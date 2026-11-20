@@ -1,9 +1,10 @@
-import { Component, ElementRef, HostListener, inject, viewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, computed, inject, viewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { SessionService } from '../core/session.service';
+import { LevelsService } from '../core/levels.service';
 import { WorkspaceService } from '../core/workspace.service';
 
 /** Estrutura das telas internas: cabeçalho com busca, menu lateral por Flight Level e conteúdo (UX/UI, seção 4). */
@@ -16,15 +17,24 @@ import { WorkspaceService } from '../core/workspace.service';
 export class Shell {
   protected readonly session = inject(SessionService);
   protected readonly workspace = inject(WorkspaceService);
+  protected readonly levels = inject(LevelsService);
   private readonly router = inject(Router);
   private readonly searchInput = viewChild.required<ElementRef<HTMLInputElement>>('searchInput');
 
-  protected readonly menu = [
+  /**
+   * Menu por Flight Level (EXP-09), com o nome de cada nível vindo da configuração (Proposta 06, NAV-D1): uma
+   * instalação que chame os níveis de "Produto", "Value Stream" e "Team" vê esses nomes.
+   */
+  protected readonly menu = computed(() => [
     { path: '/home', label: 'Home', testId: 'nav-home' },
-    { path: '/portfolio', label: 'Portfolio', testId: 'nav-portfolio' },
-    { path: '/tactical', label: 'Tactical', testId: 'nav-tactical' },
-    { path: '/squad', label: 'Squad', testId: 'nav-squad' },
-  ];
+    { path: '/portfolio', label: this.levels.nameOf('FL3'), testId: 'nav-portfolio' },
+    { path: '/tactical', label: this.levels.nameOf('FL2'), testId: 'nav-tactical' },
+    { path: '/squad', label: this.levels.nameOf('FL1'), testId: 'nav-squad' },
+  ]);
+
+  constructor() {
+    void this.levels.load();
+  }
 
   /** Atalho "/" foca a busca (UX/UI, seção 4), exceto quando o usuário já está digitando. */
   @HostListener('document:keydown', ['$event'])

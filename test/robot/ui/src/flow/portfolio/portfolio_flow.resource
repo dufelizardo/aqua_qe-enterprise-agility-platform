@@ -14,9 +14,11 @@ Portfolio - Preparar Portfólio
     RETURN    ${name}
 
 Portfolio - Abrir Quadro
-    [Documentation]    Abre o Portfolio pelo menu e garante o quadro do workspace (cria se ainda não existe).
+    [Documentation]    Abre o Portfolio pelo menu e garante o quadro do workspace (cria se ainda não existe). A trilha
+    ...    mostra a unidade ativa (Proposta 06, NAV-008).
     Click Portfolio Nav Link
-    Wait For Portfolio Page
+    Wait For Level Board Page    ${portfolio_level_name}
+    Wait For Elements State    ${LEVEL_UNIT_TRAIL}    visible    timeout=30s
     ${missing}=    Get Create Board Button Count
     IF    ${missing} > 0
         Click Create Board
@@ -72,7 +74,7 @@ Portfolio - Bloquear E Desbloquear Iniciativa
 Tactical - Abrir Quadro
     [Documentation]    Abre o Tactical pelo menu e garante o quadro de FL2 do workspace.
     Click Tactical Nav Link
-    Wait For Level Board Page    Tactical
+    Wait For Level Board Page    ${tactical_level_name}
     ${missing}=    Get Create Board Button Count
     IF    ${missing} > 0
         Click Create Board

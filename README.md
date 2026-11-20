@@ -49,6 +49,7 @@ Leia nesta ordem:
 | [Operação](doc/OPERACAO.md) | Ambientes dev e prod, nomes na rede (mDNS), pipeline de promoção, configuração única do GitHub e do servidor, desenvolvimento local. |
 | [Proposta de evolução](doc/EVOLUTION-PROPOSAL.md) | Frentes F01 a F08c que tratam os achados da revisão, com divergências e decisões pendentes. Status: proposto, não aprovado para implementação. |
 | [Proposta de experiência corporativa](doc/EXPERIENCE-PROPOSAL.md) | Menu do usuário, perfil, metas, equipes, pessoas e navegação, confrontados com o que o produto já tem. Status: proposto, fora do MVP; decisões EXP-01 a EXP-12. |
+| [Proposta de navegação organizacional](doc/NAVIGATION-PROPOSAL.md) | Menu com os nomes de nível da configuração, árvore no seletor de workspace, trilha e workspaces contextuais. Status: Fase 1 implementada; decisões NAV-D1 a NAV-D8. |
 | [Proposta de configuração e modelos de trabalho](doc/CONFIG-PROPOSAL.md) | Configuration Center, modelos Kanban e Scrum, templates de quadro e herança, confrontados com o que já existe. Status: proposto; decisões MDL-01 a MDL-12. |
 | [Proposta de quadros e visualizações](doc/BOARDS-PROPOSAL.md) | Kanban configurável, WIP, bloqueio e visualizações do trabalho, confrontados com o que já existe. Status: Etapa 1 implementada; decisões BRD-01 a BRD-12. |
 | [Proposta de administração corporativa](doc/ADMIN-PROPOSAL.md) | Áreas administrativas, papéis e níveis de configuração, confrontados com o que já existe. Status: proposto; decisões ADM-01 a ADM-09. |
@@ -135,6 +136,7 @@ O faseamento é uma proposta ainda a validar ([PRD, seção 13](doc/PRD.md)).
     ├── ADMIN-PROPOSAL.md      proposta de administração corporativa
     ├── BOARDS-PROPOSAL.md     proposta de quadros e visualizações (Kanban)
     ├── CONFIG-PROPOSAL.md     proposta de configuração e modelos de trabalho
+    ├── NAVIGATION-PROPOSAL.md proposta de navegação organizacional
     ├── pdr/            especificações por domínio e PRDs originais (.docx)
     └── prototype/      identidade visual e protótipos iniciais
 ```

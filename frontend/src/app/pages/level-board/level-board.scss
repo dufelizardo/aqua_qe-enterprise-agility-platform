@@ -403,3 +403,32 @@ textarea:focus-visible {
   color: var(--text-muted);
   font-size: 12px;
 }
+
+/* Trilha da unidade ativa (Proposta 06, NAV-008): hierarquia real; "Atende a" fica separado (NAV-010). */
+.trail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  color: var(--text-muted);
+  font-size: 13px;
+
+  strong {
+    color: var(--text);
+  }
+}
+
+.level-tag {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--blue-50);
+  color: var(--blue-700);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.serves {
+  margin-left: 8px;
+  padding-left: 8px;
+  border-left: 1px solid var(--border-strong);
+}

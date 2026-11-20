@@ -1,6 +1,7 @@
 import { Component, inject, input } from '@angular/core';
 import { Router } from '@angular/router';
 
+import { LevelsService } from '../../core/levels.service';
 import { WorkspaceService } from '../../core/workspace.service';
 
 /**
@@ -20,9 +21,15 @@ import { WorkspaceService } from '../../core/workspace.service';
       <ul class="list" data-testid="workspace-list">
         @for (item of workspace.workspaces(); track item.id) {
           <li>
-            <button type="button" class="card option" (click)="choose(item.id)" data-testid="workspace-option">
+            <button
+              type="button"
+              class="card option"
+              [style.margin-left.px]="item.depth * 20"
+              (click)="choose(item.id)"
+              data-testid="workspace-option"
+            >
               <strong>{{ item.name }}</strong>
-              <span class="muted">{{ item.roles.join(' · ') }}</span>
+              <span class="muted">{{ levels.nameOfKey(item.level) }} · {{ item.roles.join(' · ') }}</span>
             </button>
           </li>
         }
@@ -45,6 +52,7 @@ import { WorkspaceService } from '../../core/workspace.service';
 })
 export class WorkspaceSelect {
   protected readonly workspace = inject(WorkspaceService);
+  protected readonly levels = inject(LevelsService);
   private readonly router = inject(Router);
   /** Para onde voltar depois de escolher (query param). */
   readonly voltar = input<string>();
@@ -53,6 +61,7 @@ export class WorkspaceSelect {
     if (!this.workspace.loaded()) {
       void this.workspace.load();
     }
+    void this.levels.load();
   }
 
   protected choose(id: string): void {

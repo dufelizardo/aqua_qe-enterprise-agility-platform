@@ -15,3 +15,6 @@ ${portfolio_block_reason}           Aguardando decisão do comitê.
 ${tactical_cadeia_base}             Robot UI Cadeia TC
 ${tactical_cadeia_label}            Cadeia
 ${tactical_feature_base}            Robot UI Feature
+# Títulos das telas = nomes dos níveis da instalação padrão (GET /org-levels; Proposta 06).
+${portfolio_level_name}             Portfólio
+${tactical_level_name}              Cadeia
