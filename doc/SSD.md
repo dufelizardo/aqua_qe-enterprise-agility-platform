@@ -293,7 +293,7 @@ O trabalho entre ramos acontece no artefato: o pai de uma Feature pode ser uma I
 | GET | `/doc-templates/{id}` | Template com seções. | autenticado | 018 |
 | POST | `/doc-templates/{id}/versions` | Publica nova versão do template. | gerir configuração | 018 |
 
-No MVP, os tipos de artefato são os da configuração padrão (seção 8.1) e não são editáveis pela API.
+No MVP, os tipos de artefato são os da configuração padrão (seção 8.1) e não são editáveis pela API. Os workflows padrão (seção 8.2) ficam na unidade raiz, na versão 1; `Cancelado` não tem posição, porque está fora da sequência. `hasGate` vem sempre `false` até o módulo `governance` existir. Publicar versões ainda não está implementado.
 
 `GET /workflows/{id}` (trecho):
 
@@ -448,7 +448,15 @@ Contexto herdado (`GET /artifacts/STORY-3310/context`), usado na tela de detalhe
 }
 ```
 
-`summary` é o início da descrição do ancestral (até 300 caracteres). Ancestrais que o usuário não pode ver são devolvidos apenas com `key` e `type`.
+`summary` é o início da descrição do ancestral (até 300 caracteres). Todo ancestral de um artefato legível aparece com esse resumo, mesmo que o usuário não possa abri-lo ([seção 2.1](#21-escopo-entre-unidades-rev-01-rev-02-rev-04), regra 3). `documents` e `businessRules` passam a ser preenchidos com os módulos `livingdocs` e de RNs; até lá, `businessRules` vem vazio e `documents` não aparece.
+
+Como as regras de escopo foram aplicadas (2026-11-20):
+
+- **Pai em outro ramo (regra 4):** a unidade do filho está ligada à do pai quando é a própria unidade do pai ou está abaixo dela, ou quando ela, ou uma unidade acima dela, atende à unidade do pai ou a uma unidade acima dela.
+- **Pai que o usuário não lê (regra 5):** é aceito quando as unidades estão ligadas. Sem ligação, a API responde como se o pai não existisse (`VALIDATION_FAILED` em `parentId`), para não revelar que ele existe. Se o usuário lê o pai e falta a ligação, a resposta é `ORG_UNITS_NOT_LINKED`.
+- **Listagem (regras 1, 2 e 6):** entram os artefatos que o usuário lê e que estão, eles ou um ancestral, na subárvore do workspace (`X-Workspace-Id`). A ordem padrão é a de criação, do mais recente para o mais antigo.
+- **Editar, arquivar e trocar o pai** exigem a permissão do nível do artefato (matriz da seção 2) na unidade dele ou acima. Ler um descendente de outro ramo não dá edição (`403`).
+- Ainda não implementados: vínculos, ordenação, RNs e CAs desta seção, e o evento de auditoria de cada operação (com os módulos `events` e `audit`).
 
 Vínculos: `type` é um de `RELATES_TO`, `ORIGINATES_FROM`, `DUPLICATES`. `ORIGINATES_FROM` é o vínculo de um Bug ou Problema de Produção com o artefato de origem.
 

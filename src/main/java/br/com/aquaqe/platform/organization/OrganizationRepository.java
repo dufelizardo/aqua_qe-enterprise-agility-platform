@@ -3,9 +3,11 @@ package br.com.aquaqe.platform.organization;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -162,6 +164,35 @@ class OrganizationRepository implements OrgUnits {
 	@Override
 	public UUID rootId() {
 		return jdbc.sql("select id from organization.org_unit where parent_id is null").query(UUID.class).single();
+	}
+
+	@Override
+	public Set<UUID> subtrees(Collection<UUID> roots) {
+		if (roots.isEmpty()) {
+			return Set.of();
+		}
+		return Set.copyOf(jdbc.sql("""
+				select u.id from organization.org_unit u
+				 where exists (select 1 from organization.org_unit r where r.id in (:roots) and u.path like r.path || '%')
+				""")
+			.param("roots", roots)
+			.query(UUID.class)
+			.list());
+	}
+
+	@Override
+	public boolean anyServes(Collection<UUID> from, Collection<UUID> to) {
+		if (from.isEmpty() || to.isEmpty()) {
+			return false;
+		}
+		return jdbc.sql("""
+				select exists (select 1 from organization.org_unit_link
+				 where unit_id in (:from) and serves_unit_id in (:to))
+				""")
+			.param("from", from)
+			.param("to", to)
+			.query(Boolean.class)
+			.single();
 	}
 
 	private List<UnitRef> linkRefs(String shownColumn, String filterColumn, UUID unitId) {
