@@ -107,7 +107,7 @@ Formato Problem Details, com campos adicionais:
 
 ## 2. Papéis e permissões
 
-Papéis padrão **(a validar)**, derivados das personas do PRD. Um papel é sempre atribuído em uma unidade organizacional e vale para ela e para as unidades abaixo dela. Um vínculo de atendimento entre unidades não estende papéis: ele apenas permite ligar artefatos entre ramos. A leitura, porém, acompanha a hierarquia de artefatos: quem pode ler um artefato pode ler os descendentes dele, mesmo em outra unidade **(a validar)**.
+Papéis padrão **(a validar)**, derivados das personas do PRD. Onde cada papel vale, entre unidades e ramos, está na [seção 2.1](#21-escopo-entre-unidades-rev-01-rev-02-rev-04), decidida em 2026-11-20.
 
 | Papel | Persona |
 |---|---|
@@ -139,6 +139,42 @@ Papéis padrão **(a validar)**, derivados das personas do PRD. Um papel é semp
 | Consultar auditoria | ✔ | | | | | | | |
 
 Executar uma transição exige também poder editar o artefato naquele nível.
+
+### 2.1 Escopo entre unidades (REV-01, REV-02, REV-04)
+
+Decidido em 2026-11-20. A matriz acima diz **o que** cada papel faz; esta seção diz **onde**. O serviço de autorização do módulo `access` (SAD, seção 7.2) aplica as duas juntas.
+
+**Regras.**
+
+1. **Escopo do papel.** Um papel é atribuído em uma unidade organizacional e vale para ela e para todas as unidades abaixo dela na árvore.
+2. **Leitura para baixo.** Quem pode ler um artefato lê também todos os descendentes dele, em qualquer unidade, inclusive documentos e anexos. É só leitura: editar um descendente de outro ramo exige papel na unidade dele.
+3. **Resumo para cima (REV-02).** Quem pode ler um artefato vê o **resumo** de todos os ancestrais dele: chave, tipo, título, status, início da descrição e status dos documentos. Não vê o conteúdo dos documentos, os anexos nem os demais campos. O resumo aparece só no contexto herdado; abrir o ancestral exige poder lê-lo.
+4. **Vínculo de atendimento.** O vínculo "atende a" não estende papéis. Ele só autoriza ligar: a unidade de um artefato filho precisa pertencer à unidade do pai, estar abaixo dela ou atendê-la; senão, `ORG_UNITS_NOT_LINKED`.
+5. **Escolha do pai entre ramos (a validar).** Quem pode criar um artefato em uma unidade vê o resumo dos artefatos das unidades atendidas por ela, só na seleção do pai. Sem isso, a Cadeia não teria como encontrar a Iniciativa do portfólio que atende.
+6. **Listagem e busca seguem o detalhe.** Tudo o que o usuário pode abrir aparece nas listagens e na busca (regras 1 e 2); o que ele não pode abrir não aparece, nem como contagem.
+7. **Resposta fora do escopo.** Artefato que o usuário não pode ler: `404 NOT_FOUND`, sem revelar que existe. Artefato que ele lê, mas não pode editar: `403 FORBIDDEN`.
+8. **Fase 2.** Os níveis de visibilidade Private, Shared e Enterprise (RF-SC06 a 08) só **acrescentam** leituras a estas regras; nenhum caso permitido no MVP passa a ser negado.
+
+**Matriz por relação.** Para um usuário e um artefato, vale a primeira linha que se aplica:
+
+| Relação do usuário com o artefato | Detalhe | Listagem e busca | Contexto herdado | Documentos e anexos | Editar e transição |
+|---|:-:|:-:|:-:|:-:|:-:|
+| No escopo de um papel (regra 1) | ✔ | ✔ | completo | ✔ | conforme o papel |
+| Descendente de um artefato que lê (regra 2) | ✔ | ✔ | completo | ✔ | 403 |
+| Ancestral de um artefato que lê (regra 3) | 404 | ✘ | resumo | ✘ (só o status) | 404 |
+| Candidato a pai, em unidade atendida (regra 5) | 404 | só na seleção do pai | — | ✘ | 404 |
+| Nenhuma das anteriores | 404 | ✘ | — | ✘ | 404 |
+
+**Cenários de organização (REV-04).** Validam a ADR-14 contra as regras acima. Cada cenário vira dados de teste da suíte de autorização ([QA, seção 7](QA.md#7-suítes-prioritárias-do-mvp)).
+
+| Cenário | Estrutura | Quem cria e liga | Quem lê o quê |
+|---|---|---|---|
+| **C1 — Padrão** | Empresa › UN Varejo › Portfólio A › Cadeia Pagamentos › Squad Pix | PM do Portfólio A cria a INIT-1; TL da Cadeia cria a FEAT-1 sob a INIT-1 (mesmo ramo); o Squad Pix cria a STORY-1 sob a FEAT-1. | O PM do Portfólio A lê tudo abaixo dele (regra 1). O Squad Pix lê a STORY-1 e vê o resumo da FEAT-1 e da INIT-1 (regra 3). Um PM do Portfólio C, de outro ramo, recebe 404 em tudo (regra 7). |
+| **C2 — Cadeia compartilhada** | A Cadeia Pagamentos, sob o Portfólio A, atende também ao Portfólio B | O TL da Cadeia escolhe a INIT-12 do Portfólio B como pai (regra 5) e cria a FEAT-12 na Cadeia (regra 4). | A PM do Portfólio B lê a FEAT-12 e as Histórias dela (regra 2), mas recebe 403 ao editar. O TL da Cadeia vê o resumo da INIT-12 (regra 3) e recebe 404 ao abri-la. |
+| **C3 — Sem Unidade de Negócio** | Empresa › Portfólio D › Cadeia › Squad (o nível UN não é usado; a árvore pula níveis, SSD 3.2) | Igual ao C1. | Igual ao C1: as regras só consultam a árvore e o Flight Level, nunca o nome do nível (ADR-14). |
+| **C4 — Squad em duas Cadeias** | O Squad Pix, sob a Cadeia Pagamentos, atende também à Cadeia Crédito | O Squad cria a STORY-7 sob a FEAT-7 da Cadeia Crédito (regra 4), depois de achá-la pela seleção do pai (regra 5). | O TL da Cadeia Crédito lê a STORY-7 (regra 2). O Squad vê o resumo da FEAT-7 e do que estiver acima dela (regra 3). |
+
+O vínculo é sempre declarado por quem tem o papel de gerir configuração (SSD, seção 3.2); nenhum papel de negócio cria vínculos.
 
 ## 3. Recursos por módulo
 
@@ -1044,7 +1080,7 @@ A tabela `story_rule_ref` não aparece no diagrama do SAD; ela materializa a ref
 
 ## 10. Pendências
 
-- **Estrutura organizacional configurável** — a regra de leitura por hierarquia de artefatos e a exigência de vínculo para ligar artefatos entre ramos são propostas; falta também a edição de níveis depois da instalação (Fase 3).
+- **Estrutura organizacional configurável** — as regras de escopo foram decididas (seção 2.1); falta validar a regra 5 (escolha do pai entre ramos) e definir a edição de níveis depois da instalação (Fase 3).
 - **Itens "a validar" deste documento:** papéis padrão e matriz de permissões; status dos workflows de FL2 e FL1; gates padrão; seções e aprovadores dos templates; tipos de bloco.
 - **Segregação de funções:** impedir que o autor de um documento seja o aprovador, e que quem executa a transição seja quem aprova o gate.
 - **Editor de documentos:** a decisão de construir ou adotar pode alterar o formato de blocos da seção 6.

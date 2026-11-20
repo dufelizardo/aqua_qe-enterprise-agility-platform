@@ -307,7 +307,7 @@ Regras de negócio aplicáveis
   RN-03  Bloquear a conta após cinco tentativas inválidas.
 ```
 
-Ancestral que o usuário não pode ver aparece só com a chave e o aviso "sem acesso a este item".
+Ancestral que o usuário não pode abrir aparece só com o resumo (título, status, início da descrição e status dos documentos), sem link para o detalhe e com o aviso "resumo: sem acesso ao conteúdo" ([SSD, seção 2.1](SSD.md#21-escopo-entre-unidades-rev-01-rev-02-rev-04), regra 3).
 
 ### 6.10 Estados comuns
 
