@@ -1,0 +1,21 @@
+# Aplicação do ArgoCD (GitOps). Aplicar no servidor: kubectl apply -f <este arquivo> (ou -f k8s/argocd/ para todas).
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: aqua-qe-agility-platform-dev
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/dufelizardo/aqua_qe-enterprise-agility-platform.git
+    targetRevision: developer
+    path: k8s/apps/overlays/dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: aqua-qe-agility-platform-dev
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

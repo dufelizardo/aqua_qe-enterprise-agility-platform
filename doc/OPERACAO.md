@@ -126,7 +126,7 @@ kubectl -n aqua-qe-agility-platform-prod create secret generic db-credentials --
 kubectl -n aqua-qe-agility-platform-prod create secret generic auth-client --from-literal=secret="$PROD_WEB_SECRET"
 
 # Aplicações do ArgoCD (dev acompanha a developer; prod e auth, a main)
-kubectl apply -f k8s/argocd/applications.yaml
+kubectl apply -f k8s/argocd/            # todas; ou só uma, ex.: kubectl apply -f k8s/argocd/dev.yaml
 ```
 
 **Primeiro acesso à produção.** O realm `aquaqe-prod` nasce sem usuários. Entre em http://aquaqe-auth.local/admin com o usuário do segredo `keycloak-admin`, escolha o realm `aquaqe-prod` e crie os usuários, com nome, sobrenome e e-mail preenchidos.
