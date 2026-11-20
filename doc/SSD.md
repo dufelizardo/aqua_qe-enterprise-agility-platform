@@ -256,6 +256,7 @@ Regras:
 - Um vínculo só é aceito entre unidades que não estejam na mesma linha da árvore (uma não é ancestral da outra).
 - A unidade raiz é criada na instalação e é única; não pode ser desativada. Toda unidade nova tem pai ativo.
 - `PATCH` exige o `version` lido (seção 1.5).
+- **Pendente:** quando houver artefatos, decidir o que acontece ao desativar uma unidade com itens ativos, papéis vigentes ou vínculos (bloquear, avisar ou exigir mover). A tela pede confirmação antes de desativar ([Proposta 03](ADMIN-PROPOSAL.md#6-o-que-a-análise-revelou-no-produto-atual)).
 
 Detalhe de unidade (`GET /org-units/{id}`; também é a resposta de `POST` e `PATCH`). `path` vai da raiz até o pai:
 
@@ -942,6 +943,10 @@ Todos os eventos vão para a trilha de auditoria. A coluna **Notifica** indica o
 | `business_case.validated` | Business case validado. | `initiativeKey` | responsável |
 | `sprint.started` | Sprint iniciada. | `sprintId`, `squadId` | — |
 | `sprint.closed` | Sprint encerrada. | `sprintId`, `squadId`, `carriedOver` | — |
+| `org_unit.created` **(a validar)** | Unidade criada. | `orgUnitId`, `level`, `parentId`, `name` | — |
+| `org_unit.updated` **(a validar)** | Unidade renomeada, desativada ou reativada. | `orgUnitId`, `changes` (antes e depois por campo) | — |
+| `org_unit.link_added` **(a validar)** | Vínculo "atende a" criado. | `orgUnitId`, `servesOrgUnitId` | — |
+| `org_unit.link_removed` **(a validar)** | Vínculo "atende a" removido. | `orgUnitId`, `servesOrgUnitId` | — |
 | `role_assignment.granted` | Papel atribuído. | `userId`, `role`, `orgUnitId` | — |
 | `role_assignment.revoked` | Papel revogado. | `userId`, `role`, `orgUnitId` | — |
 | `config.workflow_published` | Nova versão de workflow. | `workflowId`, `versionNumber` | — |
@@ -1112,6 +1117,7 @@ A tabela `story_rule_ref` não aparece no diagrama do SAD; ela materializa a ref
 - **Campos customizados:** no MVP são um objeto livre em `customFields`; definição de tipos e validação entram com o Customization Engine.
 - **Limites operacionais:** tamanho máximo de anexo, retenção da outbox e limites de taxa da API dependem dos valores de qualidade ainda em aberto.
 - **Internacionalização:** os nomes de status e as mensagens de regra estão em português; não há mecanismo de tradução.
+- **Dados pessoais:** visibilidade de nome e e-mail de outros usuários, tratamento de contas desativadas na trilha de auditoria e retenção ([REV-14](REVIEW-01.md#rev-14--privacidade-e-dados-pessoais)).
 
 ## 11. Rastreabilidade
 

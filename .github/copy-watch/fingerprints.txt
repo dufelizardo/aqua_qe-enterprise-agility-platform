@@ -12,6 +12,8 @@
 "aqeap-qa-db5e074a82"
 "aqeap-review01-e6ceb25143"
 "aqeap-evolutio-da48a1a439"
+"aqeap-experien-273999c5d5"
+"aqeap-adminpro-ef9e4c4a0a"
 #
 # Impressões digitais: frases características do texto. Sobrevivem a quem apaga o marcador.
 "O Workspace do Artefato é o centro da experiência"
