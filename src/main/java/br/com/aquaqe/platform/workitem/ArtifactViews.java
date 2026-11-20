@@ -18,7 +18,7 @@ public final class ArtifactViews {
 	public record ArtifactView(UUID id, String key, String type, String level, String title, String description,
 			ParentRef parent, UnitRef orgUnit, StatusRef status, Person owner, Person technicalLead, Person qaOwner,
 			Person assignee, String size, Map<String, Object> customFields, long childCount, boolean archived,
-			int version, Instant createdAt, Instant updatedAt) {
+			int version, Instant createdAt, Instant updatedAt, boolean blocked, String blockedReason) {
 	}
 
 	public record ParentRef(UUID id, String key, String type, String title) {

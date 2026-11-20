@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -62,8 +63,9 @@ class BoardIntegrationTests {
 
 	@Test
 	void workspacesSaoAsUnidadesComPapel() throws Exception {
-		grant("paula", "BUSINESS_OWNER", portfolio);
-		mvc.perform(get("/api/v1/me/workspaces").with(user("paula")))
+		grant("wanda", "PRODUCT_MANAGER", portfolio);
+		grant("wanda", "BUSINESS_OWNER", portfolio);
+		mvc.perform(get("/api/v1/me/workspaces").with(user("wanda")))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.items.length()").value(1))
 			.andExpect(jsonPath("$.items[0].id").value(portfolio))
@@ -124,6 +126,120 @@ class BoardIntegrationTests {
 			.andExpect(jsonPath("$.items[*].id").value(hasItem(board)));
 		mvc.perform(get("/api/v1/boards").param("orgUnitId", outroPortfolio).param("level", "FL2").with(user("carlos")))
 			.andExpect(jsonPath("$.items.length()").value(0));
+	}
+
+	@Test
+	void configurarColunasValidaFasesEStatus() throws Exception {
+		String unit = unit("Portfólio Config", "PORTFOLIO", root());
+		grant("paula", "PRODUCT_MANAGER", unit);
+		String board = createBoard("paula", unit, "FL3");
+		// Agrupa Ideia e Backlog numa coluna; Estudo de Viabilidade fica sem coluna (aviso).
+		mvc.perform(json(patch("/api/v1/boards/{id}", board), user("paula"), """
+				{"name":"Portfólio Configurado","columns":[
+				  {"name":"Entrada","phase":"UPSTREAM","statusKeys":["IDEA","BACKLOG"],"wipLimit":5},
+				  {"name":"Refinamento","phase":"UPSTREAM","statusKeys":["REFINEMENT"],"wipLimit":2,"wipPolicy":"BLOCK"},
+				  {"name":"Construção","phase":"DOWNSTREAM","statusKeys":["BUILDING"]},
+				  {"name":"Concluído","phase":"DOWNSTREAM","statusKeys":["DONE"]}]}
+				"""))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.name").value("Portfólio Configurado"))
+			.andExpect(jsonPath("$.columns.length()").value(4))
+			.andExpect(jsonPath("$.columns[0].statusKeys").value(contains("IDEA", "BACKLOG")))
+			.andExpect(jsonPath("$.columns[1].wipPolicy").value("BLOCK"))
+			.andExpect(jsonPath("$.columns[0].wipPolicy").value("WARN"))
+			.andExpect(jsonPath("$.unmappedStatusKeys").value(contains("FEASIBILITY")));
+
+		mvc.perform(json(patch("/api/v1/boards/{id}", board), user("paula"), """
+				{"columns":[{"name":"A","phase":"UPSTREAM","statusKeys":["IDEA"]},{"name":"B","phase":"UPSTREAM","statusKeys":["IDEA"]}]}
+				"""))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.errors[0].field").value("columns[1].statusKeys"));
+		mvc.perform(json(patch("/api/v1/boards/{id}", board), user("paula"), """
+				{"columns":[{"name":"A","phase":"DOWNSTREAM","statusKeys":["DONE"]},{"name":"B","phase":"UPSTREAM","statusKeys":["IDEA"]}]}
+				"""))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.errors[0].field").value("columns[1].phase"));
+		mvc.perform(json(patch("/api/v1/boards/{id}", board), user("paula"), """
+				{"columns":[{"name":"A","phase":"UPSTREAM","statusKeys":["DEVELOPMENT"]}]}
+				"""))
+			.andExpect(status().isBadRequest());
+		mvc.perform(json(patch("/api/v1/boards/{id}", board), user("sergio"), "{\"name\":\"x\"}"))
+			.andExpect(status().isForbidden());
+	}
+
+	@Test
+	void limiteDeWipAvisaOuImpede() throws Exception {
+		String unit = unit("Portfólio WIP", "PORTFOLIO", root());
+		grant("paula", "PRODUCT_MANAGER", unit);
+		String board = createBoard("paula", unit, "FL3");
+		mvc.perform(json(patch("/api/v1/boards/{id}", board), user("paula"), """
+				{"columns":[
+				  {"name":"Ideia","phase":"UPSTREAM","statusKeys":["IDEA"],"wipLimit":2},
+				  {"name":"Backlog","phase":"UPSTREAM","statusKeys":["BACKLOG"],"wipLimit":1,"wipPolicy":"BLOCK"},
+				  {"name":"Resto","phase":"DOWNSTREAM","statusKeys":["FEASIBILITY","REFINEMENT","BUILDING","DONE"]}]}
+				"""))
+			.andExpect(status().isOk());
+
+		String a = initiative("paula", unit);
+		mvc.perform(get("/api/v1/boards/{id}/view", board).with(user("paula")))
+			.andExpect(jsonPath("$.columns[0].wipState").value("UNDER"))
+			.andExpect(jsonPath("$.columns[2].wipState").value("NONE"));
+		String b = initiative("paula", unit);
+		mvc.perform(get("/api/v1/boards/{id}/view", board).with(user("paula")))
+			.andExpect(jsonPath("$.columns[0].wipCount").value(2))
+			.andExpect(jsonPath("$.columns[0].wipState").value("AT"));
+		// WARN: a terceira entra e a coluna passa do limite.
+		initiative("paula", unit);
+		mvc.perform(get("/api/v1/boards/{id}/view", board).with(user("paula")))
+			.andExpect(jsonPath("$.columns[0].wipState").value("OVER"));
+
+		// BLOCK: Backlog aceita uma; a segunda é recusada pelo guarda, com o motivo.
+		moveTo(a, "BACKLOG", 0).andExpect(status().isOk());
+		moveTo(b, "BACKLOG", 0)
+			.andExpect(status().is(422))
+			.andExpect(jsonPath("$.code").value("GATE_BLOCKED"))
+			.andExpect(jsonPath("$.failedRules[0].type").value("WIP_LIMIT"));
+		mvc.perform(get("/api/v1/artifacts/{a}/transitions", b).with(user("paula")))
+			.andExpect(jsonPath("$.items[?(@.to.key=='BACKLOG')].failedRules[0].type").value(hasItem("WIP_LIMIT")));
+	}
+
+	@Test
+	void marcaDeBloqueadoAparecemNoCartaoEFiltra() throws Exception {
+		String unit = unit("Portfólio Bloqueio", "PORTFOLIO", root());
+		grant("paula", "PRODUCT_MANAGER", unit);
+		String board = createBoard("paula", unit, "FL3");
+		String init = initiative("paula", unit);
+		initiative("paula", unit);
+		mvc.perform(json(patch("/api/v1/artifacts/{a}", init), user("paula"),
+				"{\"blocked\":true,\"blockedReason\":\"Aguardando o jurídico\",\"version\":0}"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.blocked").value(true))
+			.andExpect(jsonPath("$.blockedReason").value("Aguardando o jurídico"));
+		mvc.perform(get("/api/v1/boards/{id}/view", board).param("blocked", "true").with(user("paula")))
+			.andExpect(jsonPath("$.columns[0].cards.length()").value(1))
+			.andExpect(jsonPath("$.columns[0].cards[0].blockedReason").value("Aguardando o jurídico"));
+		mvc.perform(json(patch("/api/v1/artifacts/{a}", init), user("paula"), "{\"blocked\":false,\"version\":1}"))
+			.andExpect(jsonPath("$.blocked").value(false))
+			.andExpect(jsonPath("$.blockedReason").doesNotExist());
+	}
+
+	private org.springframework.test.web.servlet.ResultActions moveTo(String artifact, String toKey, int version)
+			throws Exception {
+		String options = mvc.perform(get("/api/v1/artifacts/{a}/transitions", artifact).with(user("paula")))
+			.andReturn().getResponse().getContentAsString();
+		List<String> ids = JsonPath.read(options, "$.items[?(@.to.key=='" + toKey + "')].id");
+		return mvc.perform(json(post("/api/v1/artifacts/{a}/transitions", artifact), user("paula"),
+				"{\"transitionId\":\"" + ids.getFirst() + "\",\"version\":" + version + "}"));
+	}
+
+	private String initiative(String username, String unitId) throws Exception {
+		return JsonPath.read(mvc.perform(json(post("/api/v1/artifacts"), user(username),
+				"{\"type\":\"INITIATIVE\",\"title\":\"Iniciativa\",\"orgUnitId\":\"" + unitId + "\"}"))
+			.andExpect(status().isCreated()).andReturn().getResponse().getContentAsString(), "$.id");
+	}
+
+	private String root() {
+		return jdbc.queryForObject("select id from organization.org_unit where parent_id is null", UUID.class).toString();
 	}
 
 	private String createBoard(String username, String unitId, String level) throws Exception {

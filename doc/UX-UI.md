@@ -211,17 +211,19 @@ A aba ativa faz parte da rota, para que um link leve direto ao documento ou ao h
 ```
 
 - Mostra tipo, chave, título, responsável, estimativa e o resumo do gate de saída (`gateSummary` da visão do quadro).
+- Item bloqueado: barra vermelha à esquerda e a etiqueta "Bloqueada", com o motivo no texto de ajuda. O menu `[...]` traz "Marcar como bloqueada…" (pede o motivo) ou "Desbloquear" ([Proposta 04](BOARDS-PROPOSAL.md), KAN-009).
 - O resumo do gate usa a etiqueta "aprovado" quando todas as regras estão atendidas e "atenção" quando faltam.
 - Clique abre o workspace ou o detalhe. O menu `[...]` traz "Mover para…", que lista as transições possíveis e é a alternativa de teclado ao arraste.
 
 ### 6.2 Quadro
 
 - Colunas agrupadas em dois blocos rotulados, **Upstream** e **Downstream**, com uma divisória entre eles.
-- Cada coluna mostra nome e quantidade de cartões.
-- Ao iniciar o arraste, o quadro consulta `GET /artifacts/{artifact}/transitions` e esmaece as colunas para as quais não existe transição.
+- Cada coluna mostra nome e quantidade de cartões. Com limite de WIP, o contador vira "*n* / *limite*", em âmbar quando o limite é atingido e em vermelho quando é ultrapassado. O texto de ajuda informa se a coluna só avisa ou impede a entrada ([Proposta 04](BOARDS-PROPOSAL.md#3-decisões-tomadas-2026-11-20)).
+- Ao iniciar o arraste, o quadro consulta `GET /artifacts/{artifact}/transitions` e esmaece as colunas para as quais não existe transição, o usuário não tem permissão ou há regra pendente (gate ou coluna cheia com "impedir"). No menu "Mover para…", essas opções aparecem desabilitadas, com o motivo.
 - Ao soltar, executa `POST /artifacts/{artifact}/transitions`. O cartão só muda de coluna depois da resposta de sucesso; em caso de erro, volta à origem e a tela mostra o motivo (seção 9).
 - Reordenar dentro da mesma coluna usa `POST /artifacts/{artifact}/rank`.
 - **Configurar quadro**, visível a quem pode gerir quadros, abre um painel para renomear o quadro, definir as colunas, a fase de cada uma e os status que ela agrupa (`GET /boards/{id}`, `PATCH /boards/{id}`). Um status do workflow que não esteja em nenhuma coluna gera aviso, porque os itens nele ficariam invisíveis.
+- **Configurar quadro** (implementado em 2026-11-20): nome do quadro; para cada coluna, nome, fase, status agrupados (caixas de seleção), limite de WIP (vazio = sem limite) e "Quando atingir" (Avisar ou Impedir a entrada); subir, descer, remover e adicionar coluna. Problemas (status repetido, Upstream depois de Downstream, coluna sem status) aparecem antes de salvar. O quadro também mostra o aviso de status sem coluna a quem pode configurá-lo.
 
 ### 6.3 Etiqueta de status
 
@@ -362,7 +364,7 @@ Meu trabalho
 - **Dados:** `GET /boards`, `GET /boards/{id}/view`; na lista, `GET /artifacts` com `level` FL3.
 - **Ações:** "Nova Iniciativa" (`POST /artifacts`); mover cartão (seção 6.2); filtros por responsável e texto.
 - **Estado vazio:** se não há quadro de FL3 na unidade, quem pode gerir quadros vê "Criar quadro de portfólio" (`POST /boards`); os demais veem a explicação.
-- **Situação (2026-11-20):** implementada em `/portfolio`, com quadro, lista, filtro por texto (chave, título ou responsável), "Nova Iniciativa" (com a escolha do Portfólio entre as unidades de FL3 do workspace) e movimentação por arraste ou por "Mover para…". Ainda faltam: configurar o quadro, reordenar na coluna (`rank`), o resumo do gate no cartão e a coluna de business case na lista.
+- **Situação (2026-11-20):** implementada em `/portfolio`, com quadro, lista, filtro por texto (chave, título ou responsável), "Nova Iniciativa" (com a escolha do Portfólio entre as unidades de FL3 do workspace) e movimentação por arraste ou por "Mover para…". Também: "Configurar quadro", limite de WIP e o filtro "Só bloqueados". Ainda faltam: reordenar na coluna (`rank`), o resumo do gate no cartão e a coluna de business case na lista.
 
 ### 7.4 Initiative Workspace (UI-06)
 

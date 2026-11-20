@@ -6,6 +6,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { OrgUnit, OrganizationService } from '../../admin/organization.service';
 import { ApiError, fieldError, messageOf, toApiError } from '../../core/api-error';
 import { WorkspaceService } from '../../core/workspace.service';
+import { BoardConfig } from '../../work/board-config';
 import {
   Artifact,
   Board,
@@ -14,6 +15,7 @@ import {
   Card,
   TransitionOption,
   WorkService,
+  executable,
   transitionInto,
 } from '../../work/work.service';
 
@@ -23,7 +25,7 @@ import {
  */
 @Component({
   selector: 'app-portfolio',
-  imports: [CdkDropListGroup, CdkDropList, CdkDrag, MatMenuModule, MatSnackBarModule],
+  imports: [CdkDropListGroup, CdkDropList, CdkDrag, MatMenuModule, MatSnackBarModule, BoardConfig],
   templateUrl: './portfolio.html',
   styleUrl: './portfolio.scss',
 })
@@ -41,6 +43,11 @@ export class Portfolio {
   protected readonly filter = signal('');
   protected readonly list = signal<Artifact[]>([]);
   protected readonly busy = signal(false);
+  protected readonly configuring = signal(false);
+  protected readonly onlyBlocked = signal(false);
+  /** Cartão sendo marcado como bloqueado, com o motivo digitado. */
+  protected readonly blocking = signal<Card | null>(null);
+  protected readonly blockReason = signal('');
 
   /** Colunas para onde o cartão arrastado pode ir; as demais ficam esmaecidas (UX/UI 6.2). */
   protected readonly dragOptions = signal<TransitionOption[] | null>(null);
@@ -69,7 +76,9 @@ export class Portfolio {
   private readonly filtered = computed<BoardColumn[]>(() =>
     (this.view()?.columns ?? []).map((column) => ({
       ...column,
-      cards: column.cards.filter((card) => this.matches(card.key, card.title, card.owner?.name)),
+      cards: column.cards.filter(
+        (card) => (!this.onlyBlocked() || card.blocked) && this.matches(card.key, card.title, card.owner?.name),
+      ),
     })),
   );
 
@@ -165,7 +174,8 @@ export class Portfolio {
   protected async onDragStart(event: CdkDragStart<Card>): Promise<void> {
     this.dragOptions.set(null);
     const options = await this.work.transitions(event.source.data.id);
-    this.dragOptions.set(options.filter((option) => option.canExecute));
+    // Só colunas com transição executável agora: permissão e sem regra pendente (gate ou limite de WIP).
+    this.dragOptions.set(executable(options));
   }
 
   /** Durante o arraste, só aceita colunas para as quais existe transição (a de origem também, para cancelar). */
@@ -204,6 +214,56 @@ export class Portfolio {
       await this.refresh();
       this.toast(`${card.key} movida para ${option.to.name}.`);
     });
+  }
+
+  // ---------------------------------------------------------------------------------------- configurar e bloquear
+
+  protected async onConfigured(board: Board): Promise<void> {
+    this.board.set(board);
+    // Recarrega antes de fechar o painel: o quadro só aparece de novo já com a configuração nova.
+    await this.refresh();
+    this.configuring.set(false);
+    this.toast('Quadro configurado.');
+  }
+
+  protected startBlock(card: Card): void {
+    this.blocking.set(card);
+    this.blockReason.set(card.blockedReason ?? '');
+  }
+
+  protected async confirmBlock(): Promise<void> {
+    const card = this.blocking();
+    if (!card) {
+      return;
+    }
+    await this.run(async () => {
+      await this.work.setBlocked(card.id, true, this.blockReason().trim() || null, card.version);
+      this.blocking.set(null);
+      await this.refresh();
+      this.toast(`${card.key} marcada como bloqueada.`);
+    });
+  }
+
+  protected async unblock(card: Card): Promise<void> {
+    await this.run(async () => {
+      await this.work.setBlocked(card.id, false, null, card.version);
+      await this.refresh();
+      this.toast(`${card.key} desbloqueada.`);
+    });
+  }
+
+  /** Texto do contador da coluna: "n / limite" quando há limite de WIP (Proposta 04, 7.1.2). */
+  protected counter(column: BoardColumn): string {
+    return column.wipLimit === null ? `${column.cards.length}` : `${column.wipCount ?? 0} / ${column.wipLimit}`;
+  }
+
+  protected wipTitle(column: BoardColumn): string {
+    if (column.wipLimit === null) {
+      return 'Sem limite de WIP';
+    }
+    const policy = column.wipPolicy === 'BLOCK' ? 'impede a entrada quando cheia' : 'só avisa';
+    const states = { NONE: '', UNDER: 'abaixo do limite', AT: 'limite atingido', OVER: 'limite ultrapassado' };
+    return `Limite de WIP ${column.wipLimit} (${policy}); ${states[column.wipState]}.`;
   }
 
   // ---------------------------------------------------------------------------------------- apoio

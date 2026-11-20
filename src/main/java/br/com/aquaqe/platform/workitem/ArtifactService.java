@@ -48,7 +48,8 @@ class ArtifactService {
 	static final Set<String> SIZES = Set.of("XS", "S", "M", "L", "XL");
 	private static final Set<String> USER_FIELDS = Set.of("ownerId", "technicalLeadId", "qaOwnerId", "assigneeId");
 	private static final Set<String> PATCHABLE = Set.of("title", "description", "ownerId", "technicalLeadId",
-		"qaOwnerId", "assigneeId", "size", "customFields", "parentId", "version");
+		"qaOwnerId", "assigneeId", "size", "customFields", "parentId", "blocked", "blockedReason", "version");
+	static final int BLOCKED_REASON_MAX = 500;
 
 	private final ArtifactRepository repository;
 	private final ArtifactConfiguration configuration;
@@ -95,6 +96,17 @@ class ArtifactService {
 		Filter filter = new Filter(orgUnits.subtrees(List.of(orgUnitId)), typeIds(null, level), null, null, null, null,
 			null, null, false);
 		return views(repository.search(filter, caller.scope(), 0, limit));
+	}
+
+	/** Itens não arquivados do nível, nos status informados, na subárvore da unidade, de todos os usuários (WIP). */
+	long countForBoard(UUID orgUnitId, String level, Collection<UUID> statusIds) {
+		Filter filter = new Filter(orgUnits.subtrees(List.of(orgUnitId)), typeIds(null, level), statusIds, null, null,
+			null, null, null, false);
+		return repository.count(filter, null);
+	}
+
+	boolean inBoardScope(UUID artifactId, UUID orgUnitId) {
+		return repository.withinUnits(artifactId, orgUnits.subtrees(List.of(orgUnitId)));
 	}
 
 	List<ArtifactView> children(String ref, boolean archived) {
@@ -152,7 +164,7 @@ class ArtifactService {
 		Row row = new Row(id, key, type.id(), parent == null ? null : parent.id(), path, unitId,
 			configuration.initialStatus(type.key()).id(), title, text(body, "description"), people.get("ownerId"),
 			people.get("technicalLeadId"), people.get("qaOwnerId"), people.get("assigneeId"),
-			size(body.get("size")), customFields(body.get("customFields")), false, 0, null, null, 0);
+			size(body.get("size")), customFields(body.get("customFields")), false, 0, null, null, 0, false, null);
 		repository.insert(row, caller.userId());
 		return views(List.of(repository.find(id).orElseThrow())).getFirst();
 	}
@@ -193,7 +205,7 @@ class ArtifactService {
 			people.get("ownerId"), people.get("technicalLeadId"), people.get("qaOwnerId"), people.get("assigneeId"),
 			body.containsKey("size") ? size(body.get("size")) : current.size(),
 			body.containsKey("customFields") ? customFields(body.get("customFields")) : current.customFields(),
-			current.archived(), current.version(), null, null, 0);
+			current.archived(), current.version(), null, null, 0, blocked(body, current), blockedReason(body, current));
 		if (!repository.update(updated, version.intValue())) {
 			throw ApiException.versionConflict();
 		}
@@ -367,7 +379,7 @@ class ArtifactService {
 				person(names, r.ownerId()), person(names, r.technicalLeadId()),
 				person(names, r.qaOwnerId()), person(names, r.assigneeId()),
 				r.size(), parseCustomFields(r.customFields()), r.childCount(), r.archived(), r.version(), r.createdAt(),
-				r.updatedAt()));
+				r.updatedAt(), r.blocked(), r.blockedReason()));
 		}
 		return result;
 	}
@@ -377,6 +389,31 @@ class ArtifactService {
 	}
 
 	// ---------------------------------------------------------------------------------------------- campos
+
+	/** Marca de bloqueado (Proposta 04, KAN-009): {@code blocked} liga e desliga; desligar limpa o motivo. */
+	private static boolean blocked(Map<String, Object> body, Row current) {
+		if (!body.containsKey("blocked")) {
+			return current.blocked();
+		}
+		if (!(body.get("blocked") instanceof Boolean value)) {
+			throw ApiException.validation("blocked", "use true ou false");
+		}
+		return value;
+	}
+
+	private static String blockedReason(Map<String, Object> body, Row current) {
+		if (!blocked(body, current)) {
+			return null;
+		}
+		String reason = body.containsKey("blockedReason") ? text(body, "blockedReason") : current.blockedReason();
+		if (reason == null || reason.isBlank()) {
+			return null;
+		}
+		if (reason.strip().length() > BLOCKED_REASON_MAX) {
+			throw ApiException.validation("blockedReason", "no máximo " + BLOCKED_REASON_MAX + " caracteres");
+		}
+		return reason.strip();
+	}
 
 	private static String requireTitle(Object value) {
 		String title = value instanceof String s ? s.strip() : "";

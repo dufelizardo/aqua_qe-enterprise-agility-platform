@@ -1,5 +1,6 @@
 package br.com.aquaqe.platform.workitem;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -62,6 +63,19 @@ public class Artifacts {
 	 */
 	public List<ArtifactView> itemsOfLevel(UUID orgUnitId, String level, int limit) {
 		return service.itemsOfLevel(orgUnitId, level, limit);
+	}
+
+	/**
+	 * Quantos itens do nível estão nos status informados na subárvore da unidade, contando todos os usuários. Base do
+	 * limite de WIP, que vale para a coluna inteira e não só para o que cada um enxerga.
+	 */
+	public long countForBoard(UUID orgUnitId, String level, Collection<UUID> statusIds) {
+		return service.countForBoard(orgUnitId, level, statusIds);
+	}
+
+	/** O artefato aparece nos quadros da unidade (ele, ou um ancestral dele, está na subárvore)? */
+	public boolean inBoardScope(UUID artifactId, UUID orgUnitId) {
+		return service.inBoardScope(artifactId, orgUnitId);
 	}
 
 	/** O artefato no formato da API (SSD 3.4). */

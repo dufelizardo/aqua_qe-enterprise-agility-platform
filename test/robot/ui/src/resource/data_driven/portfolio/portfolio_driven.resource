@@ -10,3 +10,5 @@ ${portfolio_unit_base}              Robot UI Portfólio PF
 ${portfolio_unit_label}             Portfólio
 ${portfolio_initiative_base}        Robot UI Iniciativa
 ${portfolio_initiative_description}    Criada pela suíte de interface do Portfolio.
+${portfolio_wip_limit}              999
+${portfolio_block_reason}           Aguardando decisão do comitê.

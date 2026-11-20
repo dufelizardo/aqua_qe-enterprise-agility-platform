@@ -17,3 +17,10 @@ CT-001 - PRD-RF-001: Validate Portfolio - criar Iniciativa e mover de Ideia para
     PORTFOLIO - CRIAR E MOVER INICIATIVA    ${portfolio_admin_username}    ${portfolio_admin_display_name}
     ...    ${portfolio_root_name}    ${portfolio_unit_base}    ${portfolio_unit_label}    ${portfolio_initiative_base}
     ...    ${portfolio_initiative_description}
+
+CT-002 - KAN-006: Validate Portfolio - configurar limite de WIP e marcar Iniciativa como bloqueada
+    [Documentation]    "Configurar quadro" define o limite (contador n / limite); o cartão bloqueado mostra a etiqueta.
+    [Tags]    UI    Portfolio    PRD-RF-011    KAN-002    KAN-006    KAN-009
+    PORTFOLIO - CONFIGURAR WIP E BLOQUEAR    ${portfolio_admin_username}    ${portfolio_admin_display_name}
+    ...    ${portfolio_root_name}    ${portfolio_unit_base}    ${portfolio_unit_label}    ${portfolio_initiative_base}
+    ...    ${portfolio_initiative_description}    ${portfolio_wip_limit}    ${portfolio_block_reason}
