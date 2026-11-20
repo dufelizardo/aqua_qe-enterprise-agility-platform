@@ -164,7 +164,7 @@ A **matriz de rastreabilidade** (requisito → suítes → casos → último res
 
 | Suíte | Verifica | Base | Tags |
 |---|---|---|---|
-| **Autorização e isolamento** | Data-driven sobre a matriz papel × relação organizacional × operação, positivos e negativos, em detalhe, listagem, busca, contexto herdado e anexos. A matriz do SSD, seção 2, é o ponto de partida; a matriz completa sai do REV-01. | [SSD, seção 2](SSD.md#2-papéis-e-permissões) | `REV-01`, `REV-02`, `F01`, `F08a`, `security` |
+| **Autorização e isolamento** | Data-driven sobre a matriz papel × relação organizacional × operação, positivos e negativos, em detalhe, listagem, busca, contexto herdado e anexos. Regras, matriz por relação e cenários C1 a C4 no [SSD, seção 2.1](SSD.md#21-escopo-entre-unidades-rev-01-rev-02-rev-04). | [SSD, seção 2](SSD.md#2-papéis-e-permissões) | `REV-01`, `REV-02`, `F01`, `F08a`, `security` |
 | **Gates** | Os seis tipos de regra: `REQUIRED_FIELD`, `DOCUMENT_SECTION_FILLED`, `DOCUMENT_APPROVED`, `MIN_CHILDREN`, `BUSINESS_CASE_VALIDATED`, `ROLE_APPROVAL`. Retorno `GATE_BLOCKED` com `failedRules`; transição liberada depois de corrigir. | [SSD, seção 5](SSD.md#5-regras-de-gate), [4.2](SSD.md#42-transição-com-gate) | `PRD-RF-022` a `024`, `F02` |
 | **Aprovações** | Aprovação e rejeição por papel; `APPROVER_ROLE_REQUIRED`; histórico com substituídas; segregação de funções, quando a F02 for aprovada. | [SSD, seção 4.3](SSD.md#43-aprovação-formal-de-um-gate) | `PRD-RF-024`, `F02`, `REV-09` |
 | **Documentos** | Salvar nova versão, `VERSION_CONFLICT`, `DOCUMENT_NOT_EDITABLE`, aprovar e reabrir, seções obrigatórias do template. | [SSD, seções 4.4](SSD.md#44-salvar-documento-com-conflito) e [6](SSD.md#6-formato-dos-documentos) | `PRD-RF-018` a `020`, `REV-05` |
@@ -225,7 +225,7 @@ O que a implementação precisa oferecer para que os testes acima sejam possíve
 
 - Metas numéricas de desempenho e volume, e a ferramenta de carga, que fica fora do Robot.
 - SLA de atraso da auditoria (REV-03) e decisão D-03 sobre falha persistente.
-- Matriz de autorização completa (REV-01), que define os dados da suíte de isolamento.
+- ~~Matriz de autorização completa (REV-01)~~: decidida em 2026-11-20 ([SSD, seção 2.1](SSD.md#21-escopo-entre-unidades-rev-01-rev-02-rev-04)).
 - Convenção `data-testid`, a incorporar na UX/UI.
 - Capítulos do ASVS nível 2 aplicáveis e quais são verificáveis por Robot (REV-13).
 - Gestão de defeitos: onde registrar e como ligar ao caso de teste, enquanto a própria plataforma não oferece gestão de testes (Fase 2).

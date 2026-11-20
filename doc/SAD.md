@@ -245,7 +245,7 @@ A seleção de workspace acontece depois do login: a aplicação lista as unidad
 
 ### 7.2 Autorização
 
-Toda verificação de acesso passa por um único serviço do módulo `access`, que responde à pergunta "este usuário pode executar esta ação sobre este recurso?". No MVP a resposta vem dos papéis atribuídos na unidade organizacional do recurso ou acima dela (RBAC por escopo). Além disso, quem pode ler um artefato pode ler os descendentes dele, mesmo que estejam em outra unidade: o dono de uma Iniciativa enxerga as Features que a compõem, ainda que entregues por uma Cadeia de outro ramo da árvore. Consultas de listagem recebem o mesmo filtro de escopo, para que um usuário nunca veja artefatos de um portfólio em que não tem papel.
+Toda verificação de acesso passa por um único serviço do módulo `access`, que responde à pergunta "este usuário pode executar esta ação sobre este recurso?". No MVP a resposta vem dos papéis atribuídos na unidade organizacional do recurso ou acima dela (RBAC por escopo). Além disso, quem pode ler um artefato pode ler os descendentes dele, mesmo que estejam em outra unidade: o dono de uma Iniciativa enxerga as Features que a compõem, ainda que entregues por uma Cadeia de outro ramo da árvore. Para cima, vê só o resumo dos ancestrais, no contexto herdado. Listagem e busca aplicam exatamente a mesma regra do detalhe. As regras completas, a matriz por relação e os cenários de organização estão no [SSD, seção 2.1](SSD.md#21-escopo-entre-unidades-rev-01-rev-02-rev-04), decididos em 2026-11-20.
 
 Como a decisão está centralizada, as regras por atributo, os níveis de visibilidade Private, Shared e Enterprise e a autorização por recurso (RF-SC06 a 08) entram na Fase 2 sem alterar os módulos de negócio.
 
@@ -375,7 +375,7 @@ Se algum módulo precisar virar serviço separado (o candidato mais provável é
 | 11 | Busca textual pelo PostgreSQL no MVP | Decidido |
 | 12 | Analytics Store em schema separado do PostgreSQL na Fase 2 | Proposto |
 | 13 | Uma instalação por cliente | Proposto |
-| 14 | Estrutura organizacional configurável: níveis como dados e vínculos de atendimento entre unidades | Proposto |
+| 14 | Estrutura organizacional configurável: níveis como dados e vínculos de atendimento entre unidades | Decidido |
 | 15 | Ambientes dev e prod no servidor doméstico, com GitOps e nomes mDNS | Decidido |
 | 16 | Login no navegador conduzido pelo backend (BFF); token Bearer para integrações | Decidido |
 | 17 | Ambiente dev sem senha (persona de teste), proibido em produção | Decidido |
@@ -451,7 +451,7 @@ Os valores-alvo são provisórios; o PRD lista sua definição como pendência.
 
 ## 13. Pendências
 
-- **Estrutura organizacional (ADR-14):** falta definir como a visibilidade Private, Shared e Enterprise da especificação de Segurança se combina com os vínculos de atendimento, e o procedimento para reorganizar níveis depois que há dados (Fase 3).
+- **Estrutura organizacional (ADR-14):** decidida em 2026-11-20, validada pelos cenários do SSD, seção 2.1; Private, Shared e Enterprise só acrescentam leituras às regras do MVP. Falta o procedimento para reorganizar níveis depois que há dados (Fase 3).
 - **Biblioteca de componentes de interface e tokens de design:** propostos na [especificação de UX/UI](UX-UI.md) (Angular Material com CDK); aguardam confirmação.
 - **Editor de documentos:** construir ou adotar; formato exato dos blocos.
 - **Notificações:** canais além de e-mail e regras de envio.
