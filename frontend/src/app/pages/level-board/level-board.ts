@@ -1,5 +1,5 @@
 import { CdkDrag, CdkDragDrop, CdkDragStart, CdkDropList, CdkDropListGroup } from '@angular/cdk/drag-drop';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
@@ -7,8 +7,10 @@ import { OrgUnit, OrganizationService } from '../../admin/organization.service';
 import { ApiError, fieldError, messageOf, toApiError } from '../../core/api-error';
 import { WorkspaceService } from '../../core/workspace.service';
 import { BoardConfig } from '../../work/board-config';
+import { LEVEL_SETUPS, LevelSetup, MANAGE_ROLES_NOTE } from './level-setup';
 import {
   Artifact,
+  ArtifactType,
   Board,
   BoardColumn,
   BoardView,
@@ -20,20 +22,28 @@ import {
 } from '../../work/work.service';
 
 /**
- * Portfolio Management (UX/UI 7.3): as Iniciativas do workspace no fluxo de FL3, em quadro ou lista. Mover um cartão é
- * executar a transição (UX/UI 6.2): o cartão só muda de coluna depois da resposta de sucesso.
+ * Quadro de um Flight Level: Portfolio (FL3, UX/UI 7.3), Tactical (FL2, 7.5) e Squad (FL1, 7.7), em quadro ou lista. A
+ * rota informa o nível ({@link LEVEL_SETUPS}). Mover um cartão é executar a transição (UX/UI 6.2): o cartão só muda de
+ * coluna depois da resposta de sucesso.
  */
 @Component({
-  selector: 'app-portfolio',
+  selector: 'app-level-board',
   imports: [CdkDropListGroup, CdkDropList, CdkDrag, MatMenuModule, MatSnackBarModule, BoardConfig],
-  templateUrl: './portfolio.html',
-  styleUrl: './portfolio.scss',
+  templateUrl: './level-board.html',
+  styleUrl: './level-board.scss',
 })
-export class Portfolio {
+export class LevelBoard {
   private readonly work = inject(WorkService);
   private readonly organization = inject(OrganizationService);
   private readonly snackBar = inject(MatSnackBar);
   protected readonly workspace = inject(WorkspaceService);
+
+  /** Chave do nível, vinda dos dados da rota. */
+  readonly screen = input<keyof typeof LEVEL_SETUPS>('portfolio');
+  protected readonly setup = computed<LevelSetup>(() => LEVEL_SETUPS[this.screen()]);
+  protected readonly manageNote = MANAGE_ROLES_NOTE;
+  /** Tipos de artefato da instalação (nome, pais permitidos), para os cartões e o formulário. */
+  protected readonly types = signal<ArtifactType[]>([]);
 
   protected readonly loading = signal(true);
   protected readonly loadError = signal<string | null>(null);
@@ -53,18 +63,27 @@ export class Portfolio {
   protected readonly dragOptions = signal<TransitionOption[] | null>(null);
   protected readonly menuOptions = signal<TransitionOption[] | null>(null);
 
-  // Nova Iniciativa
+  // Novo item
   protected readonly creating = signal(false);
+  protected readonly newType = signal('');
   protected readonly newTitle = signal('');
   protected readonly newDescription = signal('');
   protected readonly newUnit = signal('');
+  protected readonly newParent = signal('');
   protected readonly createError = signal<ApiError | null>(null);
-  protected readonly portfolioUnits = signal<OrgUnit[]>([]);
+  protected readonly levelUnits = signal<OrgUnit[]>([]);
+  /** Itens que podem ser pai do tipo escolhido e que o usuário lê. */
+  protected readonly parentCandidates = signal<Artifact[]>([]);
+  /** Na ordem definida para a tela (História primeiro no Squad, Feature primeiro no Tactical). */
+  protected readonly creatableTypes = computed(() =>
+    this.setup()
+      .creatableTypes.map((key) => this.types().find((t) => t.key === key))
+      .filter((t): t is ArtifactType => !!t),
+  );
+  protected readonly selectedType = computed(() => this.types().find((t) => t.key === this.newType()) ?? null);
 
   /** Só decide o que mostrar; quem decide o acesso é a API (SSD 2). */
-  protected readonly canCreate = computed(() =>
-    this.workspace.hasRole('PLATFORM_ADMIN', 'BUSINESS_OWNER', 'PRODUCT_MANAGER'),
-  );
+  protected readonly canCreate = computed(() => this.workspace.hasRole(...this.setup().createRoles));
   protected readonly canManageBoards = computed(() =>
     this.workspace.hasRole('PLATFORM_ADMIN', 'PRODUCT_MANAGER', 'TECH_LEAD'),
   );
@@ -86,7 +105,20 @@ export class Portfolio {
   protected readonly messageOf = messageOf;
 
   constructor() {
-    void this.load();
+    // Recarrega quando a rota troca de nível (Portfolio, Tactical, Squad reutilizam o componente).
+    effect(() => {
+      this.screen();
+      untracked(() => {
+        this.creating.set(false);
+        this.configuring.set(false);
+        this.board.set(null);
+        void this.load();
+      });
+    });
+  }
+
+  protected typeName(key: string): string {
+    return this.types().find((t) => t.key === key)?.name ?? key;
   }
 
   protected async load(): Promise<void> {
@@ -97,7 +129,10 @@ export class Portfolio {
     this.loading.set(true);
     this.loadError.set(null);
     try {
-      const boards = await this.work.boards(workspaceId, 'FL3');
+      if (this.types().length === 0) {
+        this.types.set(await this.work.artifactTypes());
+      }
+      const boards = await this.work.boards(workspaceId, this.setup().level);
       this.board.set(boards[0] ?? null);
       await this.refresh();
     } catch (error) {
@@ -111,7 +146,7 @@ export class Portfolio {
     const board = this.board();
     const [view, list] = await Promise.all([
       board ? this.work.boardView(board.id) : Promise.resolve(null),
-      this.work.artifacts('FL3'),
+      this.work.artifacts(this.setup().level),
     ]);
     this.view.set(view);
     this.list.set(list);
@@ -123,34 +158,54 @@ export class Portfolio {
       return;
     }
     await this.run(async () => {
-      this.board.set(await this.work.createBoard(workspaceId, 'FL3'));
+      this.board.set(await this.work.createBoard(workspaceId, this.setup().level));
       await this.refresh();
-      this.toast('Quadro de portfólio criado.');
+      this.toast('Quadro criado.');
     });
   }
 
-  // ---------------------------------------------------------------------------------------- Nova Iniciativa
+  // ---------------------------------------------------------------------------------------- novo item
 
   protected async openCreate(): Promise<void> {
     this.creating.set(true);
     this.createError.set(null);
     const units = await this.organization.allUnits();
     const options = unitsInWorkspace(units, this.workspace.currentWorkspaceId()).filter(
-      (unit) => unit.active && unit.level.flightLevel === 'FL3',
+      (unit) => unit.active && unit.level.flightLevel === this.setup().level,
     );
-    this.portfolioUnits.set(options);
+    this.levelUnits.set(options);
     this.newUnit.set(options[0]?.id ?? '');
+    await this.chooseType(this.creatableTypes()[0]?.key ?? '');
   }
 
-  protected async createInitiative(): Promise<void> {
+  /** Troca o tipo e carrega os possíveis pais: itens que o usuário lê, dos tipos permitidos (SSD 8.1). */
+  protected async chooseType(key: string): Promise<void> {
+    this.newType.set(key);
+    this.newParent.set('');
+    const type = this.selectedType();
+    if (!type || type.parentTypes.length === 0) {
+      this.parentCandidates.set([]);
+      return;
+    }
+    const levels = [...new Set(this.types().filter((t) => type.parentTypes.includes(t.key)).map((t) => t.level))];
+    const lists = await Promise.all(levels.map((level) => this.work.artifacts(level)));
+    const candidates = lists.flat().filter((a) => type.parentTypes.includes(a.type));
+    this.parentCandidates.set(candidates);
+    if (type.parentRequired) {
+      this.newParent.set(candidates[0]?.id ?? '');
+    }
+  }
+
+  protected async createItem(): Promise<void> {
     this.createError.set(null);
     this.busy.set(true);
     try {
       const created = await this.work.createArtifact({
-        type: 'INITIATIVE',
+        type: this.newType(),
         title: this.newTitle(),
         description: this.newDescription() || undefined,
         orgUnitId: this.newUnit(),
+        parentId: this.newParent() || undefined,
       });
       this.creating.set(false);
       this.newTitle.set('');

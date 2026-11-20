@@ -403,6 +403,7 @@ Documentação                         Gates
 - **Dados:** `GET /boards/{id}/view`.
 - **Ações:** mover cartão; filtrar por tipo, responsável e Iniciativa; "Nova Feature".
 - **Diferença visual:** Feature de Sustentação tem etiqueta de tipo própria no cartão.
+- **Situação (2026-11-20):** implementada em `/tactical`, com o mesmo quadro configurável do Portfolio (lista, filtro, configurar quadro, WIP e bloqueio). "Nova Feature" pede o tipo (Feature ou Feature de Sustentação), o item pai (Iniciativas que o usuário lê; obrigatório para Feature) e a Cadeia. Ainda falta o filtro por Iniciativa.
 
 ### 7.6 Feature Workspace (UI-08, UI-10 a UI-14)
 
@@ -449,6 +450,7 @@ Documentação                    Gates — Pronto para Construir    4 de 6
 - Encerrar uma sprint mostra antes quantos itens não concluídos voltarão ao backlog.
 - Squad sem nenhuma sprint não vê o seletor no quadro; a aba Sprints explica que o uso é opcional.
 - "Novo item" pede o tipo; os tipos e os pais permitidos vêm de `GET /artifact-types`.
+- **Situação (2026-11-20):** o **Quadro** está implementado em `/squad`, com o mesmo componente das outras telas e "Novo item" (tipo, pai opcional ou obrigatório conforme o tipo, e Squad). As colunas padrão juntam os status dos três fluxos de FL1 (itens, Task e Problema de Produção); cada squad agrupa como quiser em "Configurar quadro". As abas **Backlog** (com `rank`) e **Sprints** ainda não existem: entram com as sprints (issue #48).
 
 ### 7.8 Work Item Details (UI-16)
 

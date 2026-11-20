@@ -12,3 +12,6 @@ ${portfolio_initiative_base}        Robot UI Iniciativa
 ${portfolio_initiative_description}    Criada pela suíte de interface do Portfolio.
 ${portfolio_wip_limit}              999
 ${portfolio_block_reason}           Aguardando decisão do comitê.
+${tactical_cadeia_base}             Robot UI Cadeia TC
+${tactical_cadeia_label}            Cadeia
+${tactical_feature_base}            Robot UI Feature

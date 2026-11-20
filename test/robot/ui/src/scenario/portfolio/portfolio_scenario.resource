@@ -32,3 +32,21 @@ PORTFOLIO - CONFIGURAR WIP E BLOQUEAR
     Portfolio - Criar Iniciativa    ${title}    ${initiative_description}    ${portfolio}
     Portfolio - Configurar Limite De WIP    ${wip_limit}
     Portfolio - Bloquear E Desbloquear Iniciativa    ${title}    ${block_reason}
+
+TACTICAL - CRIAR E MOVER FEATURE
+    [Documentation]    Portfólio e Cadeia novos; Iniciativa no Portfolio; Feature sob ela no Tactical, movida de Backlog
+    ...    para Em Refinamento.
+    [Arguments]    ${username}    ${display_name}    ${root_name}    ${portfolio_base}    ${portfolio_label}
+    ...    ${cadeia_base}    ${cadeia_label}    ${initiative_base}    ${feature_base}    ${description}
+    ${portfolio}=    Portfolio - Preparar Portfólio    ${username}    ${display_name}    ${root_name}
+    ...    ${portfolio_base}    ${portfolio_label}
+    ${cadeia}=    Unique Name    ${cadeia_base}
+    Admin - Criar Unidade Sob    ${portfolio}    ${cadeia}    ${cadeia_label}
+    ${initiative}=    Unique Name    ${initiative_base}
+    Portfolio - Abrir Quadro
+    Portfolio - Criar Iniciativa    ${initiative}    ${description}    ${portfolio}
+    ${key}=    Get Card Key    IDEA    ${initiative}
+    ${feature}=    Unique Name    ${feature_base}
+    Tactical - Abrir Quadro
+    Tactical - Criar Feature Sob Iniciativa    ${feature}    ${description}    ${key} · ${initiative}    ${cadeia}
+    Portfolio - Mover Iniciativa    ${feature}    BACKLOG    REFINEMENT

@@ -1,7 +1,7 @@
 <header class="page-header">
-  <p class="eyebrow">FL3 · {{ workspace.current()?.name }}</p>
-  <h1 data-testid="page-title">Portfolio</h1>
-  <p class="lead">As Iniciativas do workspace no fluxo estratégico.</p>
+  <p class="eyebrow">{{ setup().level }} · {{ workspace.current()?.name }}</p>
+  <h1 data-testid="page-title">{{ setup().title }}</h1>
+  <p class="lead">{{ setup().lead }}</p>
 </header>
 
 <div class="toolbar">
@@ -13,10 +13,10 @@
     class="filter"
     type="search"
     placeholder="Filtrar por chave, título ou responsável"
-    aria-label="Filtrar Iniciativas"
+    aria-label="Filtrar itens"
     [value]="filter()"
     (input)="filter.set(value($event))"
-    data-testid="portfolio-filter"
+    data-testid="board-filter"
   />
   <label class="check">
     <input type="checkbox" [checked]="onlyBlocked()" (change)="onlyBlocked.set(!onlyBlocked())" data-testid="filter-blocked" />
@@ -28,7 +28,7 @@
     </button>
   }
   @if (canCreate()) {
-    <button type="button" class="btn primary" (click)="openCreate()" data-testid="new-initiative">Nova Iniciativa</button>
+    <button type="button" class="btn primary" (click)="openCreate()" data-testid="new-item">{{ setup().newLabel }}</button>
   }
 </div>
 
@@ -49,46 +49,75 @@
 }
 
 @if (creating()) {
-  <form class="card create" (submit)="$event.preventDefault(); createInitiative()" data-testid="new-initiative-form">
-    <h2>Nova Iniciativa</h2>
-    <label for="init-title">Título</label>
+  <form class="card create" (submit)="$event.preventDefault(); createItem()" data-testid="new-item-form">
+    <h2>{{ setup().newLabel }}</h2>
+    @if (creatableTypes().length > 1) {
+      <label for="item-type">Tipo</label>
+      <select id="item-type" [value]="newType()" (change)="chooseType(value($event))" data-testid="new-item-type">
+        @for (type of creatableTypes(); track type.key) {
+          <option [value]="type.key" [selected]="type.key === newType()">{{ type.name }}</option>
+        }
+      </select>
+    }
+    <label for="item-title">Título</label>
     <input
-      id="init-title"
+      id="item-title"
       maxlength="200"
       [value]="newTitle()"
       (input)="newTitle.set(value($event))"
       [attr.aria-invalid]="!!fieldError(createError(), 'title')"
-      data-testid="new-initiative-title"
+      data-testid="new-item-title"
     />
-    <label for="init-description">Descrição</label>
+    <label for="item-description">Descrição</label>
     <textarea
-      id="init-description"
+      id="item-description"
       rows="3"
       [value]="newDescription()"
       (input)="newDescription.set(value($event))"
-      data-testid="new-initiative-description"
+      data-testid="new-item-description"
     ></textarea>
-    <label for="init-unit">Portfólio</label>
-    <select id="init-unit" [value]="newUnit()" (change)="newUnit.set(value($event))" data-testid="new-initiative-unit">
-      @for (unit of portfolioUnits(); track unit.id) {
+    @if (selectedType()?.parentTypes?.length) {
+      <label for="item-parent">Item pai{{ selectedType()?.parentRequired ? '' : ' (opcional)' }}</label>
+      <select id="item-parent" [value]="newParent()" (change)="newParent.set(value($event))" data-testid="new-item-parent">
+        @if (!selectedType()?.parentRequired) {
+          <option value="" [selected]="newParent() === ''">Sem item pai</option>
+        }
+        @for (parent of parentCandidates(); track parent.id) {
+          <option [value]="parent.id" [selected]="parent.id === newParent()">{{ parent.key }} · {{ parent.title }}</option>
+        }
+      </select>
+      @if (selectedType()?.parentRequired && parentCandidates().length === 0) {
+        <p class="hint">Nenhum item pai disponível neste workspace para este tipo.</p>
+      }
+    }
+    <label for="item-unit">{{ setup().unitLabel }}</label>
+    <select id="item-unit" [value]="newUnit()" (change)="newUnit.set(value($event))" data-testid="new-item-unit">
+      @for (unit of levelUnits(); track unit.id) {
         <option [value]="unit.id" [selected]="unit.id === newUnit()">{{ unit.name }}</option>
       }
     </select>
-    @if (portfolioUnits().length === 0) {
-      <p class="hint">Não há unidade de nível estratégico (FL3) neste workspace. Peça ao administrador.</p>
+    @if (levelUnits().length === 0) {
+      <p class="hint">Não há unidade de {{ setup().level }} ({{ setup().unitLabel }}) neste workspace. Peça ao administrador.</p>
     }
     @if (createError(); as error) {
-      <p class="field-error" data-testid="new-initiative-error">{{ messageOf(error) }}</p>
+      <p class="field-error" data-testid="new-item-error">{{ messageOf(error) }}</p>
     }
     <div class="actions">
-      <button type="submit" class="btn primary" [disabled]="busy() || !newUnit()" data-testid="new-initiative-submit">Criar</button>
+      <button
+        type="submit"
+        class="btn primary"
+        [disabled]="busy() || !newUnit() || (selectedType()?.parentRequired && !newParent())"
+        data-testid="new-item-submit"
+      >
+        Criar
+      </button>
       <button type="button" class="btn" (click)="creating.set(false)">Cancelar</button>
     </div>
   </form>
 }
 
 @if (loading()) {
-  <div class="skeleton" data-testid="portfolio-loading" aria-busy="true"><span></span><span></span><span></span></div>
+  <div class="skeleton" data-testid="board-loading" aria-busy="true"><span></span><span></span><span></span></div>
 } @else if (loadError(); as error) {
   <div class="card" role="alert">
     <p>{{ error }}</p>
@@ -96,34 +125,35 @@
   </div>
 } @else if (mode() === 'lista') {
   <div class="card table-wrap">
-    <table data-testid="portfolio-list">
+    <table data-testid="board-list">
       <thead>
-        <tr><th>Chave</th><th>Título</th><th>Responsável</th><th>Status</th><th>Features</th></tr>
+        <tr><th>Chave</th><th>Tipo</th><th>Título</th><th>Responsável</th><th>Status</th><th>{{ setup().childrenLabel }}</th></tr>
       </thead>
       <tbody>
         @for (item of filteredList(); track item.id) {
-          <tr data-testid="portfolio-row">
+          <tr data-testid="board-row">
             <td class="mono">{{ item.key }}</td>
+            <td>{{ typeName(item.type) }}</td>
             <td>{{ item.title }}</td>
             <td>{{ item.owner?.name ?? '—' }}</td>
             <td><span class="status">{{ item.status.name }}</span></td>
             <td>{{ item.childCount }}</td>
           </tr>
         } @empty {
-          <tr><td colspan="5" class="muted">Nenhuma Iniciativa neste workspace.</td></tr>
+          <tr><td colspan="6" class="muted">{{ setup().emptyItems }} neste workspace.</td></tr>
         }
       </tbody>
     </table>
   </div>
 } @else if (!board()) {
-  <div class="card empty" data-testid="portfolio-empty">
+  <div class="card empty" data-testid="board-empty">
     @if (canManageBoards()) {
-      <p>Este workspace ainda não tem quadro de portfólio.</p>
+      <p>Este workspace ainda não tem {{ setup().boardLabel }}.</p>
       <button type="button" class="btn primary" [disabled]="busy()" (click)="createBoard()" data-testid="create-board">
-        Criar quadro de portfólio
+        Criar {{ setup().boardLabel }}
       </button>
     } @else {
-      <p>Este workspace ainda não tem quadro de portfólio. Quem gere quadros (PM, Tech Lead ou administrador) pode criá-lo.</p>
+      <p>Este workspace ainda não tem {{ setup().boardLabel }}. {{ manageNote }}</p>
     }
   </div>
 } @else {
@@ -133,7 +163,7 @@
       "Configurar quadro".
     </p>
   }
-  <div class="board" cdkDropListGroup data-testid="portfolio-board">
+  <div class="board" cdkDropListGroup data-testid="board">
     @for (group of [{ label: 'Upstream', columns: upstream() }, { label: 'Downstream', columns: downstream() }]; track group.label) {
       <section class="phase" [attr.aria-label]="group.label">
         <h2 class="phase-label">{{ group.label }}</h2>
@@ -170,7 +200,7 @@
                   [attr.data-testid]="'card-' + card.key"
                 >
                   <header>
-                    <span class="type">Iniciativa</span>
+                    <span class="type">{{ typeName(card.type) }}</span>
                     <span class="mono">{{ card.key }}</span>
                     <button
                       type="button"
@@ -227,7 +257,7 @@
                   </mat-menu>
                 </article>
               } @empty {
-                <p class="muted empty-column">Nenhuma Iniciativa.</p>
+                <p class="muted empty-column">{{ setup().emptyItems }}.</p>
               }
             </div>
           }
