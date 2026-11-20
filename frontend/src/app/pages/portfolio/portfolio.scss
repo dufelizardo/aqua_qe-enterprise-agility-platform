@@ -354,3 +354,52 @@ textarea:focus-visible {
   outline: 2px solid var(--blue-500);
   outline-offset: 2px;
 }
+
+.check {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.warning {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fff7e6;
+  font-size: 13px;
+}
+
+/* Limite de WIP (Proposta 04, 7.1.2): âmbar quando atingido, vermelho quando ultrapassado. */
+.count.wip-at {
+  padding: 0 6px;
+  border-radius: 6px;
+  background: var(--amber-500);
+  color: var(--navy-900);
+}
+
+.count.wip-over {
+  padding: 0 6px;
+  border-radius: 6px;
+  background: var(--danger-700);
+  color: #fff;
+}
+
+.card-item.blocked {
+  border-left: 4px solid var(--danger-700);
+}
+
+.blocked-badge {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #fde8e1;
+  color: var(--danger-700);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.menu-note {
+  color: var(--text-muted);
+  font-size: 12px;
+}

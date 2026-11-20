@@ -467,6 +467,7 @@ Como as regras de escopo foram aplicadas (2026-11-20):
 - **Listagem (regras 1, 2 e 6):** entram os artefatos que o usuário lê e que estão, eles ou um ancestral, na subárvore do workspace (`X-Workspace-Id`). A ordem padrão é a de criação, do mais recente para o mais antigo.
 - **Editar, arquivar e trocar o pai** exigem a permissão do nível do artefato (matriz da seção 2) na unidade dele ou acima. Ler um descendente de outro ramo não dá edição (`403`).
 - Ainda não implementados: vínculos, ordenação, RNs e CAs desta seção, e o evento de auditoria de cada operação (com os módulos `events` e `audit`).
+- **Bloqueio** ([Proposta 04](BOARDS-PROPOSAL.md), KAN-009): `blocked` (booleano) e `blockedReason` (até 500 caracteres), alterados por `PATCH` com a permissão de edição. Desmarcar `blocked` limpa o motivo. O cartão do quadro traz os dois campos.
 - **Responsável padrão (decidido em 2026-11-20, a especificar):** quem fica como Owner de um artefato criado sem `ownerId` varia por instituição (em algumas é o PO, em outras o PM). Será configurável, por tipo de artefato e por unidade, na configuração organizacional. Até lá, o artefato nasce sem Owner.
 
 Vínculos: `type` é um de `RELATES_TO`, `ORIGINATES_FROM`, `DUPLICATES`. `ORIGINATES_FROM` é o vínculo de um Bug ou Problema de Produção com o artefato de origem.
@@ -651,7 +652,28 @@ Criação (`POST /boards`, corpo `{ "orgUnitId", "level", "name" }`, implementad
 - As colunas nascem uma por status em sequência dos workflows do nível, na ordem da posição, sem o `Cancelado`. Artefatos cancelados não aparecem no quadro.
 - A fase da coluna é a do status. Nos workflows sem fase (Task e Problema de Produção), status `TODO` ficam em `UPSTREAM` e os demais em `DOWNSTREAM`.
 - A visão traz até 500 cartões, só os que o usuário lê (seção 2.1, regras 1, 2 e 6). `gateSummary` vem nulo até o módulo `governance`.
-- Ainda não implementados: `PATCH /boards/{id}`, ordenação (`rank`) e sprints.
+- Ainda não implementados: ordenação (`rank`) e sprints.
+
+Configuração (`PATCH /boards/{id}`, gerir quadros; [Proposta 04](BOARDS-PROPOSAL.md#3-decisões-tomadas-2026-11-20)). `name` e `columns` são opcionais; `columns`, quando informado, substitui todas as colunas. A coluna que traz `id` mantém o identificador:
+
+```json
+{
+  "name": "Portfólio Canais",
+  "columns": [
+    { "id": "e2100000-0000-4000-8000-000000000001", "name": "Entrada", "phase": "UPSTREAM", "statusKeys": ["IDEA", "BACKLOG"], "wipLimit": 5, "wipPolicy": "WARN" },
+    { "name": "Refinamento", "phase": "UPSTREAM", "statusKeys": ["REFINEMENT"], "wipLimit": 2, "wipPolicy": "BLOCK" },
+    { "name": "Construção", "phase": "DOWNSTREAM", "statusKeys": ["BUILDING", "DONE"] }
+  ]
+}
+```
+
+- Pelo menos uma coluna. Cada status do nível (e `CANCELLED`) fica em no máximo uma coluna. As colunas `UPSTREAM` vêm antes das `DOWNSTREAM`.
+- `wipLimit`: inteiro maior ou igual a 1, ou ausente (sem limite). `wipPolicy`: `WARN` (padrão; só avisa) ou `BLOCK` (impede a entrada).
+- A resposta, e também `GET /boards` e `GET /boards/{id}`, traz `unmappedStatusKeys`: os status do nível fora de qualquer coluna, cujos itens não aparecem no quadro.
+
+Limite de WIP na visão: cada coluna traz `wipLimit`, `wipPolicy`, `wipCount` e `wipState`. `wipCount` conta **todos** os itens não arquivados da coluna no escopo do quadro, não só os que o usuário enxerga, porque o limite vale para a coluna inteira. `wipState` é `NONE` (sem limite), `UNDER`, `AT` (atingido) ou `OVER` (ultrapassado). Com `BLOCK`, um guarda de transição do módulo `board` recusa a entrada (`422 GATE_BLOCKED`, regra `WIP_LIMIT`) quando a coluna de destino está no limite em **qualquer** quadro do nível que contenha o item. Mover dentro da mesma coluna não conta. A regra aparece também em `failedRules` de `GET /artifacts/{artifact}/transitions`.
+
+Filtro adicional da visão: `blocked` (`true` ou `false`).
 
 Visão do quadro (`GET /boards/{id}/view`, filtros `sprintId`, `assigneeId`, `type`):
 
@@ -1129,7 +1151,7 @@ Convenções:
 | | `workflow_status` | `workflow_id`, `key`, `name`, `phase`, `category`, `position` | (`workflow_id`, `key`) único. |
 | | `workflow_transition` | `workflow_id`, `from_status_id`, `to_status_id` | Única por (`from_status_id`, `to_status_id`). |
 | | `doc_template` | `document_type`, `version_number`, `sections` (JSON), `approver_role`, `org_unit_id` | (`document_type`, `org_unit_id`, `version_number`) único. |
-| `workitem` | `artifact` | `key`, `type_id`, `parent_id`, `org_unit_id`, `status_id`, `title`, `description`, `owner_id`, `technical_lead_id`, `qa_owner_id`, `assignee_id`, `size`, `custom_fields` (JSON), `rank`, `archived`, `version`, `search_vector` | `key` única; índices em `parent_id`, em (`org_unit_id`, `type_id`, `status_id`) e índice de texto em `search_vector`. |
+| `workitem` | `artifact` | `key`, `type_id`, `parent_id`, `org_unit_id`, `status_id`, `title`, `description`, `owner_id`, `technical_lead_id`, `qa_owner_id`, `assignee_id`, `size`, `custom_fields` (JSON), `rank`, `archived`, `blocked`, `blocked_reason`, `version`, `search_vector` | `key` única; índices em `parent_id`, em (`org_unit_id`, `type_id`, `status_id`) e índice de texto em `search_vector`. |
 | | `key_sequence` | `key_prefix` (PK), `next_value` | Gera o número da chave legível. |
 | | `artifact_link` | `source_id`, `target_id`, `type`, `created_by` | Único por (`source_id`, `target_id`, `type`); origem diferente do destino. |
 | | `business_rule` | `feature_id`, `code`, `text`, `version` | (`feature_id`, `code`) único. |
@@ -1144,7 +1166,7 @@ Convenções:
 | | `document_version` | `document_id`, `number`, `content` (JSON), `author_id`, `saved_at` | (`document_id`, `number`) único; só inserção. |
 | `portfolio` | `business_case` | `initiative_id`, `problem`, `expected_outcome`, `estimated_cost`, `currency`, `expected_benefit`, `risks`, `status`, `validated_by`, `validated_at`, `version` | `initiative_id` único. |
 | `board` | `board` | `org_unit_id`, `level`, `name`, `filters` (JSON) | Índice em `org_unit_id`. |
-| | `board_column` | `board_id`, `position`, `name`, `phase`, `status_keys` | (`board_id`, `position`) único. |
+| | `board_column` | `board_id`, `position`, `name`, `phase`, `status_keys`, `wip_limit`, `wip_policy` | (`board_id`, `position`) único; `wip_limit` ≥ 1 ou nulo; `wip_policy` `WARN` ou `BLOCK`. |
 | | `sprint` | `squad_id`, `name`, `goal`, `start_date`, `end_date`, `state` | No máximo uma `ACTIVE` por `squad_id`. |
 | | `sprint_item` | `sprint_id`, `artifact_id` | PK composta. |
 | `events` | `outbox_event` | `event_id`, `type`, `occurred_at`, `envelope` (JSON), `published_at` | Índice parcial nos não publicados; limpeza periódica dos publicados. |

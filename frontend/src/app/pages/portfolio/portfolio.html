@@ -18,10 +18,35 @@
     (input)="filter.set(value($event))"
     data-testid="portfolio-filter"
   />
+  <label class="check">
+    <input type="checkbox" [checked]="onlyBlocked()" (change)="onlyBlocked.set(!onlyBlocked())" data-testid="filter-blocked" />
+    Só bloqueados
+  </label>
+  @if (canManageBoards() && board()) {
+    <button type="button" class="btn" (click)="configuring.set(!configuring())" data-testid="configure-board">
+      Configurar quadro
+    </button>
+  }
   @if (canCreate()) {
     <button type="button" class="btn primary" (click)="openCreate()" data-testid="new-initiative">Nova Iniciativa</button>
   }
 </div>
+
+@if (configuring() && board(); as current) {
+  <app-board-config [board]="current" (saved)="onConfigured($event)" (closed)="configuring.set(false)" />
+}
+
+@if (blocking(); as card) {
+  <form class="card create" (submit)="$event.preventDefault(); confirmBlock()" data-testid="block-form">
+    <h2>Marcar {{ card.key }} como bloqueada</h2>
+    <label for="block-reason">Motivo</label>
+    <input id="block-reason" maxlength="500" [value]="blockReason()" (input)="blockReason.set(value($event))" data-testid="block-reason" />
+    <div class="actions">
+      <button type="submit" class="btn primary" [disabled]="busy()" data-testid="block-confirm">Marcar bloqueada</button>
+      <button type="button" class="btn" (click)="blocking.set(null)">Cancelar</button>
+    </div>
+  </form>
+}
 
 @if (creating()) {
   <form class="card create" (submit)="$event.preventDefault(); createInitiative()" data-testid="new-initiative-form">
@@ -102,6 +127,12 @@
     }
   </div>
 } @else {
+  @if (canManageBoards() && (view()?.unmappedStatusKeys?.length ?? 0) > 0) {
+    <p class="warning" data-testid="board-unmapped">
+      Há status sem coluna neste quadro ({{ view()!.unmappedStatusKeys.join(', ') }}); itens neles não aparecem. Use
+      "Configurar quadro".
+    </p>
+  }
   <div class="board" cdkDropListGroup data-testid="portfolio-board">
     @for (group of [{ label: 'Upstream', columns: upstream() }, { label: 'Downstream', columns: downstream() }]; track group.label) {
       <section class="phase" [attr.aria-label]="group.label">
@@ -117,10 +148,21 @@
               (cdkDropListDropped)="onDrop($event)"
               [attr.data-testid]="'column-' + column.statusKeys[0]"
             >
-              <h3>{{ column.name }} <span class="count">{{ column.cards.length }}</span></h3>
+              <h3>
+                {{ column.name }}
+                <span
+                  class="count"
+                  [class.wip-at]="column.wipState === 'AT'"
+                  [class.wip-over]="column.wipState === 'OVER'"
+                  [title]="wipTitle(column)"
+                  [attr.data-testid]="'wip-' + column.statusKeys[0]"
+                  >{{ counter(column) }}</span
+                >
+              </h3>
               @for (card of column.cards; track card.id) {
                 <article
                   class="card-item"
+                  [class.blocked]="card.blocked"
                   cdkDrag
                   [cdkDragData]="card"
                   [cdkDragDisabled]="busy()"
@@ -143,6 +185,11 @@
                   </header>
                   <p class="title">{{ card.title }}</p>
                   <footer>
+                    @if (card.blocked) {
+                      <span class="blocked-badge" [title]="card.blockedReason ?? 'Bloqueada'" data-testid="card-blocked">
+                        Bloqueada
+                      </span>
+                    }
                     @if (card.owner) {
                       <span class="avatar" [title]="card.owner.name">{{ initials(card.owner.name) }}</span>
                     }
@@ -156,17 +203,26 @@
                       @for (option of options; track option.id) {
                         <button
                           mat-menu-item
-                          [disabled]="!option.canExecute || busy()"
+                          [disabled]="!option.canExecute || option.failedRules.length > 0 || busy()"
+                          [title]="option.failedRules[0]?.message ?? ''"
                           (click)="move(card, option)"
                           [attr.data-testid]="'move-to-' + option.to.key"
                         >
                           {{ option.to.name }}
+                          @if (option.failedRules.length > 0) {
+                            <span class="menu-note">· {{ option.failedRules[0]!.message }}</span>
+                          }
                         </button>
                       } @empty {
                         <span class="menu-label">Nenhuma transição a partir daqui.</span>
                       }
                     } @else {
                       <span class="menu-label">Carregando…</span>
+                    }
+                    @if (card.blocked) {
+                      <button mat-menu-item (click)="unblock(card)" data-testid="card-unblock">Desbloquear</button>
+                    } @else {
+                      <button mat-menu-item (click)="startBlock(card)" data-testid="card-block">Marcar como bloqueada…</button>
                     }
                   </mat-menu>
                 </article>

@@ -43,3 +43,28 @@ Portfolio - Lista Mostra A Iniciativa
     Show List
     ${text}=    Get List Text
     Should Contain    ${text}    ${title}
+
+Portfolio - Configurar Limite De WIP
+    [Documentation]    Define o limite de WIP da primeira coluna (Ideia) e confere o contador "n / limite"; depois
+    ...    volta a deixar sem limite, porque o quadro do workspace é compartilhado com as demais suítes.
+    [Arguments]    ${limit}
+    Open Board Configuration
+    Set First Column WIP Limit    ${limit}
+    Save Board Configuration
+    Wait For Idea Column Counter    contains    / ${limit}
+    ${counter}=    Get Idea Column Counter Text
+    Should End With    ${counter}    / ${limit}
+    Open Board Configuration
+    Set First Column WIP Limit    ${EMPTY}
+    Save Board Configuration
+    Wait For Idea Column Counter    not contains    /
+    ${counter}=    Get Idea Column Counter Text
+    Should Not Contain    ${counter}    /
+
+Portfolio - Bloquear E Desbloquear Iniciativa
+    [Documentation]    Marca a Iniciativa como bloqueada (o cartão mostra a etiqueta) e desbloqueia.
+    [Arguments]    ${title}    ${reason}
+    Block Card Using Menu    IDEA    ${title}    ${reason}
+    Wait For Card Blocked State    IDEA    ${title}    visible
+    Unblock Card Using Menu    IDEA    ${title}
+    Wait For Card Blocked State    IDEA    ${title}    detached

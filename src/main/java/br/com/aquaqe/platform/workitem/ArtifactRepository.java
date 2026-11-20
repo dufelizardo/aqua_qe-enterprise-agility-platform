@@ -27,7 +27,7 @@ class ArtifactRepository {
 	private static final String COLUMNS = """
 		a.id, a.key, a.type_id, a.parent_id, a.path, a.org_unit_id, a.status_id, a.title, a.description,
 		a.owner_id, a.technical_lead_id, a.qa_owner_id, a.assignee_id, a.size, cast(a.custom_fields as text) as custom_fields,
-		a.archived, a.version, a.created_at, a.updated_at,
+		a.archived, a.version, a.created_at, a.updated_at, a.blocked, a.blocked_reason,
 		(select count(*) from workitem.artifact c where c.parent_id = a.id and not c.archived) as child_count
 		""";
 
@@ -105,8 +105,11 @@ class ArtifactRepository {
 	private static Map<String, Object> where(StringBuilder sql, Filter f, Collection<UUID> scope) {
 		Map<String, Object> params = new HashMap<>();
 		List<String> conditions = new ArrayList<>();
-		conditions.add(READABLE);
-		params.put("scope", array(scope));
+		// Sem escopo: contagem da coluna inteira para o limite de WIP, que vale para todos os itens.
+		if (scope != null) {
+			conditions.add(READABLE);
+			params.put("scope", array(scope));
+		}
 		// Workspace: o artefato, ou um ancestral dele, está na subárvore da unidade escolhida (SSD 1.2 e 2.1).
 		conditions.add("""
 			exists (select 1 from workitem.artifact w
@@ -143,6 +146,18 @@ class ArtifactRepository {
 		}
 	}
 
+	/** O artefato, ou um ancestral dele, está numa das unidades (o item aparece num quadro dessa subárvore)? */
+	boolean withinUnits(UUID artifactId, Collection<UUID> units) {
+		return jdbc.sql("""
+				select exists (select 1 from workitem.artifact a where a.id = :id and exists (
+				  select 1 from workitem.artifact w where w.org_unit_id = any(cast(:units as uuid[])) and a.path like w.path || '%'))
+				""")
+			.param("id", artifactId)
+			.param("units", array(units))
+			.query(Boolean.class)
+			.single();
+	}
+
 	/** Próximo número do prefixo (1, 2, 3...), atômico mesmo com criações simultâneas. */
 	long nextNumber(String prefix) {
 		return jdbc.sql("""
@@ -176,13 +191,15 @@ class ArtifactRepository {
 		return jdbc.sql("""
 				update workitem.artifact set parent_id = :parent, path = :path, title = :title, description = :description,
 				  owner_id = :owner, technical_lead_id = :tl, qa_owner_id = :qa, assignee_id = :assignee, size = :size,
-				  custom_fields = cast(:custom as jsonb), version = version + 1, updated_at = now()
+				  custom_fields = cast(:custom as jsonb), blocked = :blocked, blocked_reason = :reason,
+				  version = version + 1, updated_at = now()
 				 where id = :id and version = :version
 				""")
 			.param("id", r.id()).param("parent", r.parentId()).param("path", r.path())
 			.param("title", r.title()).param("description", r.description())
 			.param("owner", r.ownerId()).param("tl", r.technicalLeadId()).param("qa", r.qaOwnerId())
 			.param("assignee", r.assigneeId()).param("size", r.size()).param("custom", r.customFields())
+			.param("blocked", r.blocked()).param("reason", r.blockedReason())
 			.param("version", expectedVersion)
 			.update() == 1;
 	}
@@ -227,7 +244,8 @@ class ArtifactRepository {
 			rs.getObject("owner_id", UUID.class), rs.getObject("technical_lead_id", UUID.class),
 			rs.getObject("qa_owner_id", UUID.class), rs.getObject("assignee_id", UUID.class), rs.getString("size"),
 			rs.getString("custom_fields"), rs.getBoolean("archived"), rs.getInt("version"),
-			instant(rs, "created_at"), instant(rs, "updated_at"), rs.getLong("child_count"));
+			instant(rs, "created_at"), instant(rs, "updated_at"), rs.getLong("child_count"), rs.getBoolean("blocked"),
+			rs.getString("blocked_reason"));
 	}
 
 	private static Instant instant(ResultSet rs, String column) throws SQLException {
@@ -242,7 +260,8 @@ class ArtifactRepository {
 
 	record Row(UUID id, String key, UUID typeId, UUID parentId, String path, UUID orgUnitId, UUID statusId, String title,
 			String description, UUID ownerId, UUID technicalLeadId, UUID qaOwnerId, UUID assigneeId, String size,
-			String customFields, boolean archived, int version, Instant createdAt, Instant updatedAt, long childCount) {
+			String customFields, boolean archived, int version, Instant createdAt, Instant updatedAt, long childCount,
+			boolean blocked, String blockedReason) {
 
 		/** Ids dos ancestrais, da raiz até o pai, lidos do {@code path}. */
 		List<UUID> ancestorIds() {

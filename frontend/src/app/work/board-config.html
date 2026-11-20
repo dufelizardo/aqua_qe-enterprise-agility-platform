@@ -1,0 +1,99 @@
+<section class="panel" aria-labelledby="config-title" data-testid="board-config">
+  <header>
+    <h2 id="config-title">Configurar quadro</h2>
+    <button type="button" class="link" (click)="closed.emit()" data-testid="board-config-close">Fechar</button>
+  </header>
+
+  <label class="field">
+    <span>Nome do quadro</span>
+    <input [value]="name()" (input)="name.set(value($event))" maxlength="120" data-testid="board-config-name" />
+  </label>
+
+  <ol class="columns">
+    @for (column of columns(); track $index; let i = $index) {
+      <li class="column" data-testid="board-config-column">
+        <div class="row">
+          <input
+            class="name"
+            [value]="column.name"
+            (input)="edit(i, { name: value($event) })"
+            maxlength="80"
+            aria-label="Nome da coluna"
+            data-testid="board-config-column-name"
+          />
+          <select
+            [value]="column.phase"
+            (change)="edit(i, { phase: $any(value($event)) })"
+            aria-label="Fase"
+            data-testid="board-config-column-phase"
+          >
+            <option value="UPSTREAM" [selected]="column.phase === 'UPSTREAM'">Upstream</option>
+            <option value="DOWNSTREAM" [selected]="column.phase === 'DOWNSTREAM'">Downstream</option>
+          </select>
+          <button type="button" class="icon" (click)="move(i, -1)" [disabled]="i === 0" aria-label="Subir coluna">↑</button>
+          <button type="button" class="icon" (click)="move(i, 1)" [disabled]="i === columns().length - 1" aria-label="Descer coluna">↓</button>
+          <button type="button" class="icon danger" (click)="remove(i)" aria-label="Remover coluna">✕</button>
+        </div>
+        <fieldset class="statuses">
+          <legend>Status agrupados</legend>
+          @for (status of statuses(); track status.key) {
+            <label>
+              <input
+                type="checkbox"
+                [checked]="column.statusKeys.includes(status.key)"
+                (change)="toggleStatus(i, status.key, checked($event))"
+                [attr.data-testid]="'board-config-status-' + status.key"
+              />
+              {{ status.name }}
+            </label>
+          }
+        </fieldset>
+        <div class="row wip">
+          <label>
+            Limite de WIP
+            <input
+              type="number"
+              min="1"
+              placeholder="sem limite"
+              [value]="column.wipLimit ?? ''"
+              (input)="limit(i, value($event))"
+              data-testid="board-config-wip-limit"
+            />
+          </label>
+          <label>
+            Quando atingir
+            <select [value]="column.wipPolicy" (change)="policy(i, value($event))" data-testid="board-config-wip-policy">
+              <option value="WARN" [selected]="column.wipPolicy === 'WARN'">Avisar</option>
+              <option value="BLOCK" [selected]="column.wipPolicy === 'BLOCK'">Impedir a entrada</option>
+            </select>
+          </label>
+        </div>
+      </li>
+    }
+  </ol>
+  <button type="button" class="btn" (click)="add()" data-testid="board-config-add">Adicionar coluna</button>
+
+  @if (unmapped().length > 0) {
+    <p class="warning" data-testid="board-config-unmapped">
+      Sem coluna: {{ unmapped().map(s => s.name).join(', ') }}. Itens nesses status não aparecem no quadro.
+    </p>
+  }
+  @for (problem of problems(); track problem) {
+    <p class="field-error">{{ problem }}</p>
+  }
+  @if (error(); as e) {
+    <p class="field-error" data-testid="board-config-error">{{ messageOf(e) }}</p>
+  }
+  <div class="actions">
+    <button
+      type="button"
+      class="btn primary"
+      [disabled]="busy() || problems().length > 0"
+      (click)="save()"
+      data-testid="board-config-save"
+    >
+      Salvar
+    </button>
+    <button type="button" class="btn" (click)="closed.emit()">Cancelar</button>
+  </div>
+</section>

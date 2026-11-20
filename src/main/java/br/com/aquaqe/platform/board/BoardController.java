@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,8 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.aquaqe.platform.board.BoardService.Board;
 import br.com.aquaqe.platform.board.BoardService.BoardView;
+import br.com.aquaqe.platform.board.BoardService.ColumnInput;
 
-/** Quadros (SSD 3.9). Editar colunas ({@code PATCH}) e sprints entram depois. */
+/** Quadros (SSD 3.9): criar, configurar colunas e WIP, e a visão com os cartões. Sprints entram depois. */
 @RestController
 @RequestMapping("/api/v1/boards")
 class BoardController {
@@ -42,13 +44,21 @@ class BoardController {
 		return service.board(id);
 	}
 
+	@PatchMapping("/{id}")
+	Board update(@PathVariable UUID id, @RequestBody UpdateBoard body) {
+		return service.update(id, body.name(), body.columns());
+	}
+
 	@GetMapping("/{id}/view")
 	BoardView view(@PathVariable UUID id, @RequestParam(required = false) String type,
-			@RequestParam(required = false) UUID assigneeId) {
-		return service.view(id, type, assigneeId);
+			@RequestParam(required = false) UUID assigneeId, @RequestParam(required = false) Boolean blocked) {
+		return service.view(id, type, assigneeId, blocked);
 	}
 
 	record CreateBoard(UUID orgUnitId, String level, String name) {
+	}
+
+	record UpdateBoard(String name, List<ColumnInput> columns) {
 	}
 
 	record Items<T>(List<T> items) {

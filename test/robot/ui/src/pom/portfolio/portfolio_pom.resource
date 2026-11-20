@@ -63,3 +63,42 @@ Show List
 Get List Text
     ${text}=    Get Text    ${PORTFOLIO_LIST}
     RETURN    ${text}
+
+Open Board Configuration
+    Click    ${PORTFOLIO_CONFIGURE_BOARD}
+    Wait For Elements State    ${PORTFOLIO_CONFIG_FIRST_WIP}    visible    timeout=30s
+
+Set First Column WIP Limit
+    [Arguments]    ${limit}
+    Fill Text    ${PORTFOLIO_CONFIG_FIRST_WIP}    ${limit}
+
+Save Board Configuration
+    Click    ${PORTFOLIO_CONFIG_SAVE}
+    Wait For Elements State    ${PORTFOLIO_CONFIG_PANEL}    detached    timeout=30s
+
+Get Idea Column Counter Text
+    ${text}=    Get Text    ${PORTFOLIO_WIP_IDEA}
+    RETURN    ${text}
+
+Wait For Idea Column Counter
+    [Arguments]    ${operator}    ${expected}
+    Wait For Condition    Text    ${PORTFOLIO_WIP_IDEA}    ${operator}    ${expected}    timeout=30s
+
+Block Card Using Menu
+    [Arguments]    ${status}    ${title}    ${reason}
+    ${card}=    Card Locator    ${status}    ${title}
+    Click    ${card} >> ${PORTFOLIO_CARD_MENU}
+    Click    ${PORTFOLIO_CARD_BLOCK}
+    Fill Text    ${PORTFOLIO_BLOCK_REASON}    ${reason}
+    Click    ${PORTFOLIO_BLOCK_CONFIRM}
+
+Unblock Card Using Menu
+    [Arguments]    ${status}    ${title}
+    ${card}=    Card Locator    ${status}    ${title}
+    Click    ${card} >> ${PORTFOLIO_CARD_MENU}
+    Click    ${PORTFOLIO_CARD_UNBLOCK}
+
+Wait For Card Blocked State
+    [Arguments]    ${status}    ${title}    ${state}
+    ${card}=    Card Locator    ${status}    ${title}
+    Wait For Elements State    ${card} >> ${PORTFOLIO_CARD_BLOCKED_BADGE}    ${state}    timeout=30s
