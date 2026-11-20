@@ -10,9 +10,9 @@ resources:
 # newTag é atualizado pelo publish-image.yml a cada push na main (SHA do commit).
 images:
   - name: ghcr.io/dufelizardo/aqua-qe-platform
-    newTag: 9ccb5c0b07e760e1714d3e654ef92477d8afb8b7
+    newTag: ccea85cc667af15131d529ace3abd600b0e3aaba
   - name: ghcr.io/dufelizardo/aqua-qe-platform-frontend
-    newTag: 9ccb5c0b07e760e1714d3e654ef92477d8afb8b7
+    newTag: ccea85cc667af15131d529ace3abd600b0e3aaba
 
 configMapGenerator:
   - name: app-config
