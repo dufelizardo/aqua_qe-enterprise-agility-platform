@@ -1,6 +1,7 @@
 package br.com.aquaqe.platform.shared;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 
@@ -10,12 +11,23 @@ public class ApiException extends RuntimeException {
 	private final HttpStatus status;
 	private final String code;
 	private final List<FieldError> errors;
+	private final Map<String, Object> properties;
 
 	public ApiException(HttpStatus status, String code, String detail, List<FieldError> errors) {
 		super(detail);
 		this.status = status;
 		this.code = code;
 		this.errors = List.copyOf(errors);
+		this.properties = Map.of();
+	}
+
+	/** Erro com campos adicionais no corpo, como {@code failedRules} do {@code GATE_BLOCKED} (SSD 5.3). */
+	public ApiException(HttpStatus status, String code, String detail, Map<String, Object> properties) {
+		super(detail);
+		this.status = status;
+		this.code = code;
+		this.errors = List.of();
+		this.properties = Map.copyOf(properties);
 	}
 
 	public ApiException(HttpStatus status, String code, String detail) {
@@ -52,6 +64,10 @@ public class ApiException extends RuntimeException {
 
 	public List<FieldError> errors() {
 		return errors;
+	}
+
+	public Map<String, Object> properties() {
+		return properties;
 	}
 
 	public record FieldError(String field, String message) {

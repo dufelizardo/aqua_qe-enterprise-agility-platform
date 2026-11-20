@@ -187,6 +187,18 @@ class ArtifactRepository {
 			.update() == 1;
 	}
 
+	/** Novo status, com concorrência otimista. @return false se a versão não confere */
+	boolean changeStatus(UUID id, UUID statusId, int expectedVersion) {
+		return jdbc.sql("""
+				update workitem.artifact set status_id = :status, version = version + 1, updated_at = now()
+				 where id = :id and version = :version
+				""")
+			.param("id", id)
+			.param("status", statusId)
+			.param("version", expectedVersion)
+			.update() == 1;
+	}
+
 	/** Troca o prefixo do caminho de toda a subárvore quando o pai muda. */
 	void movePaths(String oldPath, String newPath) {
 		jdbc.sql("""

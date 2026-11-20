@@ -24,6 +24,12 @@ public interface ArtifactConfiguration {
 	/** Ids dos status com a chave e/ou a categoria informadas (filtros de listagem); {@code null} ignora o critério. */
 	Set<UUID> statusIds(String key, String category);
 
+	/** Transições do workflow que saem do status informado (SSD 8.2). */
+	List<StatusTransition> transitionsFrom(UUID statusId);
+
+	record StatusTransition(UUID id, Status from, Status to) {
+	}
+
 	record ArtifactType(UUID id, String key, String level, String name, String keyPrefix, boolean parentRequired,
 			Set<String> parentTypes) {
 	}

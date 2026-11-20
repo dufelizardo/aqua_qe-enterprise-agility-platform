@@ -100,6 +100,25 @@ class ConfigurationRepository implements ArtifactConfiguration {
 			.list());
 	}
 
+	@Override
+	public List<StatusTransition> transitionsFrom(UUID statusId) {
+		List<Map.Entry<UUID, UUID>> pairs = jdbc.sql("""
+				select tr.id, tr.to_status_id from configuration.workflow_transition tr
+				  join configuration.workflow_status t on t.id = tr.to_status_id
+				 where tr.from_status_id = :from
+				 order by t.position nulls last
+				""")
+			.param("from", statusId)
+			.query((rs, n) -> Map.entry(rs.getObject("id", UUID.class), rs.getObject("to_status_id", UUID.class)))
+			.list();
+		List<UUID> ids = new java.util.ArrayList<>(pairs.stream().map(Map.Entry::getValue).toList());
+		ids.add(statusId);
+		Map<UUID, Status> statuses = statuses(ids);
+		return pairs.stream()
+			.map(p -> new StatusTransition(p.getKey(), statuses.get(statusId), statuses.get(p.getValue())))
+			.toList();
+	}
+
 	List<Workflow> workflows(String artifactType) {
 		return jdbc.sql("""
 				select w.id, w.name, w.version_number from configuration.workflow w

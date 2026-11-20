@@ -482,6 +482,28 @@ Requisição de transição:
 
 Resposta de sucesso: `200` com o artefato atualizado. Respostas de falha: `TRANSITION_NOT_ALLOWED`, `VERSION_CONFLICT` ou `GATE_BLOCKED`.
 
+Transições possíveis (`GET /artifacts/FEAT-1024/transitions`). `canExecute` diz se o usuário pode executá-la (editar no nível do artefato, seção 2); `failedRules` lista o que o gate ainda exige e fica vazia quando a transição está liberada:
+
+```json
+{
+  "items": [
+    {
+      "id": "b1000000-0000-4000-8000-000000000003",
+      "to": { "key": "READY_TO_BUILD", "name": "Pronto para Construir", "phase": "UPSTREAM", "category": "TODO" },
+      "canExecute": true,
+      "failedRules": []
+    }
+  ]
+}
+```
+
+Regras (implementadas em 2026-11-20):
+- A ordem das verificações é a da seção 4.2: leitura (`404`), edição (`403`), `version` (`409`), transição existente a partir do status atual (`422 TRANSITION_NOT_ALLOWED`) e guardas do gate (`422 GATE_BLOCKED`, com `failedRules`).
+- Item arquivado não muda de status (`TRANSITION_NOT_ALLOWED`).
+- `comment` é opcional, com até 1.000 caracteres.
+- O histórico vem do mais antigo para o mais recente. A criação do artefato não gera item de histórico; o primeiro item é a primeira transição.
+- Ainda não implementados: os gates (módulo `governance`; até lá nenhuma transição é bloqueada), os eventos `artifact.status_changed` e `artifact.transition_blocked` e a gravação do bloqueio em transação separada.
+
 Item do histórico:
 
 ```json
