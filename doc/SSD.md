@@ -467,6 +467,7 @@ Como as regras de escopo foram aplicadas (2026-11-20):
 - **Listagem (regras 1, 2 e 6):** entram os artefatos que o usuário lê e que estão, eles ou um ancestral, na subárvore do workspace (`X-Workspace-Id`). A ordem padrão é a de criação, do mais recente para o mais antigo.
 - **Editar, arquivar e trocar o pai** exigem a permissão do nível do artefato (matriz da seção 2) na unidade dele ou acima. Ler um descendente de outro ramo não dá edição (`403`).
 - Ainda não implementados: vínculos, ordenação, RNs e CAs desta seção, e o evento de auditoria de cada operação (com os módulos `events` e `audit`).
+- **Responsável padrão (decidido em 2026-11-20, a especificar):** quem fica como Owner de um artefato criado sem `ownerId` varia por instituição (em algumas é o PO, em outras o PM). Será configurável, por tipo de artefato e por unidade, na configuração organizacional. Até lá, o artefato nasce sem Owner.
 
 Vínculos: `type` é um de `RELATES_TO`, `ORIGINATES_FROM`, `DUPLICATES`. `ORIGINATES_FROM` é o vínculo de um Bug ou Problema de Produção com o artefato de origem.
 
