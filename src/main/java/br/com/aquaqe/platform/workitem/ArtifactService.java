@@ -250,14 +250,14 @@ class ArtifactService {
 		return parent;
 	}
 
-	private void requireEdit(Caller caller, Row row, ArtifactType type) {
+	void requireEdit(Caller caller, Row row, ArtifactType type) {
 		if (!authorization.can(caller.userId(), Permission.editAt(type.level()), row.orgUnitId())) {
 			throw ApiException.forbidden();
 		}
 	}
 
 	/** Fora do escopo de leitura responde 404, igual a inexistente (SSD 2.1, regra 7). */
-	private Row readable(String ref, Caller caller) {
+	Row readable(String ref, Caller caller) {
 		Row row = resolve(ref).orElseThrow(ApiException::notFound);
 		if (!repository.readable(row.id(), caller.scope())) {
 			throw ApiException.notFound();
@@ -274,7 +274,7 @@ class ArtifactService {
 		}
 	}
 
-	private Caller caller() {
+	Caller caller() {
 		UUID userId = currentUser.require().id();
 		return new Caller(userId, authorization.readScope(userId));
 	}
@@ -324,13 +324,13 @@ class ArtifactService {
 		return configuration.statusIds(key, category);
 	}
 
-	private ArtifactType typeOf(Row row) {
+	ArtifactType typeOf(Row row) {
 		return configuration.type(row.typeId()).orElseThrow();
 	}
 
 	// ---------------------------------------------------------------------------------------------- visões
 
-	private List<ArtifactView> views(List<Row> rows) {
+	List<ArtifactView> views(List<Row> rows) {
 		if (rows.isEmpty()) {
 			return List.of();
 		}
@@ -449,6 +449,6 @@ class ArtifactService {
 		return new ApiException(HttpStatus.valueOf(422), code, detail);
 	}
 
-	private record Caller(UUID userId, Collection<UUID> scope) {
+	record Caller(UUID userId, Collection<UUID> scope) {
 	}
 }

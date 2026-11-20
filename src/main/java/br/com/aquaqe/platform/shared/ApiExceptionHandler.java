@@ -18,7 +18,9 @@ class ApiExceptionHandler {
 
 	@ExceptionHandler(ApiException.class)
 	ResponseEntity<ProblemDetail> api(ApiException ex) {
-		return problem(ex.status(), ex.code(), ex.getMessage(), ex.errors());
+		ResponseEntity<ProblemDetail> response = problem(ex.status(), ex.code(), ex.getMessage(), ex.errors());
+		ex.properties().forEach(response.getBody()::setProperty);
+		return response;
 	}
 
 	@ExceptionHandler(HttpMessageNotReadableException.class)

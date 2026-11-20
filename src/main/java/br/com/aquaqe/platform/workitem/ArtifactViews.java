@@ -10,35 +10,35 @@ import br.com.aquaqe.platform.identity.UserDirectory.UserRef;
 import br.com.aquaqe.platform.organization.OrgUnits.OrgUnitSummary;
 
 /** Formatos de resposta do módulo {@code workitem} (SSD 3.4). */
-final class ArtifactViews {
+public final class ArtifactViews {
 
 	private ArtifactViews() {
 	}
 
-	record ArtifactView(UUID id, String key, String type, String level, String title, String description,
+	public record ArtifactView(UUID id, String key, String type, String level, String title, String description,
 			ParentRef parent, UnitRef orgUnit, StatusRef status, Person owner, Person technicalLead, Person qaOwner,
 			Person assignee, String size, Map<String, Object> customFields, long childCount, boolean archived,
 			int version, Instant createdAt, Instant updatedAt) {
 	}
 
-	record ParentRef(UUID id, String key, String type, String title) {
+	public record ParentRef(UUID id, String key, String type, String title) {
 	}
 
-	record UnitRef(UUID id, String name, String level) {
+	public record UnitRef(UUID id, String name, String level) {
 
 		static UnitRef of(OrgUnitSummary unit) {
 			return unit == null ? null : new UnitRef(unit.id(), unit.name(), unit.levelKey());
 		}
 	}
 
-	record StatusRef(String key, String name, String phase, String category) {
+	public record StatusRef(String key, String name, String phase, String category) {
 
 		static StatusRef of(Status status) {
 			return status == null ? null : new StatusRef(status.key(), status.name(), status.phase(), status.category());
 		}
 	}
 
-	record Person(UUID id, String name) {
+	public record Person(UUID id, String name) {
 
 		static Person of(UserRef user) {
 			return user == null ? null : new Person(user.id(), user.name());
@@ -46,9 +46,9 @@ final class ArtifactViews {
 	}
 
 	/** Contexto herdado: resumo dos ancestrais, da raiz até o pai, e as RNs aplicáveis. */
-	record ContextView(List<Ancestor> ancestors, List<Object> businessRules) {
+	public record ContextView(List<Ancestor> ancestors, List<Object> businessRules) {
 
-		record Ancestor(String key, String type, String title, String status, String summary) {
+		public record Ancestor(String key, String type, String title, String status, String summary) {
 		}
 	}
 }

@@ -6,3 +6,5 @@ Resource            ../../data_driven/identity/identity_driven.resource
 Resource            ../../data_driven/organization/organization_driven.resource
 # WORKITEM
 Resource            ../../data_driven/workitem/workitem_driven.resource
+# WORKFLOW
+Resource            ../../data_driven/workflow/workflow_driven.resource
