@@ -12,6 +12,8 @@ Open AQuA-QE Browser
     [Documentation]    Abre um navegador novo, sem sessão, no caminho informado (padrão: a landing pública).
     [Arguments]    ${path}=/
     New Browser    chromium    headless=${AQUA_HEADLESS}
+    # O login passa por Keycloak → API → SPA; em máquinas lentas a navegação passa dos 10 s padrão.
+    Set Browser Timeout    30s
     New Context    locale=pt-BR
     New Page    ${AQUA_UI_URL}${path}
 

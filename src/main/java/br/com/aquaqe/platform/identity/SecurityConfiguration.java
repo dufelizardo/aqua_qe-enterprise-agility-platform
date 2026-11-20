@@ -1,6 +1,6 @@
 package br.com.aquaqe.platform.identity;
 
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -11,7 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
@@ -50,7 +49,7 @@ class SecurityConfiguration {
 				.requestMatchers(PUBLIC_PATHS).permitAll()
 				.anyRequest().authenticated())
 			.csrf(csrf -> csrf.spa())
-			.logout(logout -> logout.logoutSuccessHandler(redirectTo(request -> "/")));
+			.logout(logout -> logout.logoutSuccessHandler(redirectTo((request, authentication) -> "/")));
 		return http.build();
 	}
 
@@ -80,13 +79,14 @@ class SecurityConfiguration {
 	 * endereço a abrir. Um formulário comum recebe o redirect.
 	 */
 	private static LogoutSuccessHandler keycloakLogout(AuthProperties auth) {
-		return redirectTo(request -> {
+		// Usa a autenticação entregue ao handler: quando ele roda, o SecurityContext já foi limpo. Sem o id_token_hint,
+		// o Keycloak pede confirmação em vez de voltar para a aplicação.
+		return redirectTo((request, authentication) -> {
 			String home = ServletUriComponentsBuilder.fromContextPath(request).path("/").toUriString();
 			UriComponentsBuilder logout = UriComponentsBuilder
 				.fromUriString(auth.realmPublicUrl() + "/protocol/openid-connect/logout")
 				.queryParam("client_id", auth.clientId())
 				.queryParam("post_logout_redirect_uri", home);
-			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 			if (authentication != null && authentication.getPrincipal() instanceof OidcUser user) {
 				logout.queryParam("id_token_hint", user.getIdToken().getTokenValue());
 			}
@@ -95,9 +95,9 @@ class SecurityConfiguration {
 	}
 
 	/** Redireciona para o endereço calculado; para o SPA (XHR com Accept JSON), devolve o endereço em JSON. */
-	private static LogoutSuccessHandler redirectTo(Function<HttpServletRequest, String> targetFor) {
+	private static LogoutSuccessHandler redirectTo(BiFunction<HttpServletRequest, Authentication, String> targetFor) {
 		return (request, response, authentication) -> {
-			String target = targetFor.apply(request);
+			String target = targetFor.apply(request, authentication);
 			String accept = request.getHeader(HttpHeaders.ACCEPT);
 			if (accept != null && accept.contains(MediaType.APPLICATION_JSON_VALUE)) {
 				response.setContentType(MediaType.APPLICATION_JSON_VALUE);

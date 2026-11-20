@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -90,6 +91,15 @@ class ApplicationIntegrationTests {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.redirectUrl").value(
 				startsWith("http://localhost:8180/realms/aquaqe-dev/protocol/openid-connect/logout?client_id=aquaqe-web")));
+	}
+
+	@Test
+	void logoutComSessaoOidcLevaOIdTokenAoKeycloak() throws Exception {
+		// Sem o id_token_hint, o Keycloak pede confirmação em vez de voltar para a aplicação.
+		mvc.perform(post("/logout").with(csrf()).with(oidcLogin().idToken(token -> token.tokenValue("id-token-de-teste")))
+				.accept(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.redirectUrl").value(containsString("id_token_hint=id-token-de-teste")));
 	}
 
 	@Test
