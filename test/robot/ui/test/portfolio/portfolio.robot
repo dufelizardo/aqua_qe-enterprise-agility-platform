@@ -24,3 +24,11 @@ CT-002 - KAN-006: Validate Portfolio - configurar limite de WIP e marcar Iniciat
     PORTFOLIO - CONFIGURAR WIP E BLOQUEAR    ${portfolio_admin_username}    ${portfolio_admin_display_name}
     ...    ${portfolio_root_name}    ${portfolio_unit_base}    ${portfolio_unit_label}    ${portfolio_initiative_base}
     ...    ${portfolio_initiative_description}    ${portfolio_wip_limit}    ${portfolio_block_reason}
+
+CT-003 - PRD-RF-012: Validate Tactical - criar Feature sob a Iniciativa e mover de Backlog para Em Refinamento
+    [Documentation]    O quadro de FL2 usa o mesmo componente; a Feature nasce em Backlog com a Iniciativa como pai.
+    [Tags]    UI    Tactical    PRD-RF-010    PRD-RF-011    PRD-RF-012
+    TACTICAL - CRIAR E MOVER FEATURE    ${portfolio_admin_username}    ${portfolio_admin_display_name}
+    ...    ${portfolio_root_name}    ${portfolio_unit_base}    ${portfolio_unit_label}    ${tactical_cadeia_base}
+    ...    ${tactical_cadeia_label}    ${portfolio_initiative_base}    ${tactical_feature_base}
+    ...    ${portfolio_initiative_description}

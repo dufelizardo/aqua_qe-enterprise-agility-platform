@@ -27,23 +27,27 @@ export const routes: Routes = [
         title: 'Workspace · AQuA-QE',
         loadComponent: () => import('./pages/workspace/workspace-select').then((m) => m.WorkspaceSelect),
       },
+      // Portfolio (FL3), Tactical (FL2) e Squad (FL1) usam o mesmo quadro configurável (UX/UI 7.3, 7.5 e 7.7).
       {
         path: 'portfolio',
         title: 'Portfolio · AQuA-QE',
         canActivate: [workspaceGuard],
-        loadComponent: () => import('./pages/portfolio/portfolio').then((m) => m.Portfolio),
+        loadComponent: () => import('./pages/level-board/level-board').then((m) => m.LevelBoard),
+        data: { screen: 'portfolio' },
       },
       {
         path: 'tactical',
         title: 'Tactical · AQuA-QE',
-        loadComponent: () => import('./pages/placeholder/placeholder').then((m) => m.Placeholder),
-        data: { screen: 'Tactical Board', level: 'FL2' },
+        canActivate: [workspaceGuard],
+        loadComponent: () => import('./pages/level-board/level-board').then((m) => m.LevelBoard),
+        data: { screen: 'tactical' },
       },
       {
         path: 'squad',
         title: 'Squad · AQuA-QE',
-        loadComponent: () => import('./pages/placeholder/placeholder').then((m) => m.Placeholder),
-        data: { screen: 'Squad Workspace', level: 'FL1' },
+        canActivate: [workspaceGuard],
+        loadComponent: () => import('./pages/level-board/level-board').then((m) => m.LevelBoard),
+        data: { screen: 'squad' },
       },
       {
         path: 'admin',

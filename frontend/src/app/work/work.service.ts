@@ -33,6 +33,15 @@ export interface Artifact {
   blockedReason: string | null;
 }
 
+/** Tipo de artefato da instalação (SSD 3.3 e 8.1). */
+export interface ArtifactType {
+  key: string;
+  level: 'FL1' | 'FL2' | 'FL3';
+  name: string;
+  parentRequired: boolean;
+  parentTypes: string[];
+}
+
 /** Cartão do quadro (UX/UI 6.1; SSD 3.9). */
 export interface Card {
   id: string;
@@ -153,7 +162,17 @@ export class WorkService {
     return response.items;
   }
 
-  createArtifact(body: { type: string; title: string; description?: string; orgUnitId: string }): Promise<Artifact> {
+  async artifactTypes(): Promise<ArtifactType[]> {
+    return (await firstValueFrom(this.http.get<{ items: ArtifactType[] }>(`${API}/artifact-types`))).items;
+  }
+
+  createArtifact(body: {
+    type: string;
+    title: string;
+    description?: string;
+    orgUnitId: string;
+    parentId?: string;
+  }): Promise<Artifact> {
     return firstValueFrom(this.http.post<Artifact>(`${API}/artifacts`, body));
   }
 

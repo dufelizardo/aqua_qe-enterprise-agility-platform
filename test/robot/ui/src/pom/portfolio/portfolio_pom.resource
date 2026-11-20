@@ -9,7 +9,7 @@ Click Portfolio Nav Link
 
 Wait For Portfolio Page
     Wait For Condition    Text    ${PORTFOLIO_PAGE_TITLE}    ==    Portfolio    timeout=30s
-    Wait For Elements State    css=[data-testid="portfolio-board"], [data-testid="portfolio-empty"]    visible
+    Wait For Elements State    css=[data-testid="board"], [data-testid="board-empty"]    visible
     ...    timeout=30s
 
 Get Create Board Button Count
@@ -102,3 +102,28 @@ Wait For Card Blocked State
     [Arguments]    ${status}    ${title}    ${state}
     ${card}=    Card Locator    ${status}    ${title}
     Wait For Elements State    ${card} >> ${PORTFOLIO_CARD_BLOCKED_BADGE}    ${state}    timeout=30s
+
+Click Tactical Nav Link
+    Click    ${LEVEL_NAV_TACTICAL}
+
+Wait For Level Board Page
+    [Arguments]    ${title}
+    Wait For Condition    Text    ${PORTFOLIO_PAGE_TITLE}    ==    ${title}    timeout=30s
+    Wait For Elements State    css=[data-testid="board"], [data-testid="board-empty"]    visible
+    ...    timeout=30s
+
+Get Card Key
+    [Arguments]    ${status}    ${title}
+    ${card}=    Card Locator    ${status}    ${title}
+    ${key}=    Get Text    ${card} >> css=.mono
+    RETURN    ${key}
+
+Fill New Child Item
+    [Documentation]    Formulário de novo item com pai: tipo padrão do nível, título, pai (rótulo "CHAVE · título") e unidade.
+    [Arguments]    ${title}    ${description}    ${parent_label}    ${unit_name}
+    Click    ${PORTFOLIO_NEW_INITIATIVE}
+    Fill Text    ${PORTFOLIO_NEW_TITLE}    ${title}
+    Fill Text    ${PORTFOLIO_NEW_DESCRIPTION}    ${description}
+    Wait For Elements State    ${LEVEL_NEW_PARENT} >> css=option >> text=${parent_label}    attached    timeout=30s
+    Select Options By    ${LEVEL_NEW_PARENT}    label    ${parent_label}
+    Select Options By    ${PORTFOLIO_NEW_UNIT}    label    ${unit_name}

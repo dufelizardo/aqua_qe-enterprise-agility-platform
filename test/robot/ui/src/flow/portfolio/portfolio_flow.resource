@@ -68,3 +68,20 @@ Portfolio - Bloquear E Desbloquear Iniciativa
     Wait For Card Blocked State    IDEA    ${title}    visible
     Unblock Card Using Menu    IDEA    ${title}
     Wait For Card Blocked State    IDEA    ${title}    detached
+
+Tactical - Abrir Quadro
+    [Documentation]    Abre o Tactical pelo menu e garante o quadro de FL2 do workspace.
+    Click Tactical Nav Link
+    Wait For Level Board Page    Tactical
+    ${missing}=    Get Create Board Button Count
+    IF    ${missing} > 0
+        Click Create Board
+    END
+    Wait For Portfolio Board
+
+Tactical - Criar Feature Sob Iniciativa
+    [Documentation]    "Nova Feature" com a Iniciativa como pai e a Cadeia como unidade; a Feature nasce em Backlog.
+    [Arguments]    ${title}    ${description}    ${parent_label}    ${cadeia_name}
+    Fill New Child Item    ${title}    ${description}    ${parent_label}    ${cadeia_name}
+    Submit New Initiative
+    Wait For Card In Column    BACKLOG    ${title}

@@ -649,7 +649,7 @@ Mover um cartão entre colunas é executar a transição correspondente (`POST /
 
 Criação (`POST /boards`, corpo `{ "orgUnitId", "level", "name" }`, implementada em 2026-11-20):
 - `name` é opcional; o padrão é "*nome da unidade* · *nível*".
-- As colunas nascem uma por status em sequência dos workflows do nível, na ordem da posição, sem o `Cancelado`. Artefatos cancelados não aparecem no quadro.
+- As colunas nascem uma por status em sequência dos workflows do nível, na ordem da posição, sem o `Cancelado`. Artefatos cancelados não aparecem no quadro. Em FL1, que tem três workflows (itens, Task e Problema de Produção), isso gera uma coluna para cada status dos três; a configuração do quadro agrupa como a equipe preferir.
 - A fase da coluna é a do status. Nos workflows sem fase (Task e Problema de Produção), status `TODO` ficam em `UPSTREAM` e os demais em `DOWNSTREAM`.
 - A visão traz até 500 cartões, só os que o usuário lê (seção 2.1, regras 1, 2 e 6). `gateSummary` vem nulo até o módulo `governance`.
 - Ainda não implementados: ordenação (`rank`) e sprints.
