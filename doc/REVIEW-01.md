@@ -42,8 +42,9 @@ Ao conferir a análise externa contra os documentos, três pontos foram ajustado
 | REV-11 | Baixo | Exportação de documentos | PRD, SSD 6 | Aberto |
 | REV-12 | Baixo | Campos customizados usados em gates | SSD 5.2 e 10 | Aberto |
 | REV-13 | Alto | Baseline de segurança por framework | Spec. Segurança V2.0 (RF-SC, RNF-SC), SAD 7 e 13 | Aberto |
+| REV-14 | Alto | Privacidade e dados pessoais | SAD 13, SSD 9 e 10, [Proposta de experiência](EXPERIENCE-PROPOSAL.md) | Aberto |
 
-A frente de trabalho que trata cada achado está na [Proposta de evolução, seção 7](EVOLUTION-PROPOSAL.md#7-relação-entre-achados-e-frentes). REV-02, REV-12 e Q-01 ainda não têm frente, e REV-13 tem só cobertura parcial ([seção 8 da proposta](EVOLUTION-PROPOSAL.md#8-lacunas-desta-proposta)).
+A frente de trabalho que trata cada achado está na [Proposta de evolução, seção 7](EVOLUTION-PROPOSAL.md#7-relação-entre-achados-e-frentes). REV-02, REV-12, REV-14 e Q-01 ainda não têm frente, e REV-13 tem só cobertura parcial ([seção 8 da proposta](EVOLUTION-PROPOSAL.md#8-lacunas-desta-proposta)).
 
 ### REV-01 — Regras de autorização entre unidades
 
@@ -200,6 +201,24 @@ Também não está dito se uma aprovação dada sob a versão anterior continua 
 O CSF não deve ser usado como fonte de requisitos do produto, porque descreve resultados da organização e não da aplicação. Nas instalações on-premise e air-gapped, quem opera é o cliente; o papel do produto é fornecer as capacidades que ajudam o cliente a atingir os resultados dele. A LGPD continua obrigatória por lei. Clientes do setor financeiro tendem a pedir ISO/IEC 27001 ou a Resolução CMN 4.893, e o mapeamento ao CSF facilita responder a esses pedidos. Em textos externos, usar "mapeado ao NIST CSF 2.0", nunca "conforme" (DEC-05).
 
 O entregável da atividade é a tabela de mapeamento. Ela só deve ser feita depois que este achado for aceito.
+
+### REV-14 — Privacidade e dados pessoais
+
+Achado incluído em 2026-11-20, a partir da análise da [Proposta de experiência corporativa](EXPERIENCE-PROPOSAL.md).
+
+**Evidência.** Nenhum dos documentos trata de dados pessoais. A plataforma já guarda nome, e-mail, usuário do IdP e data da última atividade de cada pessoa (`identity.user_account`, [SSD, seção 9](SSD.md#9-esquema-físico)). Os eventos e a trilha de auditoria registram quem fez o quê. A [Especificação de Segurança V2.0](pdr/) cita a LGPD apenas como controle a suportar. A proposta de experiência pede perfil, diretório, foto, cargo, gestor e localização, que são mais dados pessoais.
+
+**Problema.** Sem uma definição, cada módulo decide sozinho o que guarda, por quanto tempo e quem vê. Isso tende a coletar mais do que o necessário e a expor dados de uma pessoa a quem não precisa deles. Também falta saber o que fazer quando alguém deixa a organização: a conta é desativada, mas o nome continua na trilha de auditoria, que só aceita inserção.
+
+**Recomendação.** Antes de qualquer frente de perfil ou diretório, decidir e registrar no SSD:
+
+- o inventário dos dados pessoais por módulo e a finalidade de cada um (minimização);
+- a visibilidade padrão de cada dado (todos os autenticados, a mesma unidade, só administradores);
+- o que acontece com os dados de quem foi desativado, incluindo a convivência entre o direito de eliminação e a auditoria imutável (por exemplo, pseudonimizar o nome e manter o identificador);
+- a retenção, junto com a da auditoria e a da outbox, que já são pendências;
+- as capacidades que o produto oferece a quem o opera para atender pedidos dos titulares, como exportar e anonimizar.
+
+Assim como no REV-13, o produto fornece capacidades e quem opera a instalação responde pela conformidade. Nunca alegar "conforme a LGPD" (DEC-05 do PRD).
 
 ## 3. Questões em aberto
 

@@ -468,6 +468,7 @@ Os valores-alvo são provisórios; o PRD lista sua definição como pendência.
 - **Valores definitivos dos atributos de qualidade** da seção 11 e volumes esperados (usuários, artefatos).
 - **Especificações ausentes** que afetam módulos da Fase 2 e 3: OKRs, dependências, capacity planning, IA.
 - **Contratos de API:** especificados no [SSD](SSD.md).
+- **Privacidade e dados pessoais:** inventário, finalidade, visibilidade e retenção dos dados pessoais, e a convivência da eliminação com a auditoria imutável ([REV-14](REVIEW-01.md#rev-14--privacidade-e-dados-pessoais)).
 
 ## 14. Rastreabilidade — requisitos do MVP
 

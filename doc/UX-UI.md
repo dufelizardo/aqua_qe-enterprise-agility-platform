@@ -659,7 +659,7 @@ A identidade (hexágono, azul e âmbar) é mantida.
 
 **Deste documento**
 
-- Catálogo de widgets da home: quais blocos existem, quem pode adicioná-los e onde a configuração do usuário é guardada.
+- Catálogo de widgets da home: quais blocos existem, quem pode adicioná-los e onde a configuração do usuário é guardada. Candidatos vindos da [proposta de experiência corporativa](EXPERIENCE-PROPOSAL.md#6-o-que-a-proposta-revelou): locais frequentes, metas acompanhadas (Fase 2), atividade recente e riscos ligados ao usuário.
 
 - Layouts finais de alta fidelidade e conjunto de ícones.
 - Editor de documentos: construir ou adotar um componente existente; a decisão pode alterar a seção 6.6.

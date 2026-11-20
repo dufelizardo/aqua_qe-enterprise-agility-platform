@@ -1112,6 +1112,7 @@ A tabela `story_rule_ref` não aparece no diagrama do SAD; ela materializa a ref
 - **Campos customizados:** no MVP são um objeto livre em `customFields`; definição de tipos e validação entram com o Customization Engine.
 - **Limites operacionais:** tamanho máximo de anexo, retenção da outbox e limites de taxa da API dependem dos valores de qualidade ainda em aberto.
 - **Internacionalização:** os nomes de status e as mensagens de regra estão em português; não há mecanismo de tradução.
+- **Dados pessoais:** visibilidade de nome e e-mail de outros usuários, tratamento de contas desativadas na trilha de auditoria e retenção ([REV-14](REVIEW-01.md#rev-14--privacidade-e-dados-pessoais)).
 
 ## 11. Rastreabilidade
 

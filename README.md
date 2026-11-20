@@ -48,6 +48,7 @@ Leia nesta ordem:
 | [Revisão 01](doc/REVIEW-01.md) | Achados da revisão dos quatro documentos, com gravidade, evidência, recomendação e ordem de trabalho. Não altera os documentos revisados. |
 | [Operação](doc/OPERACAO.md) | Ambientes dev e prod, nomes na rede (mDNS), pipeline de promoção, configuração única do GitHub e do servidor, desenvolvimento local. |
 | [Proposta de evolução](doc/EVOLUTION-PROPOSAL.md) | Frentes F01 a F08c que tratam os achados da revisão, com divergências e decisões pendentes. Status: proposto, não aprovado para implementação. |
+| [Proposta de experiência corporativa](doc/EXPERIENCE-PROPOSAL.md) | Menu do usuário, perfil, metas, equipes, pessoas e navegação, confrontados com o que o produto já tem. Status: proposto, fora do MVP; decisões EXP-01 a EXP-12. |
 
 Material de apoio:
 
@@ -127,6 +128,7 @@ O faseamento é uma proposta ainda a validar ([PRD, seção 13](doc/PRD.md)).
     ├── REVIEW-01.md    revisão dos documentos
     ├── OPERACAO.md     ambientes, mDNS, pipeline e servidor
     ├── EVOLUTION-PROPOSAL.md  proposta de evolução (não aprovada)
+    ├── EXPERIENCE-PROPOSAL.md proposta de experiência corporativa (fora do MVP)
     ├── pdr/            especificações por domínio e PRDs originais (.docx)
     └── prototype/      identidade visual e protótipos iniciais
 ```
