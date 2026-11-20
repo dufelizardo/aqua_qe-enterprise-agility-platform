@@ -13,7 +13,8 @@ WORKDIR /app
 COPY --from=build /src/target/aqua-qe-platform-*.jar /tmp/app.jar
 # Extrai o jar em camadas: o Java carrega mais rápido, o que importa num servidor modesto.
 RUN java -Djarmode=tools -jar /tmp/app.jar extract --destination /app && rm /tmp/app.jar \
- && addgroup -S app && adduser -S -G app app
-USER app
+ && addgroup -S -g 10001 app && adduser -S -u 10001 -G app app
+# UID numérico: o Kubernetes só aceita runAsNonRoot quando consegue comprovar que o usuário não é root.
+USER 10001:10001
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
