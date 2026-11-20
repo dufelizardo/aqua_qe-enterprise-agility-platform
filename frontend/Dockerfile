@@ -2,7 +2,7 @@
 FROM node:24-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci --no-audit --no-fund
+RUN npm ci --no-audit --no-fund --fetch-retries=5 --fetch-retry-mintimeout=20000
 COPY . .
 RUN npx ng build --configuration production
 

@@ -189,15 +189,22 @@ O que a implementação precisa oferecer para que os testes acima sejam possíve
 
 ## 9. Ambiente e execução
 
-- **Local:** `docker compose` com PostgreSQL, Keycloak (com o realm de teste), MinIO e a aplicação. A URL vem de variável de ambiente (`AQUA_HOST_URL`, `AQUA_UI_URL`), sem porta fixa no código.
+- **Local:** `docker compose` com PostgreSQL, Keycloak (com o realm de teste) e a aplicação; o MinIO entra junto com os anexos. As URLs vêm de variáveis de ambiente (`AQUA_HOST_URL`, `AQUA_AUTH_URL`, `AQUA_UI_URL`), sem porta fixa no código.
 - **Dependências:** `robotframework`, `robotframework-requests` e `robotframework-browser`, com versões fixadas em `requirements.txt`. A biblioteca Browser exige `rfbrowser init` para instalar o Playwright; no CI, usar imagem com os navegadores já instalados.
 - **Execução:** `run_tests.sh` / `run_tests.ps1`, com saída em `results/`. `--dryrun` faz só a checagem de sintaxe e imports. `--include smoke` seleciona por tag.
-- **CI** (modelo do `pipeline.yml` do Mais Saúde Pública):
-  1. JUnit, integração e Spring Modulith em todo push.
-  2. Robot `--dryrun` em todo PR.
-  3. Suíte Robot completa (API e UI) nos PRs de promoção. O job builda a imagem real, sobe os containers efêmeros e roda a suíte contra eles. O merge fica bloqueado se a suíte falhar.
-  4. `results/` publicado como artifact, inclusive quando a suíte falha.
-  5. Execução agendada nos ambientes de homologação, só como alerta, sem bloquear nada.
+- **CI** ([`pipeline.yml`](../.github/workflows/pipeline.yml), no modelo do Mais Saúde Pública):
+  1. JUnit, integração e Spring Modulith em todo push e PR.
+  2. Robot `--dryrun` em todo push e PR.
+  3. Suíte Robot completa (API e UI) nos PRs de promoção para a `main`, por [`ci_run.sh`](../test/robot/ci_run.sh). O job builda a imagem real, sobe os containers efêmeros e roda a suíte contra eles. O merge fica bloqueado se a suíte falhar.
+  4. `results/` publicado como artifact, inclusive quando a suíte falha, com os logs dos containers.
+- **Retentativas** (SAD, ADR-18). Cada tipo de falha tem um tratamento:
+  | Falha | Tratamento |
+  |---|---|
+  | Rede ou serviço externo (download do Maven, imagens, Chromium, subida da pilha) | Até 3 tentativas com espera crescente. A imagem da API usa a imagem oficial do Maven, sem baixar o Maven pelo wrapper. |
+  | Teste que falha uma vez | `ci_run.sh` reexecuta só os testes que falharam (`--rerunfailed`) e junta os resultados. Se passar na reexecução, o teste é **instável**: o pipeline segue, mas abre (ou comenta) uma issue com a label `teste instável`, que precisa ser corrigida. |
+  | Job de aceitação inteiro | O [`retry-acceptance.yml`](../.github/workflows/retry-acceptance.yml) reexecuta o job até 2 vezes (3 tentativas), só quando ele é o único job com falha, e comenta no PR. |
+  | Backend, frontend ou dry-run | Não há retentativa: é falha de código. |
+- **Teste instável não é aceito como estado normal.** A issue aberta automaticamente entra no backlog com prioridade do time; se o mesmo teste voltar a oscilar, a issue recebe um comentário com o link da execução.
 
 ## 10. Critérios de entrada e saída
 
