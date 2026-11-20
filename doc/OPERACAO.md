@@ -29,7 +29,7 @@ O Keycloak atende só a produção. O dev roda sem senha (ADR-17): a API age com
 
 ```text
 aparelho no Wi-Fi ── "quem é aquaqe-dev.local?" (multicast 224.0.0.251:5353) ──▶ servidor
-                  ◀─ "192.168.0.200" ─────────────────────── pod mdns do namespace aquaqe-dev
+                  ◀─ "192.168.0.200" ─────────────────────── pod mdns do namespace aqua-qe-agility-platform-dev
 aparelho ── http://aquaqe-dev.local ──▶ 192.168.0.200 (Traefik, MetalLB) ── Ingress pelo host ──▶ frontend
 ```
 
@@ -55,7 +55,7 @@ Regras:
 
 | Onde | Comando | Esperado |
 |---|---|---|
-| Cluster | `kubectl -n aquaqe-dev logs deploy/mdns` | `Anunciando aquaqe-dev.local -> 192.168.0.200 pela interface 192.168.0.50` |
+| Cluster | `kubectl -n aqua-qe-agility-platform-dev logs deploy/mdns` | `Anunciando aquaqe-dev.local -> 192.168.0.200 pela interface 192.168.0.50` |
 | Windows | `Resolve-DnsName aquaqe-dev.local` ou `ping aquaqe-dev.local` | `192.168.0.200` |
 | Linux / Mac | `avahi-resolve -n aquaqe-dev.local` / `dns-sd -G v4 aquaqe-dev.local` | `192.168.0.200` |
 | Navegador | http://aquaqe-dev.local | Página de login do Keycloak em `aquaqe-auth.local` e, após entrar, Meu trabalho |
@@ -81,7 +81,7 @@ feature/* ──PR──▶ developer ──(pipeline verde)──▶ PR automá
                      │                                                               │
           imagem :developer + SHA                                    imagem :main + SHA, release
                      │                                                               │
-              ArgoCD → aquaqe-dev                                             ArgoCD → aquaqe-prod
+              ArgoCD → aqua-qe-agility-platform-dev                                             ArgoCD → aqua-qe-agility-platform-prod
 ```
 
 | Momento | O que roda |
@@ -109,21 +109,21 @@ Executar no `projetos-server` (ou em qualquer máquina com `kubectl` apontando p
 
 ```bash
 # Namespaces
-kubectl create namespace aquaqe-auth
-kubectl create namespace aquaqe-dev
-kubectl create namespace aquaqe-prod
+kubectl create namespace aqua-qe-agility-platform-auth
+kubectl create namespace aqua-qe-agility-platform-dev
+kubectl create namespace aqua-qe-agility-platform-prod
 
 # Identidade (Keycloak da prod)
-kubectl -n aquaqe-auth create secret generic keycloak-db --from-literal=password="$(openssl rand -hex 16)"
-kubectl -n aquaqe-auth create secret generic keycloak-admin \
+kubectl -n aqua-qe-agility-platform-auth create secret generic keycloak-db --from-literal=password="$(openssl rand -hex 16)"
+kubectl -n aqua-qe-agility-platform-auth create secret generic keycloak-admin \
   --from-literal=username=admin --from-literal=password="<senha do console do Keycloak>"
 PROD_WEB_SECRET="$(openssl rand -hex 24)"
-kubectl -n aquaqe-auth create secret generic keycloak-realms --from-literal=prod-web-secret="$PROD_WEB_SECRET"
+kubectl -n aqua-qe-agility-platform-auth create secret generic keycloak-realms --from-literal=prod-web-secret="$PROD_WEB_SECRET"
 
 # Ambientes. O dev, sem senha, só precisa do banco; a prod usa o mesmo segredo de cliente do realm.
-kubectl -n aquaqe-dev create secret generic db-credentials --from-literal=password="$(openssl rand -hex 16)"
-kubectl -n aquaqe-prod create secret generic db-credentials --from-literal=password="$(openssl rand -hex 16)"
-kubectl -n aquaqe-prod create secret generic auth-client --from-literal=secret="$PROD_WEB_SECRET"
+kubectl -n aqua-qe-agility-platform-dev create secret generic db-credentials --from-literal=password="$(openssl rand -hex 16)"
+kubectl -n aqua-qe-agility-platform-prod create secret generic db-credentials --from-literal=password="$(openssl rand -hex 16)"
+kubectl -n aqua-qe-agility-platform-prod create secret generic auth-client --from-literal=secret="$PROD_WEB_SECRET"
 
 # Aplicações do ArgoCD (dev acompanha a developer; prod e auth, a main)
 kubectl apply -f k8s/argocd/applications.yaml
@@ -139,12 +139,12 @@ Pedidos de memória (requests) por componente, para conferir com a folga do serv
 
 | Namespace | Componentes | Memória pedida | Limite |
 |---|---|---|---|
-| `aquaqe-auth` | Keycloak, PostgreSQL, mDNS | ~656 Mi | ~1,2 Gi |
-| `aquaqe-dev` | API, PostgreSQL, frontend, mDNS | ~560 Mi | ~1 Gi |
-| `aquaqe-prod` | API, PostgreSQL, frontend, mDNS | ~560 Mi | ~1 Gi |
+| `aqua-qe-agility-platform-auth` | Keycloak, PostgreSQL, mDNS | ~656 Mi | ~1,2 Gi |
+| `aqua-qe-agility-platform-dev` | API, PostgreSQL, frontend, mDNS | ~560 Mi | ~1 Gi |
+| `aqua-qe-agility-platform-prod` | API, PostgreSQL, frontend, mDNS | ~560 Mi | ~1 Gi |
 | **Total** | | **~1,8 Gi** | **~3,2 Gi** |
 
-Antes de aplicar, confira a folga atual com `free -h` e `kubectl top pods -A`. Se faltar memória, a primeira alavanca é desligar o dev quando não estiver em uso (`kubectl -n aquaqe-dev scale deploy --all --replicas=0`), porque o ArgoCD com `selfHeal` religa; nesse caso, pause a sincronização da aplicação `aquaqe-dev` antes.
+Antes de aplicar, confira a folga atual com `free -h` e `kubectl top pods -A`. Se faltar memória, a primeira alavanca é desligar o dev quando não estiver em uso (`kubectl -n aqua-qe-agility-platform-dev scale deploy --all --replicas=0`), porque o ArgoCD com `selfHeal` religa; nesse caso, pause a sincronização da aplicação `aqua-qe-agility-platform-dev` antes.
 
 ## 7. Desenvolvimento local
 

@@ -3,7 +3,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: aquaqe-auth
+  name: aqua-qe-agility-platform-auth
   namespace: argocd
 spec:
   project: default
@@ -13,7 +13,7 @@ spec:
     path: k8s/auth
   destination:
     server: https://kubernetes.default.svc
-    namespace: aquaqe-auth
+    namespace: aqua-qe-agility-platform-auth
   syncPolicy:
     automated:
       prune: true
@@ -24,7 +24,7 @@ spec:
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: aquaqe-dev
+  name: aqua-qe-agility-platform-dev
   namespace: argocd
 spec:
   project: default
@@ -34,7 +34,7 @@ spec:
     path: k8s/apps/overlays/dev
   destination:
     server: https://kubernetes.default.svc
-    namespace: aquaqe-dev
+    namespace: aqua-qe-agility-platform-dev
   syncPolicy:
     automated:
       prune: true
@@ -45,7 +45,7 @@ spec:
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: aquaqe-prod
+  name: aqua-qe-agility-platform-prod
   namespace: argocd
 spec:
   project: default
@@ -55,7 +55,7 @@ spec:
     path: k8s/apps/overlays/prod
   destination:
     server: https://kubernetes.default.svc
-    namespace: aquaqe-prod
+    namespace: aqua-qe-agility-platform-prod
   syncPolicy:
     automated:
       prune: true
