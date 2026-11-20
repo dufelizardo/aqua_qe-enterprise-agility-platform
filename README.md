@@ -107,3 +107,5 @@ O faseamento é uma proposta ainda a validar ([PRD, seção 13](doc/PRD.md)).
 ## Licença
 
 Distribuído sob a licença MIT. Veja [LICENSE](LICENSE).
+
+<!-- aqeap-readme-ab3b7c16cd -->

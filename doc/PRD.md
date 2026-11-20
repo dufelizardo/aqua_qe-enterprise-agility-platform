@@ -384,3 +384,5 @@ O PRD V2.1 não tinha requisitos numerados; seus épicos e telas estão nas seç
 [spec-db]: <pdr/Especificação de Dashboards e Painéis Padrão e Dinâmicos V2.0.docx>
 [spec-sc]: <pdr/Especificação de Segurança, Confiabilidade e Governança de Dados V2.0.docx>
 [spec-dh]: <pdr/Especificação de Arquitetura de Hospedagem e Deploy V2.0.docx>
+
+<!-- aqeap-prd-9c9efcab8c -->

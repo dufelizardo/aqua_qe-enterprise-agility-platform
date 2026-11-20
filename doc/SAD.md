@@ -473,3 +473,5 @@ Os valores-alvo são provisórios; o PRD lista sua definição como pendência.
 | PRD-RF-036 | Login com SSO e credenciais | `identity` + IdP |
 | PRD-RF-037 | MFA | IdP |
 | PRD-RF-038 | Seleção de workspace | `identity`, `access` |
+
+<!-- aqeap-sad-04440e5f71 -->

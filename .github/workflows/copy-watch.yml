@@ -1,0 +1,38 @@
+# Vigilância de cópias: toda segunda-feira, procura os marcadores e as frases características deste
+# repositório em outros repositórios públicos do GitHub e abre (ou atualiza) uma issue com o rótulo
+# copy-watch quando encontra algo. Detalhes e limites em scripts/copy-watch.sh.
+#
+# Segredos opcionais:
+#   COPY_WATCH_TOKEN          token pessoal (fine-grained, só leitura pública) para a busca de código,
+#                             caso o token do workflow seja recusado pela API de busca
+#   COPY_WATCH_EXTRA_QUERIES  consultas extras, uma por linha, que não devem ficar visíveis no repositório
+name: Vigilância de cópias
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"   # segunda-feira, 06:00 em Brasília
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: copy-watch
+  cancel-in-progress: false
+
+jobs:
+  copy-watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Procurar cópias públicas
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SEARCH_TOKEN: ${{ secrets.COPY_WATCH_TOKEN }}
+          COPY_WATCH_EXTRA_QUERIES: ${{ secrets.COPY_WATCH_EXTRA_QUERIES }}
+          CREATE_ISSUE: "true"
+        run: bash scripts/copy-watch.sh

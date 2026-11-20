@@ -472,3 +472,5 @@ Esses itens são resolvidos pelos responsáveis pelo produto e pela arquitetura 
 ## 13. Considerações finais
 
 O principal risco não está na escolha de uma tecnologia. Está em módulos diferentes implementarem interpretações diferentes de propriedade, autorização, classificação, aprovação e histórico. As frentes deste documento buscam eliminar essas ambiguidades, preservando a arquitetura modular, a documentação viva, a estrutura organizacional configurável e a visão de produto.
+
+<!-- aqeap-evolutio-da48a1a439 -->

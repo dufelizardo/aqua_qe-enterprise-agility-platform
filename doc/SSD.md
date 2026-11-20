@@ -1078,3 +1078,5 @@ A tabela `story_rule_ref` não aparece no diagrama do SAD; ela materializa a ref
 | PRD-RF-036 | Login com SSO e credenciais | `GET /me` (login no IdP) | — |
 | PRD-RF-037 | MFA | — (aplicado pelo IdP) | — |
 | PRD-RF-038 | Seleção de workspace | `GET /me/workspaces`, cabeçalho `X-Workspace-Id` | — |
+
+<!-- aqeap-ssd-0109f22d03 -->

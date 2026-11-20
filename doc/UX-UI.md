@@ -656,3 +656,5 @@ As cores e a identidade (hexágono, azul profundo e dourado) são mantidas.
 | PRD-RF-036 | Login com SSO e credenciais | Tema da tela de login |
 | PRD-RF-037 | MFA | Tema da tela de login, etapa de MFA |
 | PRD-RF-038 | Seleção de workspace | Seleção de workspace; seletor no cabeçalho |
+
+<!-- aqeap-uxui-b7ec090f46 -->

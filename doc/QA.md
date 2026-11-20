@@ -223,3 +223,5 @@ O que a implementação precisa oferecer para que os testes acima sejam possíve
 - Capítulos do ASVS nível 2 aplicáveis e quais são verificáveis por Robot (REV-13).
 - Gestão de defeitos: onde registrar e como ligar ao caso de teste, enquanto a própria plataforma não oferece gestão de testes (Fase 2).
 - Versões exatas das bibliotecas, a fixar quando o esqueleto `test/robot` for criado.
+
+<!-- aqeap-qa-db5e074a82 -->

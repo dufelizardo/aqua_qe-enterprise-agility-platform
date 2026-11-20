@@ -1,0 +1,23 @@
+# Consultas da vigilância de cópias (scripts/copy-watch.sh).
+# Uma consulta por linha, no formato da busca de código do GitHub; aspas = frase exata.
+# Linhas vazias e começadas por # são ignoradas.
+#
+# Marcadores: um por documento, no comentário HTML do final do arquivo.
+# Quem copiar o arquivo inteiro leva o marcador junto.
+"aqeap-readme-ab3b7c16cd"
+"aqeap-prd-9c9efcab8c"
+"aqeap-sad-04440e5f71"
+"aqeap-ssd-0109f22d03"
+"aqeap-uxui-b7ec090f46"
+"aqeap-qa-db5e074a82"
+"aqeap-review01-e6ceb25143"
+"aqeap-evolutio-da48a1a439"
+#
+# Impressões digitais: frases características do texto. Sobrevivem a quem apaga o marcador.
+"O Workspace do Artefato é o centro da experiência"
+"Sem verificação, um monólito modular vira um monólito comum"
+"Ancestrais que o usuário não pode ver são devolvidos apenas com"
+"Ancestral que o usuário não pode ver aparece só com a chave"
+"O diferencial falha justamente no cenário que a ADR-14 foi criada para suportar"
+"O principal risco não está na escolha de uma tecnologia"
+"Plataforma corporativa que reúne, em um único produto, gestão de trabalho, documentação e gestão de testes"

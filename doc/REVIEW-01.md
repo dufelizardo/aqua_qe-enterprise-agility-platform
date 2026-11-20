@@ -220,3 +220,5 @@ O entregável da atividade é a tabela de mapeamento. Ela só deve ser feita dep
 | 7 | Estratégia de testes | todos | [Plano de QA do MVP](QA.md), incluindo testes de fronteira de módulo (ADR-04), de autorização e de verificação ASVS (REV-13). |
 
 Os passos 1 e 2 bloqueiam o início dos módulos `access`, `organization` e `workitem`. Os módulos `configuration` e `workflow` podem começar após o passo 6, e o frontend dos workspaces após os passos 4 e 5.
+
+<!-- aqeap-review01-e6ceb25143 -->
