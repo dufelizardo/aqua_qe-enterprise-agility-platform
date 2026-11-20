@@ -100,7 +100,7 @@ Para segurar uma promoção, feche o PR automático: ele é reaberto no próximo
 
 1. **Branch `developer`** criada a partir da `main` e definida como branch padrão de trabalho.
 2. **Segredo `ENTERPRISE_AGILITY_PLATAFORM`**: token pessoal fine-grained, só deste repositório, com `Contents` e `Pull requests` em leitura e escrita (sem `Administration`, como o `WOLK_KEY` do LoneWolf). É usado para abrir o PR de promoção, fazer o merge e gravar o SHA nos overlays. Merges e pushes feitos com o token padrão do workflow não disparam outros workflows, e a esteira pararia no meio.
-3. **Proteção da `main`**: exigir PR e os checks `backend`, `frontend`, `robot-dryrun` e `acceptance`. Deixar `enforce_admins` **desligado**, senão o commit de pin feito com o PAT é recusado (lição da ADR-0015 do Mais Saúde Pública).
+3. **Proteção da `main`** (aplicada em 2026-11-20): exige PR, sem aprovação obrigatória, porque o auto-merge mescla sozinho; exige os checks `backend`, `frontend`, `robot-dryrun` e `acceptance`; bloqueia force push e exclusão. `enforce_admins` fica **desligado**, senão o commit de pin feito com o PAT é recusado (lição da ADR-0015 do Mais Saúde Pública).
 4. **Pacotes do ghcr.io públicos**: depois do primeiro `publish-image.yml`, em *Packages*, tornar `aqua-qe-platform` e `aqua-qe-platform-frontend` públicos. Pacotes novos nascem privados, e o K3s não consegue baixar a imagem sem credencial.
 
 ## 5. Configuração única no servidor
