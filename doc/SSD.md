@@ -26,7 +26,7 @@ O contrato OpenAPI é gerado do código (SAD, ADR-09); este documento é a refer
 
 | Cabeçalho | Obrigatório | Uso |
 |---|---|---|
-| `Authorization: Bearer <token>` | Sim | Token de acesso emitido pelo IdP. |
+| `Authorization: Bearer <token>` | Sim, exceto no navegador | Token de acesso emitido pelo IdP, para integrações e testes. No navegador, a autenticação é a sessão por cookie criada pelo login BFF (SAD, ADR-16); requisições que alteram dados enviam também `X-XSRF-TOKEN` com o valor do cookie `XSRF-TOKEN`. |
 | `X-Workspace-Id` | Em listagens | UUID da unidade organizacional escolhida no login. Restringe listagens à subárvore dessa unidade. |
 | `X-Correlation-Id` | Não | Se ausente, a API gera um. É devolvido na resposta e gravado em eventos e auditoria. |
 

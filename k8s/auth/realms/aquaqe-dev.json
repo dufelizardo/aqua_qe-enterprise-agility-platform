@@ -1,0 +1,239 @@
+{
+  "realm": "aquaqe-dev",
+  "displayName": "AQuA-QE (dev)",
+  "loginTheme": "aquaqe",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": false,
+  "bruteForceProtected": true,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "internationalizationEnabled": true,
+  "supportedLocales": [
+    "pt-BR",
+    "en"
+  ],
+  "defaultLocale": "pt-BR",
+  "roles": {
+    "realm": [
+      {
+        "name": "PLATFORM_ADMIN",
+        "description": "Papel padrão do SSD, seção 2 (informativo; a autorização é do módulo access)"
+      },
+      {
+        "name": "BUSINESS_OWNER",
+        "description": "Papel padrão do SSD, seção 2 (informativo; a autorização é do módulo access)"
+      },
+      {
+        "name": "PRODUCT_MANAGER",
+        "description": "Papel padrão do SSD, seção 2 (informativo; a autorização é do módulo access)"
+      },
+      {
+        "name": "TECH_LEAD",
+        "description": "Papel padrão do SSD, seção 2 (informativo; a autorização é do módulo access)"
+      },
+      {
+        "name": "UX_DESIGNER",
+        "description": "Papel padrão do SSD, seção 2 (informativo; a autorização é do módulo access)"
+      },
+      {
+        "name": "QA_ENGINEER",
+        "description": "Papel padrão do SSD, seção 2 (informativo; a autorização é do módulo access)"
+      },
+      {
+        "name": "SQUAD_MEMBER",
+        "description": "Papel padrão do SSD, seção 2 (informativo; a autorização é do módulo access)"
+      },
+      {
+        "name": "VIEWER",
+        "description": "Papel padrão do SSD, seção 2 (informativo; a autorização é do módulo access)"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "aquaqe-web",
+      "name": "AQuA-QE Web (BFF)",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${AQUAQE_DEV_WEB_SECRET}",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "frontchannelLogout": true,
+      "redirectUris": [
+        "${AQUAQE_DEV_URL}/*"
+      ],
+      "webOrigins": [
+        "${AQUAQE_DEV_URL}"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "${AQUAQE_DEV_URL}/*"
+      }
+    },
+    {
+      "clientId": "aquaqe-robot",
+      "name": "Testes automatizados (Robot Framework)",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "implicitFlowEnabled": false
+    }
+  ],
+  "users": [
+    {
+      "username": "robot.admin",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Alice",
+      "lastName": "Admin",
+      "email": "robot.admin@aquaqe.local",
+      "realmRoles": [
+        "PLATFORM_ADMIN"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${AQUAQE_DEV_TEST_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "robot.bo",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Bruno",
+      "lastName": "Owner",
+      "email": "robot.bo@aquaqe.local",
+      "realmRoles": [
+        "BUSINESS_OWNER"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${AQUAQE_DEV_TEST_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "robot.pm",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Paula",
+      "lastName": "Produto",
+      "email": "robot.pm@aquaqe.local",
+      "realmRoles": [
+        "PRODUCT_MANAGER"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${AQUAQE_DEV_TEST_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "robot.tl",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Tiago",
+      "lastName": "Lead",
+      "email": "robot.tl@aquaqe.local",
+      "realmRoles": [
+        "TECH_LEAD"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${AQUAQE_DEV_TEST_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "robot.ux",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Ursula",
+      "lastName": "Design",
+      "email": "robot.ux@aquaqe.local",
+      "realmRoles": [
+        "UX_DESIGNER"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${AQUAQE_DEV_TEST_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "robot.qa",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Quezia",
+      "lastName": "Qualidade",
+      "email": "robot.qa@aquaqe.local",
+      "realmRoles": [
+        "QA_ENGINEER"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${AQUAQE_DEV_TEST_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "robot.squad",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Sergio",
+      "lastName": "Squad",
+      "email": "robot.squad@aquaqe.local",
+      "realmRoles": [
+        "SQUAD_MEMBER"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${AQUAQE_DEV_TEST_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "robot.viewer",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Vera",
+      "lastName": "Leitura",
+      "email": "robot.viewer@aquaqe.local",
+      "realmRoles": [
+        "VIEWER"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${AQUAQE_DEV_TEST_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    }
+  ]
+}

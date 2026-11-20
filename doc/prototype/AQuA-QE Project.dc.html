@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#F4F7FA;font-family:'Manrope',sans-serif;color:#0F2233}a{color:#0B7FB8;text-decoration:none}a:hover{color:#0B5E8E}*{box-sizing:border-box}</style>
+</helmet>
+<div style="min-height:100vh;padding-bottom:72px;font-family:'Manrope',sans-serif;color:#0F2233">
+
+<div style="position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:50;display:flex;gap:4px;padding:5px;background:#0F2233;border-radius:999px;box-shadow:0 8px 30px rgba(15,34,51,.3)">
+<sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+<button onClick="{{ t.go }}" style="border:0;cursor:pointer;font:600 13px 'Manrope';padding:8px 16px;border-radius:999px;background:{{ t.bg }};color:{{ t.fg }}">{{ t.n }}</button>
+</sc-for>
+</div>
+
+<sc-if value="{{ isLanding }}" hint-placeholder-val="{{ true }}">
+<div style="background:#F7FAFF">
+<div style="background:#223958"><div style="max-width:1000px;margin:0 auto;padding-left:clamp(16px,4vw,40px);padding-right:clamp(16px,4vw,40px);display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-top:14px;padding-bottom:14px">
+<img src="assets/hlogo.png" style="height:46px;width:auto">
+<div style="display:flex;gap:22px;flex-wrap:wrap;font-weight:600;font-size:13.5px;color:#fff;margin-left:auto;margin-right:8px"><span>Plataforma</span><span>Capacidades ⌄</span><span>Para Empresas</span><span>Sobre Nós</span></div>
+<div style="display:flex;gap:10px;white-space:nowrap"><button onClick="{{ toLogin }}" style="border:1px solid #fff;background:transparent;color:#fff;border-radius:6px;padding:9px 16px;font:600 13px 'Manrope';cursor:pointer">Entrar no Sistema</button><button onClick="{{ toLogin }}" style="border:0;background:#E37B0C;color:#fff;border-radius:6px;padding:10px 16px;font:700 13px 'Manrope';cursor:pointer">Solicitar Demonstração</button></div>
+</div></div>
+
+<div style="background:#F7FAFF"><div style="max-width:1000px;margin:0 auto;padding-left:clamp(16px,4vw,40px);padding-right:clamp(16px,4vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:24px;align-items:center;padding-top:44px;padding-bottom:44px">
+<div><h1 style="font-size:clamp(28px,3.6vw,36px);line-height:1.2;letter-spacing:-.02em;margin:0 0 12px;color:#1B2F4F;font-weight:800;text-wrap:balance">Orquestre a Transformação Digital com Inteligência e Governança Corporativa em Escala</h1>
+<p style="font-size:14.5px;line-height:1.5;color:#1E293B;margin:0 0 18px;max-width:470px;text-wrap:pretty">AQuA-QE é a primeira plataforma que conecta execução operacional e inteligência de engenharia aos resultados estratégicos de negócios. Visibilidade de ponta a ponta para grandes corporações.</p>
+<button onClick="{{ toLogin }}" style="border:0;background:#E37B0C;color:#fff;border-radius:6px;padding:12px 18px;font:700 14px 'Manrope';cursor:pointer">Agendar uma Apresentação Exclusiva</button></div>
+<div style="display:flex;justify-content:center;min-width:0"><img src="assets/hero.png" style="width:100%;max-width:440px;height:auto;mix-blend-mode:multiply"></div>
+</div></div>
+
+<div style="background:#E6EFF6"><div style="max-width:1000px;margin:0 auto;padding-left:clamp(16px,4vw,40px);padding-right:clamp(16px,4vw,40px);padding-top:16px;padding-bottom:20px">
+<h2 style="text-align:center;font-size:19px;margin:0 0 16px;color:#1B2F4F;font-weight:600">Os Três Pilares Centrais</h2>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:14px">
+<div style="background:#F7FBFE;border-radius:10px;padding:20px 22px;box-shadow:0 1px 6px rgba(31,58,102,.08);display:flex;flex-direction:column;gap:10px"><div style="display:flex;align-items:center;gap:12px"><img src="assets/p1.png" style="width:40px;height:40px;object-fit:contain;flex:none"><div style="display:flex;flex-direction:column;gap:3px"><span style="font:500 12.5px 'Manrope';color:#334155">Alinhamento Estratégico com OKRs.</span><b style="font-size:19px;line-height:1.15;color:#1B2F4F;letter-spacing:-.01em">Execução Alinhada à Estratégia</b></div></div><span style="font-size:13.5px;line-height:1.5;color:#1E293B;text-wrap:pretty">Conecte suas iniciativas e Features diretamente aos Objetivos e Key Results (OKRs) corporativos. Tenha visibilidade em tempo real do impacto real das entregas no negócio.</span></div>
+<div style="background:#F7FBFE;border-radius:10px;padding:20px 22px;box-shadow:0 1px 6px rgba(31,58,102,.08);display:flex;flex-direction:column;gap:10px"><div style="display:flex;align-items:center;gap:12px"><img src="assets/p2.png" style="width:40px;height:40px;object-fit:contain;flex:none"><div style="display:flex;flex-direction:column;gap:3px"><span style="font:500 12.5px 'Manrope';color:#334155">Gestão de Fluxo de Valor (Flight Levels)</span><b style="font-size:19px;line-height:1.15;color:#1B2F4F;letter-spacing:-.01em">Visibilidade de Ponta a Ponta</b></div></div><span style="font-size:13.5px;line-height:1.5;color:#1E293B;text-wrap:pretty">Orquestre portfólios, unidades de negócio e squads em múltiplos Flight Levels. Do upstream estratégico ao downstream operacional, com gerenciamento inteligente de capacidade.</span></div>
+<div style="background:#F7FBFE;border-radius:10px;padding:20px 22px;box-shadow:0 1px 6px rgba(31,58,102,.08);display:flex;flex-direction:column;gap:10px"><div style="display:flex;align-items:center;gap:12px"><img src="assets/p3.png" style="width:40px;height:40px;object-fit:contain;flex:none"><div style="display:flex;flex-direction:column;gap:3px"><span style="font:500 12.5px 'Manrope';color:#334155">Inteligência de Dependências &amp; Governança.</span><b style="font-size:19px;line-height:1.15;color:#1B2F4F;letter-spacing:-.01em">Antecipação de Bloqueios e Riscos</b></div></div><span style="font-size:13.5px;line-height:1.5;color:#1E293B;text-wrap:pretty">Identifique, acompanhe e analise dependências complexas entre equipes, iniciativas e portfólios. Antecipe problemas antes que eles afetem o cronograma e os resultados.</span></div>
+</div></div></div>
+
+<div style="background:#223A5C"><div style="max-width:1000px;margin:0 auto;padding-left:clamp(16px,4vw,40px);padding-right:clamp(16px,4vw,40px);padding-top:16px;padding-bottom:24px">
+<h2 style="text-align:center;font-size:19px;margin:0 0 16px;color:#fff;font-weight:600">Diferenciais</h2>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:10px">
+<div style="background:#3E526D;border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:12px;border:1px solid rgba(255,255,255,.1)"><div style="display:flex;align-items:center;gap:10px"><img src="assets/d1.png" style="width:34px;height:34px;object-fit:contain;flex:none;border-radius:6px"><b style="font-size:15px;line-height:1.2;color:#fff">Living Documentation Hub</b></div><span style="font-size:13px;line-height:1.5;color:#fff">PRD, SAD, SSD, UX, QA Hub integrados e versionados.</span></div>
+<div style="background:#3E526D;border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:12px;border:1px solid rgba(255,255,255,.1)"><div style="display:flex;align-items:center;gap:10px"><img src="assets/d2.png" style="width:34px;height:34px;object-fit:contain;flex:none;border-radius:6px"><b style="font-size:15px;line-height:1.2;color:#fff">Engenharia de Valor Integrada</b></div><span style="font-size:13px;line-height:1.5;color:#fff">Rastreabilidade de ponta a ponta desde o requisito até a produção.</span></div>
+<div style="background:#3E526D;border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:12px;border:1px solid rgba(255,255,255,.1)"><div style="display:flex;align-items:center;gap:10px"><img src="assets/d3.png" style="width:34px;height:34px;object-fit:contain;flex:none;border-radius:6px"><b style="font-size:15px;line-height:1.2;color:#fff">Motor de Customização Templates</b></div><span style="font-size:13px;line-height:1.5;color:#fff">Adapte fluxos, gates e campos por portfólio, com herança corporativa.</span></div>
+<div style="background:#3E526D;border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:12px;border:1px solid rgba(255,255,255,.1)"><div style="display:flex;align-items:center;gap:10px"><img src="assets/d4.png" style="width:34px;height:34px;object-fit:contain;flex:none;border-radius:6px"><b style="font-size:15px;line-height:1.2;color:#fff">Security, Reliability &amp; Hosting</b></div><span style="font-size:13px;line-height:1.5;color:#fff">Arquitetura Cloud-Native, isolamento, Audit Trail imutável.</span></div>
+</div></div></div>
+
+<div style="background:#F7FBFE"><div style="max-width:1000px;margin:0 auto;padding-left:clamp(16px,4vw,40px);padding-right:clamp(16px,4vw,40px);padding-top:20px;padding-bottom:20px;text-align:center">
+<h2 style="font-size:22px;margin:0 0 20px;color:#1B2F4F;font-weight:700;letter-spacing:-.01em">Confiada por Líderes de Grandes Corporações</h2>
+<div style="display:flex;justify-content:center;gap:clamp(16px,5vw,44px);flex-wrap:wrap;margin-bottom:24px;align-items:center"><img src="assets/c1.png" style="height:40px;mix-blend-mode:multiply"><img src="assets/c2.png" style="height:40px;mix-blend-mode:multiply"><img src="assets/c3.png" style="height:40px;mix-blend-mode:multiply"><img src="assets/c4.png" style="height:40px;mix-blend-mode:multiply"></div>
+<p style="font-size:17px;font-style:italic;line-height:1.5;color:#0F172A;max-width:720px;margin:0 auto;text-wrap:balance">“O AQuA-QE nos deu a visibilidade que faltava para conectar a nossa estratégia de portfólio à entrega real das squads, reduzindo o tempo de ciclo em 30%.” — CIO de uma Grande Empresa.</p>
+</div></div>
+
+<div style="background:#1F3857;text-align:center"><div style="max-width:1000px;margin:0 auto;padding-left:clamp(16px,4vw,40px);padding-right:clamp(16px,4vw,40px);padding-top:20px;padding-bottom:22px">
+<h2 style="font-size:21px;margin:0 0 4px;color:#fff;font-weight:600;text-wrap:balance">Pronto para elevar a agilidade da sua empresa a um novo patamar?</h2>
+<p style="margin:0 0 14px;color:#fff;font-size:14px">Fale com nossos especialistas e descubra como o AQuA-QE pode transformar a sua organização.</p>
+<button onClick="{{ toLogin }}" style="border:0;background:#E37B0C;color:#fff;border-radius:6px;padding:11px 20px;font:700 13.5px 'Manrope';cursor:pointer">Solicitar Demonstração Personalizada</button></div></div>
+
+<div style="background:#566B80;color:#fff"><div style="max-width:1000px;margin:0 auto;padding-left:clamp(16px,4vw,40px);padding-right:clamp(16px,4vw,40px);padding-top:22px;padding-bottom:22px;display:flex;flex-wrap:wrap;gap:28px;justify-content:space-between;align-items:flex-start">
+<img src="assets/flogo.png" style="height:56px;width:auto">
+<div><div style="font-size:14px;font-weight:600;margin-bottom:8px">Links Rápidos</div><div style="display:grid;grid-template-columns:repeat(3,auto);gap:5px 44px;font-size:13.5px"><span>Plataforma</span><span>Segurança</span><span>Sobre Nós</span><span>Capacidades</span><span>Documentação</span><span>Carreiras</span><span>Clientes</span><span>Suporte</span><span>Contato</span></div></div>
+<div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;font-size:11.5px;text-align:right"><img src="assets/soc.png" style="height:24px;width:auto"><span>© 2026 AQuA-QE. Todos os direitos reservados.<br><u>Termos de Serviço</u> · <u>Política de Privacidade</u></span></div>
+</div></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));min-height:100vh;background:#fff">
+<div style="display:flex;flex-direction:column;justify-content:center;padding:48px clamp(24px,7vw,96px);gap:0">
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:56px"><img src="logo.png" style="width:44px;height:44px;object-fit:contain"><b style="font-size:20px">AQuA-QE <span style="color:#1E9BD7">Project</span></b></div>
+<h1 style="font-size:36px;letter-spacing:-.025em;margin:0 0 8px">Bem-vindo de volta</h1>
+<p style="color:#64748B;margin:0 0 28px;font-size:15px">Acesse seu workspace.</p>
+<button onClick="{{ toHome }}" style="display:flex;align-items:center;justify-content:center;gap:10px;border:1px solid #D5DDE5;background:#fff;border-radius:12px;padding:13px;font:700 14px 'Manrope';cursor:pointer;margin-bottom:10px">Continuar com SSO corporativo</button>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button onClick="{{ toHome }}" style="border:1px solid #D5DDE5;background:#fff;border-radius:12px;padding:13px;font:700 14px 'Manrope';cursor:pointer">GitHub</button><button onClick="{{ toHome }}" style="border:1px solid #D5DDE5;background:#fff;border-radius:12px;padding:13px;font:700 14px 'Manrope';cursor:pointer">GitLab</button></div>
+<div style="display:flex;align-items:center;gap:12px;margin:24px 0;color:#94A3B8;font-size:12px"><i style="flex:1;height:1px;background:#E3E9EF"></i>ou com e-mail<i style="flex:1;height:1px;background:#E3E9EF"></i></div>
+<label style="font-size:13px;font-weight:700;margin-bottom:6px">E-mail</label>
+<input value="edu@empresa.com" style="border:1px solid #D5DDE5;border-radius:12px;padding:14px;font:500 15px 'Manrope';margin-bottom:16px;outline:none" />
+<div style="display:flex;justify-content:space-between;margin-bottom:6px"><label style="font-size:13px;font-weight:700">Senha</label><a href="#" style="font-size:13px;font-weight:600">Esqueci a senha</a></div>
+<input type="password" value="senhasegura" style="border:1px solid #D5DDE5;border-radius:12px;padding:14px;font:500 15px 'Manrope';margin-bottom:24px;outline:none" />
+<button onClick="{{ toHome }}" style="border:0;background:#0F2233;color:#fff;border-radius:12px;padding:15px;font:800 15px 'Manrope';cursor:pointer">Entrar</button>
+<div style="margin-top:20px;font-size:13px;color:#64748B;display:flex;gap:8px;align-items:center">🔒 Conexão criptografada · MFA disponível</div>
+</div>
+<div style="background:linear-gradient(160deg,#0B5E8E,#0F2233);color:#fff;display:flex;flex-direction:column;justify-content:flex-end;padding:clamp(32px,5vw,72px);gap:28px;position:relative;min-height:320px;overflow:hidden">
+<img src="logo.png" style="position:absolute;top:-60px;right:-80px;width:520px;opacity:.12;filter:grayscale(1) brightness(3)">
+<div style="font:600 12px 'JetBrains Mono';letter-spacing:.08em;color:#F9AE1B">RASTREABILIDADE PONTA A PONTA</div>
+<div style="font-size:38px;line-height:1.15;letter-spacing:-.025em;font-weight:800;max-width:460px;text-wrap:balance">Cada requisito, teste e defeito conectados à release.</div>
+<div style="display:flex;gap:32px"><div><b style="font-size:28px">86%</b><div style="font-size:13px;opacity:.7">cobertura média</div></div><div><b style="font-size:28px">-42%</b><div style="font-size:13px;opacity:.7">defeitos em produção</div></div></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh">
+<aside style="background:#fff;border-right:1px solid #E3E9EF;padding:20px 14px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh;overflow:auto">
+<div style="display:flex;align-items:center;gap:10px;padding:4px 8px 18px"><img src="logo.png" style="width:34px;height:34px;object-fit:contain"><b style="font-size:16px">AQuA-QE</b></div>
+<sc-for list="{{ navItems }}" as="n" hint-placeholder-count="6">
+<div onClick="{{ n.go }}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;background:{{ n.bg }};color:{{ n.fg }}"><span style="width:8px;height:8px;border-radius:3px;background:{{ n.dot }}"></span>{{ n.n }}</div>
+<div style="padding:0 12px 6px 30px;font-size:12px;color:#94A3B8;line-height:1.4">{{ n.sub }}</div>
+</sc-for>
+<div style="margin-top:auto;background:#FFF6E0;border-radius:14px;padding:14px;font-size:13px;line-height:1.4"><b>Sprint 24</b><div style="color:#64748B;margin:2px 0 10px">encerra em 3 dias</div><div style="height:6px;background:#F5E3B5;border-radius:9px"><div style="width:72%;height:100%;background:#F9AE1B;border-radius:9px"></div></div></div>
+</aside>
+<main style="min-width:0">
+<div style="display:flex;align-items:center;gap:16px;padding:14px 32px;background:#fff;border-bottom:1px solid #E3E9EF">
+<div style="flex:1;max-width:480px;display:flex;align-items:center;gap:10px;background:#F4F7FA;border-radius:10px;padding:10px 14px;font-size:14px;color:#94A3B8">Buscar projetos, issues, testes…<span style="margin-left:auto;font:500 11px 'JetBrains Mono';border:1px solid #D5DDE5;border-radius:5px;padding:2px 6px">⌘K</span></div>
+<div style="margin-left:auto;display:flex;align-items:center;gap:16px"><span style="font-size:13px;font-weight:600;color:#475569">Ajuda</span><div style="position:relative;font-size:13px;font-weight:600;color:#475569">Alertas<i style="position:absolute;top:-4px;right:-10px;width:8px;height:8px;border-radius:50%;background:#F9AE1B"></i></div><div style="width:34px;height:34px;border-radius:50%;background:#1E9BD7;color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px">ED</div></div>
+</div>
+
+<sc-if value="{{ isHome }}" hint-placeholder-val="{{ false }}">
+<div style="padding:32px;display:flex;flex-direction:column;gap:24px">
+<div style="display:flex;justify-content:space-between;align-items:flex-end">
+<div><div style="font-size:13px;color:#64748B;margin-bottom:6px">Workspace / Visão geral</div><h1 style="margin:0;font-size:34px;letter-spacing:-.025em">Bom dia, Edu</h1><div style="color:#64748B;margin-top:4px">Você tem 7 tarefas para hoje e 2 execuções de teste pendentes.</div></div>
+<div style="display:flex;gap:10px"><button style="border:1px solid #D5DDE5;background:#fff;border-radius:10px;padding:10px 16px;font:700 13px 'Manrope'">Equipe QA ▾</button><button style="border:0;background:#0F2233;color:#fff;border-radius:10px;padding:10px 16px;font:700 13px 'Manrope'">+ Criar</button></div></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px">
+<sc-for list="{{ stats }}" as="s" hint-placeholder-count="4">
+<div style="background:#fff;border:1px solid #E3E9EF;border-radius:16px;padding:20px"><div style="font-size:13px;color:#64748B;font-weight:600">{{ s.l }}</div><div style="font-size:36px;font-weight:800;letter-spacing:-.03em;margin:6px 0 4px">{{ s.v }}</div><div style="font-size:12px;font-weight:600;color:{{ s.c }}">{{ s.d }}</div></div>
+</sc-for></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="background:#fff;border:1px solid #E3E9EF;border-radius:16px;padding:20px">
+<div style="display:flex;justify-content:space-between;margin-bottom:14px"><b>Projetos recentes</b><a href="#" style="font-size:13px;font-weight:600">Ver todos</a></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px">
+<sc-for list="{{ projects }}" as="p" hint-placeholder-count="3">
+<div style="border:1px solid #E3E9EF;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px"><span style="font:600 11px 'JetBrains Mono';color:{{ p.c }}">{{ p.k }}</span><b style="font-size:15px">{{ p.n }}</b><div style="height:6px;background:#EEF2F6;border-radius:9px"><div style="width:{{ p.p }};height:100%;background:{{ p.c }};border-radius:9px"></div></div><span style="font-size:12px;color:#64748B">{{ p.p }} · {{ p.m }}</span></div>
+</sc-for></div></div>
+<div style="background:#fff;border:1px solid #E3E9EF;border-radius:16px;padding:20px">
+<div style="display:flex;justify-content:space-between;margin-bottom:16px"><b>Atividade da semana</b><span style="font-size:12px;color:#64748B;display:flex;gap:12px"><span>■ <span style="color:#1E9BD7">Testes</span></span><span>■ <span style="color:#F9AE1B">Defeitos</span></span></span></div>
+<div style="display:flex;align-items:flex-end;gap:14px;height:140px">
+<sc-for list="{{ bars }}" as="b" hint-placeholder-count="7">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end"><div style="width:100%;display:flex;gap:3px;align-items:flex-end;height:110px"><i style="flex:1;height:{{ b.a }};background:#1E9BD7;border-radius:5px 5px 0 0"></i><i style="flex:1;height:{{ b.b }};background:#F9AE1B;border-radius:5px 5px 0 0"></i></div><span style="font-size:11px;color:#94A3B8">{{ b.d }}</span></div>
+</sc-for></div></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="background:#fff;border:1px solid #E3E9EF;border-radius:16px;padding:20px">
+<div style="display:flex;justify-content:space-between;margin-bottom:10px"><b>Minhas tarefas</b><span style="font-size:12px;color:#64748B">7 abertas</span></div>
+<sc-for list="{{ tasks }}" as="t" hint-placeholder-count="5">
+<div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid #EEF2F6"><i style="width:16px;height:16px;border:2px solid #C7D3DE;border-radius:5px"></i><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:600">{{ t.t }}</div><div style="font:500 11px 'JetBrains Mono';color:#94A3B8;margin-top:2px">{{ t.id }}</div></div><span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:99px;background:{{ t.bg }};color:{{ t.c }}">{{ t.p }}</span></div>
+</sc-for></div>
+<div style="background:#fff;border:1px solid #E3E9EF;border-radius:16px;padding:20px">
+<b>Atividades recentes</b>
+<sc-for list="{{ feed }}" as="f" hint-placeholder-count="3">
+<div style="display:flex;gap:10px;margin-top:14px;font-size:13px;line-height:1.4"><div style="width:28px;height:28px;border-radius:50%;background:{{ f.c }};color:#fff;display:grid;place-items:center;font-size:11px;font-weight:800;flex:none">{{ f.i }}</div><div><b>{{ f.w }}</b> {{ f.a }}<div style="font-size:11px;color:#94A3B8">{{ f.t }}</div></div></div>
+</sc-for></div>
+</div></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isIdeas }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-wrap:wrap;min-height:calc(100vh - 63px)">
+<div style="flex:1 1 480px;min-width:0;padding:32px;display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;justify-content:space-between;align-items:flex-end"><div><div style="font-size:13px;color:#64748B;margin-bottom:6px">Workspace / Ideias</div><h1 style="margin:0;font-size:34px;letter-spacing:-.025em">Ideias</h1><div style="color:#64748B;margin-top:4px">Registre, vote e transforme oportunidades em projetos.</div></div>
+<button style="border:0;background:#F9AE1B;color:#0F2233;border-radius:10px;padding:12px 20px;font:800 14px 'Manrope'">+ Submit an Idea</button></div>
+<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+<div style="flex:1;min-width:200px;background:#fff;border:1px solid #E3E9EF;border-radius:10px;padding:10px 14px;font-size:14px;color:#94A3B8">Buscar ideias…</div>
+<sc-for list="{{ cats }}" as="c" hint-placeholder-count="6">
+<span style="padding:9px 14px;border-radius:99px;font-size:13px;font-weight:700;background:{{ c.bg }};color:{{ c.fg }};border:1px solid {{ c.bd }}">{{ c.n }}</span>
+</sc-for></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:14px">
+<sc-for list="{{ ideas }}" as="i" hint-placeholder-count="6">
+<div onClick="{{ i.pick }}" style="background:#fff;border:2px solid {{ i.bd }};border-radius:16px;padding:18px;display:flex;gap:14px;cursor:pointer">
+<div style="display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid #E3E9EF;border-radius:12px;padding:8px 10px;height:fit-content;background:#F8FAFC"><span style="font-size:10px;color:#1E9BD7">▲</span><b style="font-size:16px">{{ i.v }}</b></div>
+<div style="display:flex;flex-direction:column;gap:8px;min-width:0">
+<div style="display:flex;gap:8px;align-items:center"><span style="font:600 10px 'JetBrains Mono';letter-spacing:.05em;padding:3px 8px;border-radius:6px;background:{{ i.cb }};color:{{ i.cf }}">{{ i.c }}</span><span style="font-size:11px;font-weight:700;color:{{ i.sc }}">● {{ i.s }}</span></div>
+<b style="font-size:16px;line-height:1.25">{{ i.t }}</b>
+<span style="font-size:13px;line-height:1.45;color:#64748B;text-wrap:pretty">{{ i.d }}</span>
+<div style="display:flex;justify-content:space-between;font-size:12px;color:#94A3B8;margin-top:2px"><span>{{ i.a }}</span><span>{{ i.n }} comentários</span></div>
+</div></div>
+</sc-for></div>
+</div>
+<aside style="flex:1 1 320px;max-width:380px;background:#fff;border-left:1px solid #E3E9EF;padding:28px;min-width:0;display:flex;flex-direction:column;gap:16px">
+<div style="font:600 11px 'JetBrains Mono';color:#94A3B8;letter-spacing:.06em">DETALHE DA IDEIA</div>
+<span style="width:fit-content;font:600 10px 'JetBrains Mono';padding:3px 8px;border-radius:6px;background:{{ sel.cb }};color:{{ sel.cf }}">{{ sel.c }}</span>
+<h2 style="margin:0;font-size:22px;line-height:1.25;letter-spacing:-.01em">{{ sel.t }}</h2>
+<p style="margin:0;font-size:14px;line-height:1.55;color:#475569">{{ sel.d }}</p>
+<div style="display:flex;gap:8px;font-size:13px;color:#64748B"><span>Por <b style="color:#0F2233">{{ sel.a }}</b></span><span>·</span><span>{{ sel.v }} votos</span></div>
+<div style="display:flex;gap:6px;align-items:center;font-size:12px;font-weight:700">
+<span style="padding:5px 10px;border-radius:99px;background:#E8F5FC;color:#0B5E8E">Nova</span>→<span style="padding:5px 10px;border-radius:99px;background:#E8F5FC;color:#0B5E8E">Em análise</span>→<span style="padding:5px 10px;border-radius:99px;background:#F4F7FA;color:#94A3B8">Aprovada</span></div>
+<div style="border-top:1px solid #EEF2F6;padding-top:14px;font-size:13px;line-height:1.5"><b>Marina</b> <span style="color:#64748B">Isso reduziria muito o retrabalho de regressão.</span></div>
+<div style="background:#F4F7FA;border-radius:10px;padding:12px;font-size:13px;color:#94A3B8">Adicionar comentário…</div>
+<div style="margin-top:auto;display:flex;flex-direction:column;gap:8px"><button style="border:0;background:#0F2233;color:#fff;border-radius:10px;padding:13px;font:800 14px 'Manrope'">Transformar em projeto</button><button style="border:1px solid #D5DDE5;background:#fff;border-radius:10px;padding:13px;font:700 14px 'Manrope'">Votar nesta ideia</button></div>
+</aside>
+</div>
+</sc-if>
+</main>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { screen: 'landing', sel: 0 };
+  renderVals() {
+    const s = this.state.screen, go = k => () => this.setState({ screen: k });
+    const names = [['landing', 'Landing'], ['login', 'Login'], ['home', 'Home'], ['ideas', 'Ideias']];
+    const app = s === 'home' || s === 'ideas';
+    const nav = [['Workspace', 'Visão geral, projetos, tarefas e ideias', '#1E9BD7', 'home'], ['Planning', 'Requisitos, backlog, boards, sprints', '#64748B'], ['Quality Engineering', 'Testes, execução e defeitos', '#F9AE1B'], ['Traceability', 'Requisitos ↔ testes ↔ releases', '#1E9BD7'], ['Intelligence', 'Dashboards, riscos e IA', '#64748B'], ['Administration', 'Usuários, permissões, integrações', '#64748B']];
+    const cats = ['Todas', 'Product', 'UX', 'Automation', 'Quality', 'Improvement'];
+    const C = { Product: ['#E8F5FC', '#0B5E8E'], UX: ['#FFF1D0', '#8A5A00'], Automation: ['#E6F0F7', '#0F2233'], Quality: ['#DFF3EA', '#146C43'], Improvement: ['#EEF2F6', '#475569'] };
+    const raw = [
+      ['Gerar casos de teste a partir de requisitos', 'Quality', 'Em análise', 142, 'Usar IA para sugerir testes ao salvar um requisito.', 'Marina L.', 18],
+      ['Atalhos de teclado no board', 'UX', 'Nova', 87, 'Mover cards e mudar status sem usar o mouse.', 'Rafael S.', 9],
+      ['Pipeline CI que bloqueia release sem cobertura', 'Automation', 'Aprovada', 121, 'Gate automático quando a cobertura ficar abaixo do critério.', 'Edu M.', 24],
+      ['Importador de projetos do Jira', 'Product', 'Em análise', 203, 'Migrar issues, campos e workflows com um clique.', 'Camila T.', 31],
+      ['Templates de plano de teste por tipo de release', 'Improvement', 'Nova', 54, 'Reaproveitar planos para hotfix, minor e major.', 'João P.', 6],
+      ['Evidências com captura de tela anotada', 'Quality', 'Nova', 76, 'Anexar print com anotações direto na execução.', 'Ana V.', 11]
+    ];
+    const sc = { 'Nova': '#1E9BD7', 'Em análise': '#B7791F', 'Aprovada': '#146C43' };
+    const ideas = raw.map((r, i) => ({ t: r[0], c: r[1].toUpperCase(), cb: C[r[1]][0], cf: C[r[1]][1], s: r[2], sc: sc[r[2]], v: r[3], d: r[4], a: r[5], n: r[6], bd: i === this.state.sel ? '#1E9BD7' : '#E3E9EF', pick: () => this.setState({ sel: i }) }));
+    const r = raw[this.state.sel], sel = { t: r[0], c: r[1].toUpperCase(), cb: C[r[1]][0], cf: C[r[1]][1], d: r[4] + ' Vincule a iniciativa a requisitos e acompanhe o impacto na qualidade das releases.', a: r[5], v: r[3] };
+    return {
+      tabs: names.map(([k, n]) => ({ n, go: go(k), bg: s === k ? '#fff' : 'transparent', fg: s === k ? '#0F2233' : '#B8C7D4' })),
+      isLanding: s === 'landing', isLogin: s === 'login', isApp: app, isHome: s === 'home', isIdeas: s === 'ideas',
+      toLogin: go('login'), toHome: go('home'),
+      heroCols: [
+        { t: 'BACKLOG', cards: [{ t: 'Login com SSO', id: 'AQ-112', s: 'Story', c: '#1E9BD7' }, { t: 'Exportar relatório', id: 'AQ-118', s: 'Task', c: '#64748B' }] },
+        { t: 'EM TESTE', cards: [{ t: 'Fluxo de checkout', id: 'AQ-104', s: '8/10 ok', c: '#B7791F' }] },
+        { t: 'PRONTO', cards: [{ t: 'Matriz de rastreio', id: 'AQ-097', s: 'Coberto', c: '#146C43' }, { t: 'Correção #431', id: 'BUG-431', s: 'Fechado', c: '#146C43' }] }
+      ],
+      areas: [['W', 'Workspace', 'Visão geral, projetos, tarefas e ideias em um só lugar.', '#1E9BD7'], ['P', 'Planning', 'Requisitos, backlog, boards Scrum/Kanban e sprints.', '#0B5E8E'], ['Q', 'Quality Engineering', 'Repositório de testes, planos, execução e defeitos.', '#F9AE1B'], ['T', 'Traceability', 'Requisitos, testes, defeitos e releases conectados.', '#64748B'], ['I', 'Intelligence', 'Dashboards, indicadores, riscos e assistente de IA.', '#0F2233'], ['A', 'Administration', 'Equipes, permissões, workflows e integrações.', '#475569']].map(a => ({ i: a[0], n: a[1], d: a[2], c: a[3] })),
+      chain: ['Ideia', 'Projeto', 'Requisito', 'Teste', 'Execução', 'Defeito', 'Release'].map((n, i) => ({ n, bg: i % 3 === 2 ? '#FFF1D0' : '#E8F5FC', fg: i % 3 === 2 ? '#8A5A00' : '#0B5E8E' })),
+      navItems: nav.map(n => ({ n: n[0], sub: n[1], dot: n[2], go: n[3] ? go('home') : () => {}, bg: n[3] && s === 'home' ? '#E8F5FC' : (s === 'ideas' && n[0] === 'Workspace' ? '#E8F5FC' : 'transparent'), fg: n[0] === 'Workspace' ? '#0B5E8E' : '#334155' })),
+      stats: [['Projetos ativos', '12', '+2 este mês', '#146C43'], ['Tarefas pendentes', '34', '7 vencem hoje', '#B7791F'], ['Cobertura de testes', '86%', '+4 pts na semana', '#146C43'], ['Defeitos abertos', '9', '3 críticos', '#C2410C']].map(a => ({ l: a[0], v: a[1], d: a[2], c: a[3] })),
+      projects: [['AQ', 'Plataforma Web 4.2', '78%', '#1E9BD7', '6 membros'], ['MB', 'App Mobile', '54%', '#F9AE1B', '4 membros'], ['API', 'Gateway de pagamentos', '91%', '#146C43', '5 membros']].map(a => ({ k: a[0], n: a[1], p: a[2], c: a[3], m: a[4] })),
+      bars: [['Seg', 50, 20], ['Ter', 70, 35], ['Qua', 45, 50], ['Qui', 85, 30], ['Sex', 95, 25], ['Sáb', 25, 10], ['Dom', 35, 15]].map(a => ({ d: a[0], a: a[1] + '%', b: a[2] + '%' })),
+      tasks: [['Revisar plano de testes da release 4.2', 'AQ-121', 'Alta', '#FFE4D6', '#C2410C'], ['Executar regressão do checkout', 'AQ-104', 'Alta', '#FFE4D6', '#C2410C'], ['Aprovar critérios de aceite', 'AQ-119', 'Média', '#FFF1D0', '#8A5A00'], ['Vincular testes ao requisito RF-32', 'AQ-117', 'Média', '#FFF1D0', '#8A5A00'], ['Atualizar documentação da API', 'AQ-110', 'Baixa', '#EEF2F6', '#475569']].map(a => ({ t: a[0], id: a[1], p: a[2], bg: a[3], c: a[4] })),
+      feed: [['MA', 'Marina', 'abriu o defeito BUG-431', 'há 12 min', '#C2410C'], ['RS', 'Rafael', 'concluiu a execução “Smoke 4.2”', 'há 1 h', '#1E9BD7'], ['CT', 'Camila', 'comentou em AQ-119', 'há 3 h', '#64748B']].map(a => ({ i: a[0], w: a[1], a: a[2], t: a[3], c: a[4] })),
+      cats: cats.map((n, i) => ({ n, bg: i === 0 ? '#0F2233' : '#fff', fg: i === 0 ? '#fff' : '#334155', bd: i === 0 ? '#0F2233' : '#E3E9EF' })),
+      ideas, sel
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,21 +1,22 @@
 # AQuA-QE Enterprise Agility Platform
 
-[![Status](https://img.shields.io/badge/status-especifica%C3%A7%C3%A3o-orange)](#roteiro)
+[![Pipeline de Promoção](https://github.com/dufelizardo/aqua_qe-enterprise-agility-platform/actions/workflows/pipeline.yml/badge.svg?branch=developer)](https://github.com/dufelizardo/aqua_qe-enterprise-agility-platform/actions/workflows/pipeline.yml)
+[![Status](https://img.shields.io/badge/status-esqueleto%20do%20MVP-orange)](#roteiro)
 [![Licença](https://img.shields.io/github/license/dufelizardo/aqua_qe-enterprise-agility-platform)](LICENSE)
 [![Documentação](https://img.shields.io/badge/docs-PRD%20%C2%B7%20SAD%20%C2%B7%20SSD%20%C2%B7%20UX%2FUI%20%C2%B7%20QA-1351b4?logo=markdown&logoColor=white)](#documentação)
 
-![Java](https://img.shields.io/badge/Java-ED8B00?logo=openjdk&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?logo=springboot&logoColor=white)
-![Angular](https://img.shields.io/badge/Angular-DD0031?logo=angular&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-proposto-4169E1?logo=postgresql&logoColor=white)
-![Keycloak](https://img.shields.io/badge/Keycloak-proposto-4D4D4D?logo=keycloak&logoColor=white)
+![Java 25](https://img.shields.io/badge/Java-25-ED8B00?logo=openjdk&logoColor=white)
+![Spring Boot 4.1](https://img.shields.io/badge/Spring_Boot-4.1-6DB33F?logo=springboot&logoColor=white)
+![Angular 22](https://img.shields.io/badge/Angular-22-DD0031?logo=angular&logoColor=white)
+![PostgreSQL 17](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
+![Keycloak 26](https://img.shields.io/badge/Keycloak-26-4D4D4D?logo=keycloak&logoColor=white)
 ![Robot Framework](https://img.shields.io/badge/Robot_Framework-LKDF-000000?logo=robotframework&logoColor=white)
 ![visitors](https://visitor-badge.laobi.icu/badge?page_id=dufelizardo.visitor-aqua_qe-enterprise-agility-platform)
 ![GitHub followers](https://img.shields.io/github/followers/dufelizardo?style=social)
 
 Plataforma corporativa que reúne, em um único produto, gestão de trabalho, documentação e gestão de testes — o que hoje costuma exigir Jira, Confluence e Xray — sem plugins e sem serviços contratados à parte.
 
-> **Estado do projeto:** fase de especificação. Este repositório contém a documentação de produto, arquitetura e interface do MVP. Ainda não há código.
+> **Estado do projeto:** esqueleto do MVP. A especificação está em [doc/](doc/); o código tem a estrutura dos 12 módulos, o login pelo Keycloak e a esteira até os ambientes dev e prod, mas ainda nenhuma funcionalidade de negócio.
 
 ## O que é
 
@@ -45,6 +46,7 @@ Leia nesta ordem:
 | [UX/UI](doc/UX-UI.md) | Tokens de design, navegação, componentes, telas do MVP e mensagens de erro. |
 | [QA](doc/QA.md) | Plano de testes do MVP: níveis, Robot Framework no padrão LKDF para API e interface, rastreabilidade, ambiente e critérios de saída. |
 | [Revisão 01](doc/REVIEW-01.md) | Achados da revisão dos quatro documentos, com gravidade, evidência, recomendação e ordem de trabalho. Não altera os documentos revisados. |
+| [Operação](doc/OPERACAO.md) | Ambientes dev e prod, nomes na rede (mDNS), pipeline de promoção, configuração única do GitHub e do servidor, desenvolvimento local. |
 | [Proposta de evolução](doc/EVOLUTION-PROPOSAL.md) | Frentes F01 a F08c que tratam os achados da revisão, com divergências e decisões pendentes. Status: proposto, não aprovado para implementação. |
 
 Material de apoio:
@@ -61,13 +63,32 @@ Todos os documentos estão com status **Rascunho para revisão**. Itens marcados
 | Estilo | Monólito modular, com um módulo por domínio | Decidido |
 | Backend | Java com Spring Boot | Decidido |
 | Frontend | Angular com TypeScript | Decidido |
-| Banco de dados | PostgreSQL, um schema por módulo | Proposto |
-| Identidade | Keycloak empacotado, com federação ao provedor do cliente | Proposto |
-| Arquivos | Armazenamento de objetos compatível com S3 | Proposto |
-| Eventos | Outbox transacional; sem broker no MVP | Proposto |
+| Fronteiras de módulo | Spring Modulith, verificado no build | Decidido |
+| Banco de dados | PostgreSQL, um schema por módulo | Decidido |
+| Identidade | Keycloak empacotado, com federação ao provedor do cliente; login no navegador pelo backend (BFF) | Decidido |
+| Arquivos | Armazenamento de objetos compatível com S3 | Decidido |
+| Eventos | Outbox transacional; sem broker no MVP | Decidido |
 | Distribuição | Containers e chart Helm para Kubernetes e OpenShift | Proposto |
 
 A plataforma é desenhada para três modelos de instalação: SaaS dedicado, on-premise e ambiente sem conexão externa (air-gapped). Os detalhes e as justificativas estão no [SAD](doc/SAD.md).
+
+## Como rodar
+
+Pré-requisitos: Docker. Para desenvolver: Java 25, Node 24 e Python 3.13.
+
+```bash
+docker compose up -d --build        # PostgreSQL, Keycloak, API e frontend
+```
+
+Abra http://localhost:4200 e entre com um usuário de teste, por exemplo `robot.pm` / `Robot#Teste123`. Há um por papel do SSD: `robot.admin`, `robot.bo`, `robot.pm`, `robot.tl`, `robot.ux`, `robot.qa`, `robot.squad` e `robot.viewer`.
+
+| Tarefa | Comando |
+|---|---|
+| Testes do backend (JUnit, Testcontainers, fronteiras de módulo) | `./mvnw verify` |
+| Testes do frontend | `cd frontend && npx ng test --watch=false` |
+| Aceitação Robot (API e interface) | `pip install -r test/robot/requirements.txt`, `rfbrowser init chromium` e `bash test/robot/run_tests.sh` |
+
+Ambientes no servidor da rede local: dev em http://aquaqe-dev.local (branch `developer`) e prod em http://aquaqe.local (branch `main`). Configuração e promoção em [doc/OPERACAO.md](doc/OPERACAO.md).
 
 ## Roteiro
 
@@ -84,14 +105,19 @@ O faseamento é uma proposta ainda a validar ([PRD, seção 13](doc/PRD.md)).
 - Decidir as frentes da [proposta de evolução](doc/EVOLUTION-PROPOSAL.md) (decisões D01 a D09) e incorporar as aprovadas aos documentos.
 - Corrigir as lacunas do SSD apontadas na [especificação de UX/UI, seção 13](doc/UX-UI.md).
 - Validar os itens "Proposto" e "a validar" dos quatro documentos.
-- Criar a estrutura de código do backend e do frontend.
+- Fazer a configuração única do GitHub e do servidor ([OPERACAO.md, seções 4 e 5](doc/OPERACAO.md)) para publicar os ambientes.
+- Decidir o modelo de autorização (REV-01, D01), que destrava os módulos `access`, `organization` e `workitem`.
 
 ## Estrutura do repositório
 
 ```text
 .
-├── README.md
-├── LICENSE
+├── src/                código da API (Spring Boot, um pacote por módulo do SAD)
+├── frontend/           SPA Angular e nginx
+├── test/robot/         aceitação Robot Framework (LKDF): api/ e ui/
+├── k8s/                manifestos: apps/ (dev e prod), auth/ (Keycloak), components/mdns, argocd/
+├── compose.yaml        ambiente local e de CI
+├── .github/workflows/  pipeline de promoção, publicação de imagens, auto-merge, vigilância de cópias
 └── doc/
     ├── PRD.md          requisitos de produto
     ├── SAD.md          arquitetura
@@ -99,6 +125,7 @@ O faseamento é uma proposta ainda a validar ([PRD, seção 13](doc/PRD.md)).
     ├── UX-UI.md        interface do MVP
     ├── QA.md           plano de testes do MVP
     ├── REVIEW-01.md    revisão dos documentos
+    ├── OPERACAO.md     ambientes, mDNS, pipeline e servidor
     ├── EVOLUTION-PROPOSAL.md  proposta de evolução (não aprovada)
     ├── pdr/            especificações por domínio e PRDs originais (.docx)
     └── prototype/      identidade visual e protótipos iniciais

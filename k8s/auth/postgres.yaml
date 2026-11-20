@@ -1,0 +1,86 @@
+# Banco do Keycloak, separado dos bancos da aplicação. A senha vem do Secret keycloak-db.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: keycloak-postgres-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak-postgres
+  labels:
+    app: aquaqe-keycloak-postgres
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: aquaqe-keycloak-postgres
+  template:
+    metadata:
+      labels:
+        app: aquaqe-keycloak-postgres
+    spec:
+      securityContext:
+        runAsUser: 70
+        runAsGroup: 70
+        fsGroup: 70
+      containers:
+        - name: postgres
+          image: postgres:17-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: keycloak
+            - name: POSTGRES_USER
+              value: keycloak
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-db
+                  key: password
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "keycloak", "-d", "keycloak", "-h", "127.0.0.1"]
+            periodSeconds: 10
+          startupProbe:
+            exec:
+              command: ["pg_isready", "-U", "keycloak", "-d", "keycloak", "-h", "127.0.0.1"]
+            periodSeconds: 10
+            failureThreshold: 60
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: keycloak-postgres-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak-postgres
+spec:
+  selector:
+    app: aquaqe-keycloak-postgres
+  ports:
+    - port: 5432
+      targetPort: 5432

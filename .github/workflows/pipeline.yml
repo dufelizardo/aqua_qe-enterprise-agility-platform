@@ -1,0 +1,126 @@
+# Pipeline de promoção (ADR-15): developer → main.
+#   push na developer e todo PR: backend (JUnit, Testcontainers, Spring Modulith), frontend (build e testes),
+#   Robot --dryrun e CodeQL.
+#   PR para a main (promoção para prod): além disso, a aceitação Robot (API e interface) contra a pilha real
+#   subida pelo docker compose. Os checks são obrigatórios na proteção da main (doc/OPERACAO.md).
+name: Pipeline de Promoção
+
+on:
+  push:
+    branches:
+      - developer
+  pull_request:
+    branches:
+      - developer
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: pipeline-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+      - name: Build e testes (JUnit, Testcontainers, fronteiras de módulo)
+        run: ./mvnw -B verify
+      - name: Relatórios de teste
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: target/surefire-reports/
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: Build de produção
+        run: npx ng build --configuration production
+      - name: Testes unitários
+        run: npx ng test --watch=false
+
+  robot-dryrun:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: test/robot/requirements.txt
+      - run: pip install -r test/robot/requirements.txt
+      - name: Sintaxe e imports das suítes Robot
+        run: bash test/robot/run_tests.sh all --dryrun
+
+  analyze:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [java-kotlin, javascript-typescript]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+      - uses: github/codeql-action/analyze@v3
+
+  acceptance:
+    needs: [backend, frontend, robot-dryrun]
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.base_ref == 'main')
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Subir a pilha (PostgreSQL, Keycloak, API e frontend)
+        run: docker compose up -d --build --wait --wait-timeout 900
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: test/robot/requirements.txt
+      - name: Instalar Robot Framework e o Chromium
+        run: |
+          pip install -r test/robot/requirements.txt
+          rfbrowser init --with-deps chromium
+      - name: Aceitação Robot (API e interface)
+        run: bash test/robot/run_tests.sh all
+      - name: Logs dos containers
+        if: failure()
+        run: docker compose logs --no-color > compose.log
+      - name: Publicar resultados
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: robot-results
+          path: |
+            test/robot/results/
+            compose.log
+          if-no-files-found: ignore
+      - name: Derrubar a pilha
+        if: always()
+        run: docker compose down -v

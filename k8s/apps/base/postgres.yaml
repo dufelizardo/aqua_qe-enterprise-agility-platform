@@ -1,0 +1,86 @@
+# PostgreSQL do ambiente (ADR-05: um banco, um schema por módulo). A senha vem do Secret db-credentials.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  labels:
+    app: aquaqe-postgres
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: aquaqe-postgres
+  template:
+    metadata:
+      labels:
+        app: aquaqe-postgres
+    spec:
+      securityContext:
+        runAsUser: 70
+        runAsGroup: 70
+        fsGroup: 70
+      containers:
+        - name: postgres
+          image: postgres:17-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: aquaqe
+            - name: POSTGRES_USER
+              value: aquaqe
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: password
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "aquaqe", "-d", "aquaqe", "-h", "127.0.0.1"]
+            periodSeconds: 10
+          startupProbe:
+            exec:
+              command: ["pg_isready", "-U", "aquaqe", "-d", "aquaqe", "-h", "127.0.0.1"]
+            periodSeconds: 10
+            failureThreshold: 60
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: postgres-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  selector:
+    app: aquaqe-postgres
+  ports:
+    - port: 5432
+      targetPort: 5432

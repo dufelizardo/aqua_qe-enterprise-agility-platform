@@ -1,0 +1,45 @@
+# Promoção automática developer → main (ADR-15).
+# Quando o "Pipeline de Promoção" termina verde num push da developer, abre o PR de promoção para a main (ou
+# reaproveita o que já está aberto). No PR roda a aceitação Robot completa; com todos os checks verdes, o
+# auto-merge.yml faz o merge, e o push na main publica a imagem de prod (publish-image.yml).
+# Segredo necessário: AUTOMERGE_PAT. PRs abertos com o token padrão do workflow não disparam outros workflows,
+# e os checks do PR nunca rodariam.
+name: Promoção automática
+
+on:
+  workflow_run:
+    workflows: ["Pipeline de Promoção"]
+    types: [completed]
+    branches: [developer]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: promote-developer
+  cancel-in-progress: false
+
+jobs:
+  open-promotion-pr:
+    if: github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Abrir o PR developer → main, se houver o que promover
+        env:
+          GH_TOKEN: ${{ secrets.AUTOMERGE_PAT }}
+          GH_REPO: ${{ github.repository }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          ahead=$(gh api "repos/${GH_REPO}/compare/main...developer" --jq '.ahead_by')
+          if [ "$ahead" -eq 0 ]; then
+            echo "A developer não tem commits novos em relação à main. Nada a promover."
+            exit 0
+          fi
+          open=$(gh pr list --base main --head developer --state open --json number --jq '.[0].number // empty')
+          if [ -n "$open" ]; then
+            echo "PR de promoção #${open} já aberto; ele recebe os commits novos e roda os checks de novo."
+            exit 0
+          fi
+          gh pr create --base main --head developer \
+            --title "Promoção developer → main" \
+            --body "$(printf 'Promoção automática aberta depois do pipeline verde na developer (%s).\n\nO merge acontece sozinho quando os checks obrigatórios passarem: backend, frontend, robot-dryrun e acceptance (aceitação Robot de API e interface). Ver doc/OPERACAO.md, seção 3.' "${SHA:0:7}")"

@@ -1,0 +1,11 @@
+target
+frontend
+test
+doc
+deploy
+k8s
+.git
+.github
+.idea
+.vscode
+*.md

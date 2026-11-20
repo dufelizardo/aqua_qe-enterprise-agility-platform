@@ -1,0 +1,86 @@
+{
+  "realm": "aquaqe-prod",
+  "displayName": "AQuA-QE (prod)",
+  "loginTheme": "aquaqe",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": false,
+  "bruteForceProtected": true,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "rememberMe": true,
+  "ssoSessionIdleTimeoutRememberMe": 2592000,
+  "ssoSessionMaxLifespanRememberMe": 2592000,
+  "internationalizationEnabled": true,
+  "supportedLocales": [
+    "pt-BR",
+    "en"
+  ],
+  "defaultLocale": "pt-BR",
+  "roles": {
+    "realm": [
+      {
+        "name": "PLATFORM_ADMIN",
+        "description": "Papel padrão do SSD, seção 2 (informativo; a autorização é do módulo access)"
+      },
+      {
+        "name": "BUSINESS_OWNER",
+        "description": "Papel padrão do SSD, seção 2 (informativo; a autorização é do módulo access)"
+      },
+      {
+        "name": "PRODUCT_MANAGER",
+        "description": "Papel padrão do SSD, seção 2 (informativo; a autorização é do módulo access)"
+      },
+      {
+        "name": "TECH_LEAD",
+        "description": "Papel padrão do SSD, seção 2 (informativo; a autorização é do módulo access)"
+      },
+      {
+        "name": "UX_DESIGNER",
+        "description": "Papel padrão do SSD, seção 2 (informativo; a autorização é do módulo access)"
+      },
+      {
+        "name": "QA_ENGINEER",
+        "description": "Papel padrão do SSD, seção 2 (informativo; a autorização é do módulo access)"
+      },
+      {
+        "name": "SQUAD_MEMBER",
+        "description": "Papel padrão do SSD, seção 2 (informativo; a autorização é do módulo access)"
+      },
+      {
+        "name": "VIEWER",
+        "description": "Papel padrão do SSD, seção 2 (informativo; a autorização é do módulo access)"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "aquaqe-web",
+      "name": "AQuA-QE Web (BFF)",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${AQUAQE_PROD_WEB_SECRET}",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "frontchannelLogout": true,
+      "redirectUris": [
+        "${AQUAQE_PROD_URL}/*"
+      ],
+      "webOrigins": [
+        "${AQUAQE_PROD_URL}"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "${AQUAQE_PROD_URL}/*"
+      }
+    }
+  ]
+}

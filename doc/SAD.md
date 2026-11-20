@@ -239,7 +239,7 @@ Fora do diagrama, por serem infraestrutura: `OUTBOX_EVENT` (módulo `events`) e 
 
 ### 7.1 Autenticação
 
-A aplicação fala apenas OIDC com o IdP empacotado. O IdP cuida do restante: credenciais locais, MFA, recuperação de senha e federação com o provedor do cliente (OIDC, SAML ou LDAP). A API valida o token a cada requisição e não mantém sessão. Atende PRD-RF-036 a 038 e RF-SC04, 05, 16 e 18.
+A aplicação fala apenas OIDC com o IdP empacotado. O IdP cuida do restante: credenciais locais, MFA, recuperação de senha e federação com o provedor do cliente (OIDC, SAML ou LDAP). No navegador, a API conduz o login e mantém uma sessão por cookie, sem expor tokens ao SPA (ADR-16). Integrações enviam token Bearer, que a API valida a cada requisição. Atende PRD-RF-036 a 038 e RF-SC04, 05, 16 e 18.
 
 A seleção de workspace acontece depois do login: a aplicação lista as unidades organizacionais em que o usuário tem papel e guarda a escolha no cliente.
 
@@ -365,21 +365,24 @@ Se algum módulo precisar virar serviço separado (o candidato mais provável é
 | 01 | Monólito modular | Decidido |
 | 02 | Backend em Java com Spring Boot | Decidido |
 | 03 | Frontend em Angular com TypeScript | Decidido |
-| 04 | Spring Modulith para impor as fronteiras de módulo | Proposto |
-| 05 | PostgreSQL único, com um schema por módulo | Proposto |
-| 06 | Outbox transacional como fonte de eventos; broker adiado | Proposto |
-| 07 | Auditoria alimentada por eventos e separada do analytics | Proposto |
-| 08 | Keycloak empacotado como IdP; a aplicação só fala OIDC | Proposto |
-| 09 | API REST com contrato OpenAPI | Proposto |
-| 10 | Armazenamento de objetos compatível com S3 | Proposto |
-| 11 | Busca textual pelo PostgreSQL no MVP | Proposto |
+| 04 | Spring Modulith para impor as fronteiras de módulo | Decidido |
+| 05 | PostgreSQL único, com um schema por módulo | Decidido |
+| 06 | Outbox transacional como fonte de eventos; broker adiado | Decidido |
+| 07 | Auditoria alimentada por eventos e separada do analytics | Decidido |
+| 08 | Keycloak empacotado como IdP; a aplicação só fala OIDC | Decidido |
+| 09 | API REST com contrato OpenAPI | Decidido |
+| 10 | Armazenamento de objetos compatível com S3 | Decidido |
+| 11 | Busca textual pelo PostgreSQL no MVP | Decidido |
 | 12 | Analytics Store em schema separado do PostgreSQL na Fase 2 | Proposto |
 | 13 | Uma instalação por cliente | Proposto |
 | 14 | Estrutura organizacional configurável: níveis como dados e vínculos de atendimento entre unidades | Proposto |
+| 15 | Ambientes dev e prod no servidor doméstico, com GitOps e nomes mDNS | Decidido |
+| 16 | Login no navegador conduzido pelo backend (BFF); token Bearer para integrações | Decidido |
+| 17 | Ambiente dev sem senha (persona de teste), proibido em produção | Decidido |
 
 **ADR-01 — Monólito modular.** A plataforma precisa ser instalada e atualizada por clientes em ambientes fechados, e as operações centrais (transição, gate, auditoria) cruzam vários domínios na mesma transação. Um único artefato de deploy com módulos internos atende aos dois pontos. Consequência: todos os módulos escalam juntos; a disciplina de fronteiras depende de verificação automática (ADR-04).
 
-**ADR-02 — Java com Spring Boot.** Usar as versões com suporte de longo prazo vigentes na criação do projeto; os números não são fixados neste documento.
+**ADR-02 — Java com Spring Boot.** Usar as versões com suporte de longo prazo vigentes na criação do projeto. Fixadas em 2026-11-20: Java 25 (LTS), Spring Boot 4.1, Spring Modulith 2.1, Angular 22, PostgreSQL 17 e Keycloak 26. A versão exata de cada uma está no `pom.xml`, no `frontend/package.json` e nos manifestos.
 
 **ADR-03 — Angular com TypeScript.** Aplicação única, com uma área carregada sob demanda por módulo do backend. A biblioteca de componentes visuais está em aberto (seção 13).
 
@@ -404,6 +407,12 @@ Se algum módulo precisar virar serviço separado (o candidato mais provável é
 **ADR-13 — Uma instalação por cliente.** A especificação de Hospedagem só prevê instância dedicada, e o isolamento físico simplifica os requisitos de confidencialidade. Consequência: o custo de operação do SaaS cresce com o número de clientes.
 
 **ADR-14 — Estrutura organizacional configurável.** Cada organização arruma portfólios, cadeias e times de um jeito: Cadeia dentro de Portfólio, Portfólio dentro de Cadeia, ou Cadeias que atendem a vários Portfólios. Fixar uma dessas formas no código excluiria as outras. A decisão tem duas partes. Primeiro, os níveis são dados, não uma lista fixa: cada nível declara qual Flight Level representa, e é isso que o restante do sistema consulta, nunca o nome do nível. Segundo, além da árvore, existe o vínculo "atende a" entre unidades, que cobre a relação muitos-para-muitos. No MVP os níveis são definidos na instalação e ficam somente para leitura depois que existem unidades; reorganizar níveis com dados já criados entra na Fase 3. Consequência: nenhuma regra de negócio pode citar "Portfólio" ou "Cadeia" pelo nome, e o isolamento de dados passa a depender também dos vínculos e da hierarquia de artefatos, não só da posição na árvore.
+
+**ADR-15 — Ambientes no servidor doméstico, com GitOps e nomes mDNS.** O projeto precisa de ambientes acessíveis de qualquer aparelho da rede local, e já existe um servidor com K3s, MetalLB, Traefik e ArgoCD Core usado pelo projeto Mais Saúde Pública. São dois ambientes: `dev`, que acompanha a branch `developer`, e `prod`, que acompanha a `main`. Cada um tem namespace, banco e API próprios. As imagens são publicadas no ghcr.io e o SHA é gravado no overlay Kustomize do ambiente, que o ArgoCD sincroniza. Os nomes `aquaqe-dev.local`, `aquaqe.local` e `aquaqe-auth.local` são anunciados por mDNS, sem configuração nos aparelhos. O Keycloak atende só a produção, porque o dev roda sem senha (ADR-17). Consequências: os ambientes não são acessíveis fora da rede local; o procedimento está em [OPERACAO.md](OPERACAO.md). Esta ADR trata do ambiente do próprio projeto e não muda a ADR-13, que é sobre a instalação nos clientes.
+
+**ADR-16 — Login no navegador conduzido pelo backend (BFF).** A biblioteca do Keycloak para o navegador (keycloak-js) exige a API de criptografia do navegador, disponível só em HTTPS ou em `localhost`; os ambientes da ADR-15 usam HTTP em nomes `.local`. Além disso, guardar tokens no navegador os expõe a XSS. A API passa a conduzir o fluxo OIDC (authorization code com PKCE, cliente confidencial) e o navegador fica com um cookie de sessão HttpOnly e proteção CSRF por cookie. Integrações e testes automatizados continuam usando token Bearer do mesmo Keycloak. O frontend é servido pelo mesmo endereço da API, por um nginx que repassa `/api`, `/oauth2`, `/login/oauth2` e `/logout`. Consequências: a API guarda sessão para usuários do navegador, o que muda o [SSD, seção 1.2](SSD.md#12-autenticação-e-cabeçalhos); escalar a API horizontalmente vai exigir sessão compartilhada (Spring Session) ou afinidade; a ADR-08 continua valendo, porque a aplicação só fala OIDC com o IdP.
+
+**ADR-17 — Ambiente dev sem senha.** No dev, o login atrapalha a navegação e a troca de papel em testes manuais, e não protege nada além de dados de teste. Nesse ambiente a API roda com `aquaqe.auth.mode=dev-persona`: cada requisição age como uma persona de teste, uma por papel do SSD, seção 2; a padrão é a primeira da lista, e a troca é feita pelo menu do avatar (`PUT /api/v1/dev/persona`). O usuário continua existindo, então autoria, aprovações e auditoria têm a quem atribuir. A produção mantém o login pelo Keycloak (`oidc`), com "Lembrar-me" de 30 dias para reduzir a digitação de senha. Uma trava impede a API de subir com `dev-persona` quando `aquaqe.environment=prod`, e há teste para ela. Consequências: o dev é acessível sem senha a qualquer aparelho da rede local, o que é aceito porque ele não guarda dados reais; os testes de login e de autorização continuam rodando no CI com o login real; o Keycloak do servidor deixa de precisar do realm de dev.
 
 ## 11. Atributos de qualidade
 

@@ -1,0 +1,11 @@
+# Anunciador mDNS reutilizável: cada ambiente informa o próprio nome no ConfigMap mdns-config.
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+resources:
+  - mdns.yaml
+
+configMapGenerator:
+  - name: mdns-anunciador
+    files:
+      - anunciador.py

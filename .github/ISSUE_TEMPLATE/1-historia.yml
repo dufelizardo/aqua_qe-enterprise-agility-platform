@@ -1,0 +1,39 @@
+name: História
+description: Funcionalidade do ponto de vista de quem usa, com critérios de aceite.
+title: "[História] "
+labels: ["tipo: história"]
+body:
+  - type: textarea
+    id: historia
+    attributes:
+      label: História
+      description: Quem precisa, o quê e para quê.
+      placeholder: Como <papel>, quero <capacidade>, para <benefício>.
+    validations:
+      required: true
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Critérios de aceite
+      description: Um por linha, verificáveis. Cada um vira ao menos um caso de teste (doc/QA.md).
+      placeholder: |
+        - Dado <contexto>, quando <ação>, então <resultado>.
+    validations:
+      required: true
+  - type: input
+    id: requisitos
+    attributes:
+      label: Requisitos e decisões relacionados
+      description: IDs do PRD, SSD, UX/UI, ADR, REV ou frente da proposta de evolução.
+      placeholder: PRD-RF-022, SSD 5.2, REV-01, F01
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área
+      multiple: true
+      options: [backend, frontend, infra, testes, documentação]
+  - type: textarea
+    id: notas
+    attributes:
+      label: Notas técnicas
+      description: Endpoints, telas, dados, dependências. Opcional.

@@ -25,7 +25,7 @@ Os esquemas de layout são diagramas de posição, não layouts finais. Toda aç
 
 | # | Decisão | Status |
 |---|---|---|
-| UX-01 | Biblioteca de componentes: Angular Material com CDK. O CDK cobre arrastar e soltar e os recursos de acessibilidade. Alternativa avaliada: PrimeNG. | Proposto |
+| UX-01 | Biblioteca de componentes: Angular Material com CDK. O CDK cobre arrastar e soltar e os recursos de acessibilidade. Alternativa avaliada: PrimeNG. | Decidido |
 | UX-02 | A tela de login é o tema do IdP empacotado (SAD, ADR-08), não uma tela Angular. A aplicação começa na seleção de workspace. | Proposto |
 | UX-03 | A home do MVP é "Meu trabalho". O Executive Overview com gráficos depende de Analytics e entra na Fase 2. | Proposto |
 | UX-04 | Interface em português, mantendo em inglês os termos de produto usados no PRD (Feature, Upstream, Gate, Workspace). | Proposto |
@@ -36,75 +36,82 @@ Os esquemas de layout são diagramas de posição, não layouts finais. Toda aç
 
 ### 3.1 Cores
 
-As quatro primeiras vêm dos protótipos; as demais são propostas.
+Revisadas em 2026-11-20 a partir do protótipo [AQuA-QE Project.dc.html](prototype/AQuA-QE%20Project.dc.html), que passa a ser a referência de identidade visual (seção 12). O layout das telas internas continua o da seção 4; muda a paleta.
 
 | Token | Valor | Uso |
 |---|---|---|
-| `brand-900` | `#172554` | Cabeçalho, menu lateral, títulos de destaque. |
-| `accent-500` | `#F59E0B` | Ação principal, item ativo do menu, destaques. |
-| `bg` | `#F8FAFC` | Fundo da área de conteúdo. |
+| `navy-900` | `#0F2233` | Cabeçalho, menu lateral, texto principal, botão principal escuro. |
+| `navy-800` | `#1B2F4F` | Títulos da landing. |
+| `navy-700` | `#223958` | Barra superior da landing. |
+| `blue-500` | `#1E9BD7` | Destaques, anel de foco, bordas de campo em foco. Não usar como fundo de texto pequeno (seção 3.2). |
+| `blue-700` | `#0B5E8E` | Links, avatar, texto sobre `blue-50`. |
+| `blue-50` | `#E8F5FC` | Fundo de item selecionado e de etiqueta informativa. |
+| `amber-500` | `#F9AE1B` | Ação principal, item ativo do menu, destaques. Sempre com texto `navy-900`. |
+| `amber-700` | `#E37B0C` | Detalhes decorativos; não leva texto branco. |
+| `bg` | `#F4F7FA` | Fundo da área de conteúdo. |
 | `surface` | `#FFFFFF` | Cartões, painéis, diálogos. |
-| `primary-700` | `#1E40AF` | Links, botões secundários, anel de foco. |
-| `accent-700` | `#B45309` | Texto ou ícone dourado sobre fundo claro. |
-| `text` | `#0F172A` | Texto principal. |
 | `text-secondary` | `#475569` | Texto de apoio, rótulos. |
-| `text-muted` | `#64748B` | Texto auxiliar; borda de campos de formulário. |
-| `border` | `#CBD5E1` | Divisórias e contorno decorativo de cartões. |
-| `danger-700` | `#B91C1C` | Erros e ações destrutivas. |
+| `text-muted` | `#64748B` | Texto auxiliar, só sobre `surface`. |
+| `border` | `#E3E9EF` | Divisórias e contorno decorativo de cartões. |
+| `border-strong` | `#D5DDE5` | Borda de campos de formulário. |
+| `danger-700` | `#C2410C` | Erros e ações destrutivas sobre `surface`. |
 
 Status, sempre como etiqueta com fundo claro e texto escuro:
 
 | Significado | Fundo | Texto | Onde aparece |
 |---|---|---|---|
-| Neutro / pendente | `#E2E8F0` | `#334155` | Documento `PENDING`, status de categoria TODO. |
-| Em andamento | `#DBEAFE` | `#1E40AF` | Documento `IN_PROGRESS`, categoria IN_PROGRESS. |
-| Aprovado / concluído | `#DCFCE7` | `#166534` | Documento `APPROVED`, regra atendida, categoria DONE. |
-| Atenção / aguardando | `#FEF3C7` | `#92400E` | Aprovação aguardando decisão. |
-| Bloqueado / rejeitado | `#FEE2E2` | `#991B1B` | Regra não atendida, aprovação rejeitada. |
+| Neutro / pendente | `#EEF2F6` | `#475569` | Documento `PENDING`, status de categoria TODO. |
+| Em andamento / informação | `#E8F5FC` | `#0B5E8E` | Documento `IN_PROGRESS`, categoria IN_PROGRESS. |
+| Aprovado / concluído | `#DFF3EA` | `#146C43` | Documento `APPROVED`, regra atendida, categoria DONE. |
+| Atenção / aguardando | `#FFF1D0` | `#8A5A00` | Aprovação aguardando decisão. |
+| Bloqueado / rejeitado | `#FFE4D6` | `#9A3412` | Regra não atendida, aprovação rejeitada. O protótipo usa `#C2410C`, que não atinge 4,5:1 nesse fundo. |
 
 ### 3.2 Contraste
 
-Razões calculadas pela fórmula da WCAG 2.1. O mínimo AA é 4,5:1 para texto e 3:1 para componentes de interface.
+Razões calculadas pela fórmula da WCAG 2.1 para a paleta da seção 3.1. O mínimo AA é 4,5:1 para texto e 3:1 para componentes de interface.
 
 | Par (frente sobre fundo) | Razão | Resultado |
 |---|---|---|
-| `text` sobre `surface` | 17,85 | Passa |
-| `text` sobre `bg` | 17,06 | Passa |
+| `navy-900` sobre `surface` | 16,19 | Passa |
+| `navy-900` sobre `bg` | 15,06 | Passa |
 | `text-secondary` sobre `surface` | 7,58 | Passa |
-| `text-secondary` sobre `bg` | 7,24 | Passa |
+| `text-secondary` sobre `bg` | 7,05 | Passa |
 | `text-muted` sobre `surface` | 4,76 | Passa |
-| `text-muted` sobre `bg` | 4,55 | Passa, no limite |
-| Branco sobre `brand-900` | 14,69 | Passa |
-| `accent-500` sobre `brand-900` | 6,84 | Passa |
-| `brand-900` sobre `accent-500` | 6,84 | Passa |
-| **Branco sobre `accent-500`** | **2,15** | **Não passa** |
-| `primary-700` sobre `surface` | 8,72 | Passa |
-| Branco sobre `primary-700` | 8,72 | Passa |
-| `accent-700` sobre `surface` | 5,02 | Passa |
-| `danger-700` sobre `surface` | 6,47 | Passa |
-| Etiqueta neutra | 8,40 | Passa |
-| Etiqueta em andamento | 7,15 | Passa |
-| Etiqueta aprovado | 6,49 | Passa |
-| Etiqueta atenção | 6,37 | Passa |
-| Etiqueta bloqueado | 6,80 | Passa |
-| `border` sobre `surface` (componente) | 1,48 | Não passa em 3:1 |
-| `accent-500` sobre `surface` (componente) | 2,15 | Não passa em 3:1 |
+| **`text-muted` sobre `bg`** | **4,43** | **Não passa** |
+| Branco sobre `navy-900` | 16,19 | Passa |
+| Branco sobre `navy-700` | 11,70 | Passa |
+| `amber-500` sobre `navy-900` | 8,56 | Passa |
+| `navy-900` sobre `amber-500` | 8,56 | Passa |
+| **Branco sobre `amber-500`** | **1,89** | **Não passa** |
+| **Branco sobre `amber-700`** | **2,96** | **Não passa** |
+| `blue-700` sobre `surface` | 6,99 | Passa |
+| `blue-700` sobre `blue-50` | 6,29 | Passa |
+| **Branco sobre `blue-500`** | **3,12** | **Só texto grande** |
+| `blue-500` sobre `surface` (componente) | 3,12 | Passa em 3:1 |
+| `danger-700` sobre `surface` | 5,18 | Passa |
+| Etiqueta neutra | 6,74 | Passa |
+| Etiqueta em andamento | 6,29 | Passa |
+| Etiqueta aprovado | 5,57 | Passa |
+| Etiqueta atenção | 5,29 | Passa |
+| Etiqueta bloqueado (`#9A3412`) | 6,03 | Passa |
+| `border-strong` sobre `surface` (componente) | 1,37 | Não passa em 3:1 |
 
-Três regras decorrem da tabela:
+Regras que decorrem da tabela:
 
-- **Botão principal dourado usa texto `brand-900`, não branco.** O protótipo de login mostra "Entrar" em branco sobre dourado, com razão 2,15.
-- **Campos de formulário usam borda `text-muted`** (4,76). A cor `border` serve apenas para divisórias e contornos que não carregam informação.
-- **O dourado não é usado como anel de foco nem como único indicador sobre fundo claro.** O foco usa `primary-700`.
+- **Botões âmbar usam texto `navy-900`, nunca branco.** O protótipo usa texto branco sobre `#E37B0C` na landing (2,96).
+- **Texto pequeno não vai sobre `blue-500`.** O avatar usa `blue-700`; o protótipo usa `#1E9BD7` (3,12).
+- **`text-muted` só sobre `surface`.**
+- **Campos de formulário** têm borda `border-strong` e, em foco, borda `blue-500` com halo, para que o estado não dependa só da borda clara.
 
 ### 3.3 Tipografia, espaçamento e forma
 
 | Item | Definição |
 |---|---|
-| Fonte | Inter, empacotada na aplicação; pilha de reserva do sistema. Código em fonte monoespaçada do sistema. |
+| Fonte | Manrope para textos e JetBrains Mono para chaves, códigos e rótulos técnicos, empacotadas na aplicação e no tema de login (sem Google Fonts), com pilha de reserva do sistema. |
 | Escala de texto | 12, 14 (corpo), 16, 20, 24 e 30 px. Altura de linha 1,5 no corpo e 1,25 em títulos. |
-| Pesos | 400 (texto), 500 (rótulos e botões), 600 (títulos). |
+| Pesos | 400 (texto), 500 e 600 (rótulos e botões), 700 e 800 (títulos e destaques). |
 | Espaçamento | Múltiplos de 4 px: 4, 8, 12, 16, 24, 32, 48. |
-| Raio | 6 px em campos e botões; 8 px em cartões e painéis; 12 px em diálogos. |
+| Raio | 6 px em botões da landing; 10 px em itens de menu e busca; 12 px em cartões, campos e botões do login; 16 px em painéis de destaque. |
 | Elevação | Três níveis: cartão em repouso, cartão em arraste ou menu, diálogo. |
 | Área de clique | Mínimo de 32 × 32 px; 40 px de altura em botões e campos. |
 
@@ -124,7 +131,7 @@ Três regras decorrem da tabela:
 +-----------+--------------------------------------------------------------------+
 ```
 
-**Cabeçalho** (fundo `brand-900`, texto branco):
+**Cabeçalho** (fundo `navy-900`, texto branco; logo da marca à esquerda):
 
 | Elemento | Comportamento | Dados |
 |---|---|---|
@@ -136,7 +143,7 @@ Três regras decorrem da tabela:
 
 O ponto verde de "operacional" sobre o avatar, presente no protótipo, não é usado: não há estado de presença no MVP.
 
-**Menu lateral** (fundo `brand-900`; item ativo com fundo `accent-500` e texto `brand-900`):
+**Menu lateral** (fundo `navy-900`; item ativo com fundo `amber-500` e texto `navy-900`):
 
 | Item | Tela | Visível para |
 |---|---|---|
@@ -154,7 +161,8 @@ Os módulos Living Documentation, Quality, Governance e Analytics do [PRD, seç�
 
 ```mermaid
 flowchart LR
-    LOGIN["Login<br/>tema do IdP"] --> WS["Seleção de workspace"]
+    LAND["Landing<br/>pública"] --> LOGIN["Login<br/>tema do IdP"]
+    LOGIN --> WS["Seleção de workspace"]
     WS --> HOME["Home<br/>Meu trabalho"]
     HOME --> PORT["Portfolio Management"]
     HOME --> TAC["Tactical Board"]
@@ -173,6 +181,7 @@ flowchart LR
 
 | Tela | ID do PRD | Rota | Fase |
 |---|---|---|---|
+| Landing (pública) | — | `/` | MVP |
 | Login | UI-02 | tema do IdP | MVP |
 | Seleção de workspace | UI-02 | `/workspace` | MVP |
 | Home — Meu trabalho | UI-03 | `/home` | MVP |
@@ -342,6 +351,7 @@ Meu trabalho
 - **Dados:** `GET /me/pending-approvals`; `GET /artifacts` filtrado por `assigneeId` e por `ownerId` com o identificador do usuário, excluindo a categoria DONE.
 - **Ações:** abrir o item; aprovar direto da lista abre o painel de gates do artefato.
 - **Estado vazio de cada bloco:** "Nada aguardando você aqui."
+- **Evolução:** os blocos são cartões numa grade. A direção é transformá-los em widgets que o usuário escolhe e organiza; o catálogo de widgets ainda não está definido (seção 13).
 
 ### 7.3 Portfolio Management (UI-04)
 
@@ -552,40 +562,39 @@ Falha de rede ou erro inesperado do servidor: "Não foi possível concluir. Tent
 
 ## 10. Tema da tela de login
 
-A tela pertence ao IdP e recebe o tema da plataforma. Segue o layout de duas colunas do protótipo, com correções.
+A tela pertence ao IdP (Keycloak) e recebe o tema `aquaqe`, em [k8s/auth/theme/aquaqe](../k8s/auth/theme/aquaqe/). Segue o layout de duas colunas do protótipo [AQuA-QE Project.dc.html](prototype/AQuA-QE%20Project.dc.html) e herda o tema padrão do Keycloak 26: os campos mantêm os ids `username`, `password` e `kc-login`, usados nos testes Robot.
 
 ```text
-+------------------------------+---------------------------------------------+
-|                              |   Entrar na Plataforma                      |
-|        [logo AQuA-QE]        |   Use suas credenciais corporativas.        |
-|                              |                                             |
-|   Enterprise Agility         |   [ (chave) Entrar com SSO corporativo ]    |
-|   Platform                   |   ----------------- ou -----------------    |
-|                              |   E-mail corporativo  [..................]  |
-|   fundo brand-900            |   Senha               [..................]  |
-|                              |                          Esqueceu a senha?  |
-|                              |   [            Entrar            ]          |
-|                              |   Termos de Serviço | Privacidade | Suporte |
-+------------------------------+---------------------------------------------+
++---------------------------------------------+------------------------------+
+|  [logo] AQuA-QE                             |  (marca ao fundo, 12%)       |
+|                          [Português (Brasil)]|                              |
+|  Bem-vindo de volta                         |  DA ESTRATÉGIA À EXECUÇÃO    |
+|  Acesse seu workspace.                      |  Estratégia e execução       |
+|  Nome de usuário ou e-mail [..............] |  conectadas, com             |
+|  Senha                     [..............] |  rastreabilidade de ponta    |
+|  [               Entrar (navy-900)        ] |  a ponta.                    |
+|                                             |  gradiente blue-700→navy-900 |
++---------------------------------------------+------------------------------+
 ```
 
 | Elemento | Definição |
 |---|---|
-| Botão de SSO | Ícone neutro de chave. O protótipo usa o logo do Google, que só cabe se o cliente usar esse provedor. |
-| Botão "Entrar" | Fundo `accent-500` com texto `brand-900` (seção 3.2). |
-| Rodapé | Sem a frase "Em conformidade com SOC 2" (PRD, DEC-05). |
-| "Lembrar-me" | Removido; a duração da sessão é política do IdP (RF-SC16, RF-SC18). |
-| "Solicite acesso" | Removido; contas vêm do provedor corporativo ou do administrador. |
-| MFA | Segunda etapa na mesma coluna direita: campo de código e instrução (PRD-RF-037). |
+| Textos do painel | Vêm da visão do produto (PRD, seção 1). Sem números de resultado. |
+| Botão "Entrar" | Fundo `navy-900`, texto branco (16,19:1). |
+| SSO e login social | Os botões de SSO corporativo, GitHub ou GitLab do protótipo aparecem só quando o provedor correspondente estiver configurado no realm; o Keycloak os mostra automaticamente. |
+| Rodapé | Sem "Em conformidade com SOC 2" (PRD, DEC-05), sem "Conexão criptografada" (os ambientes atuais usam HTTP) e sem "MFA disponível" enquanto o MFA não estiver configurado. |
+| "Esqueci a senha" | Aparece só se o realm permitir redefinição de senha. |
+| "Lembrar-me" | Não usado; a duração da sessão é política do IdP (RF-SC16, RF-SC18). |
+| MFA | Segunda etapa na mesma coluna, quando configurado (PRD-RF-037). |
 | Erros | Mensagem única para usuário ou senha inválidos, sem indicar qual dos dois. |
-| Instalação sem SSO | O botão de SSO e o separador "ou" não aparecem. |
+| Telas estreitas | O painel da direita some abaixo de 760 px. |
 
 ## 11. Acessibilidade e responsividade
 
 **Acessibilidade** — alvo WCAG 2.1 nível AA:
 
 - Toda ação alcançável por teclado. O arraste de cartões tem como alternativa o menu "Mover para…".
-- Foco sempre visível, com anel `primary-700` de 2 px.
+- Foco sempre visível, com anel `blue-500` de 2 px.
 - Status com texto ou ícone além da cor.
 - Diálogos prendem o foco e o devolvem ao elemento de origem ao fechar.
 - Mudanças de estado relevantes (cartão movido, transição bloqueada, documento salvo) são anunciadas a leitores de tela.
@@ -609,9 +618,17 @@ A tela pertence ao IdP e recebe o tema da plataforma. Segue o layout de duas col
 | | O menu lateral segue a seção 4, não a lista Dashboard, Portfolios, Initiatives, Analytics, Quality, Governance, Settings. |
 | | Sem indicador "Operational" no cabeçalho nem ponto de presença no avatar. |
 | [login.png](prototype/login.png) | Ajustes da seção 10: texto do botão principal, ícone do SSO, rodapé, "Lembrar-me" e passo de MFA. |
-| [landing_page.png](prototype/landing_page.png) | Fora da aplicação e fora deste documento. Vale a ressalva do PRD sobre depoimento e logotipos fictícios. |
+| [landing_page.png](prototype/landing_page.png) | Substituído pela landing do protótipo `AQuA-QE Project.dc.html`, agora parte da aplicação (rota `/`). O conteúdo vem do README e do PRD, sem depoimento, clientes ou números fictícios. |
 
-As cores e a identidade (hexágono, azul profundo e dourado) são mantidas.
+| [AQuA-QE Project.dc.html](prototype/AQuA-QE%20Project.dc.html) | **Referência de identidade visual** (cores, fontes, logo, landing, login e busca), decidida em 2026-11-20. O layout das telas internas continua o da seção 4. |
+| | Menu por função (Workspace, Planning, Quality Engineering, Traceability, Intelligence, Administration) não adotado: a navegação segue os Flight Levels (PRD, seção 9). |
+| | Home com projetos, cobertura de testes e defeitos não adotada: a home do MVP é "Meu trabalho" (seção 7.2); gestão de testes é Fase 2. |
+| | Tela de Ideias: corresponde a PRD-RF-002 (UI-05), na Fase 2 e dentro de Portfolio (FL3), com conversão em Iniciativa, não em "projeto". |
+| | Removidos: "AQuA-QE Project" (o nome é AQuA-QE, PRD, seção 3), números de resultado no login, clientes e depoimento fictícios, "primeira plataforma", "Solicitar demonstração", textos em inglês ("Submit an Idea") e botões sem fluxo correspondente. |
+| | Os logotipos com nome (`assets/hlogo.png`, `assets/flogo.png`) têm erro de grafia ("Enterpriss Agility Platform") e baixa resolução; a aplicação escreve o nome em texto ao lado da marca. A ilustração `assets/hero.png` tem rótulos em italiano e não é usada. |
+| | Botões com texto branco sobre âmbar e avatar com texto branco sobre `#1E9BD7` foram ajustados por contraste (seção 3.2). |
+
+A identidade (hexágono, azul e âmbar) é mantida.
 
 ## 13. Pendências
 
@@ -623,6 +640,8 @@ As cores e a identidade (hexágono, azul profundo e dourado) são mantidas.
 - **Itens recentes:** não há registro de itens visitados; por isso a home não tem esse bloco.
 
 **Deste documento**
+
+- Catálogo de widgets da home: quais blocos existem, quem pode adicioná-los e onde a configuração do usuário é guardada.
 
 - Layouts finais de alta fidelidade e conjunto de ícones.
 - Editor de documentos: construir ou adotar um componente existente; a decisão pode alterar a seção 6.6.

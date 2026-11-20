@@ -1,0 +1,84 @@
+# Ambiente local e de CI: PostgreSQL, Keycloak, API e frontend.
+#   docker compose up -d --build        sobe tudo; abra http://localhost:4200
+#   docker compose up -d postgres keycloak   só a infraestrutura, para rodar a API e o front na IDE
+#   AQUA_API_PORT=8081 docker compose up -d   se a porta 8080 da máquina estiver ocupada
+# Usuários de teste do realm aquaqe-dev: ver k8s/auth/realms/aquaqe-dev.json (senha padrão Robot#Teste123, ou AQUAQE_TEST_PASSWORD).
+name: aquaqe
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: aquaqe
+      POSTGRES_USER: aquaqe
+      POSTGRES_PASSWORD: aquaqe
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "aquaqe", "-d", "aquaqe"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.2
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HTTP_PORT: "8180"
+      # O navegador e os testes usam localhost:8180; a API usa keycloak:8180 (backchannel).
+      KC_HOSTNAME: http://localhost:8180
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_HEALTH_ENABLED: "true"
+      AQUAQE_DEV_WEB_SECRET: aquaqe-web-local
+      AQUAQE_DEV_TEST_PASSWORD: ${AQUAQE_TEST_PASSWORD:-Robot#Teste123}
+      AQUAQE_DEV_URL: http://localhost:4200
+    ports:
+      - "8180:8180"
+    volumes:
+      - ./k8s/auth/realms/aquaqe-dev.json:/opt/keycloak/data/import/aquaqe-dev.json:ro
+      - ./k8s/auth/theme/aquaqe:/opt/keycloak/themes/aquaqe:ro
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q UP <&3"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+
+  app:
+    build: .
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/aquaqe
+      DATABASE_USERNAME: aquaqe
+      DATABASE_PASSWORD: aquaqe
+      AUTH_PUBLIC_URL: http://localhost:8180
+      AUTH_INTERNAL_URL: http://keycloak:8180
+      AUTH_REALM: aquaqe-dev
+      AUTH_CLIENT_SECRET: aquaqe-web-local
+    ports:
+      - "${AQUA_API_PORT:-8080}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/actuator/health/readiness"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+
+  frontend:
+    build: frontend
+    environment:
+      BACKEND_URL: http://app:8080
+    ports:
+      - "4200:8080"
+    depends_on:
+      app:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/"]
+      interval: 5s
+      timeout: 5s
+      retries: 20

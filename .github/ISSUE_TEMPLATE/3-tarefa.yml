@@ -1,0 +1,24 @@
+name: Tarefa
+description: Trabalho técnico ou operacional que não é uma funcionalidade (configuração, infraestrutura, documentação).
+title: "[Tarefa] "
+labels: ["tipo: tarefa"]
+body:
+  - type: textarea
+    id: objetivo
+    attributes:
+      label: O que fazer
+    validations:
+      required: true
+  - type: textarea
+    id: pronto
+    attributes:
+      label: Como saber que terminou
+      placeholder: |
+        - [ ] ...
+    validations:
+      required: true
+  - type: input
+    id: referencias
+    attributes:
+      label: Referências
+      placeholder: doc/OPERACAO.md, seção 5

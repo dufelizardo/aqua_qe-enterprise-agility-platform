@@ -1,0 +1,66 @@
+@use '@angular/material' as mat;
+
+/*
+ * Tokens de design (UX/UI, seção 3.1), tirados do protótipo doc/prototype/AQuA-QE Project.dc.html.
+ * Fontes Manrope e JetBrains Mono empacotadas na aplicação (angular.json), sem dependência de rede.
+ */
+:root {
+  --navy-900: #0f2233;
+  --navy-800: #1b2f4f;
+  --navy-700: #223958;
+  --blue-500: #1e9bd7;
+  --blue-700: #0b5e8e;
+  --blue-50: #e8f5fc;
+  --amber-500: #f9ae1b;
+  --amber-700: #e37b0c;
+  --bg: #f4f7fa;
+  --surface: #ffffff;
+  --text: #0f2233;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --border: #e3e9ef;
+  --border-strong: #d5dde5;
+  --danger-700: #c2410c;
+
+  --font-text: 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+  color-scheme: light;
+
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$orange-palette,
+      ),
+      typography: (
+        plain-family: 'Manrope, system-ui, sans-serif',
+        brand-family: 'Manrope, system-ui, sans-serif',
+      ),
+      density: 0,
+    )
+  );
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-text);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+}
+
+a {
+  color: var(--blue-700);
+}
+
+:focus-visible {
+  outline: 2px solid var(--blue-500);
+  outline-offset: 2px;
+}
