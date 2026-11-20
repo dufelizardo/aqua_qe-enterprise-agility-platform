@@ -13,11 +13,11 @@ Como os ambientes do AQuA-QE são publicados e o que precisa ser feito uma únic
 
 ## 1. Ambientes
 
-| Ambiente | Branch | Endereço | Namespace | Acesso |
-|---|---|---|---|---|
-| Desenvolvimento | `developer` | http://aquaqe-dev.local | `aquaqe-dev` | Sem senha: entra como persona e troca pelo menu do avatar (ADR-17) |
-| Produção | `main` | http://aquaqe.local | `aquaqe-prod` | Login pelo Keycloak, realm `aquaqe-prod`, com "Lembrar-me" de 30 dias |
-| Identidade | `main` | http://aquaqe-auth.local | `aquaqe-auth` | Console do Keycloak em `/admin` |
+| Ambiente | Branch | Endereço | Namespace | Acesso | Situação |
+|---|---|---|---|---|---|
+| Desenvolvimento | `developer` | http://aquaqe-dev.local | `aqua-qe-agility-platform-dev` | Sem senha: entra como persona e troca pelo menu do avatar (ADR-17) | No ar desde 2026-11-20 |
+| Produção | `main` | http://aquaqe.local | `aqua-qe-agility-platform-prod` | Login pelo Keycloak, realm `aquaqe-prod`, com "Lembrar-me" de 30 dias | Adiado: falta memória no servidor |
+| Identidade | `main` | http://aquaqe-auth.local | `aqua-qe-agility-platform-auth` | Console do Keycloak em `/admin` | Adiado, junto com a produção |
 
 Os endereços abrem em qualquer aparelho conectado à rede de casa, sem configurar nada no aparelho: o servidor anuncia os nomes por mDNS ([seção 2](#2-nomes-na-rede-mdns)). Fora da rede, eles não são acessíveis.
 
