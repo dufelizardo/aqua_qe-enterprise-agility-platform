@@ -36,7 +36,10 @@ class DevPersonaModeTests {
 		mvc.perform(get("/api/v1/me"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.username").value("robot.pm"))
-			.andExpect(jsonPath("$.name").value("Paula Produto"));
+			.andExpect(jsonPath("$.name").value("Paula Produto"))
+			// No modo sem senha, cada persona recebe o seu papel na unidade raiz (SSD 8.5).
+			.andExpect(jsonPath("$.assignments[0].role").value("PRODUCT_MANAGER"))
+			.andExpect(jsonPath("$.assignments[0].orgUnit.level").value("ENTERPRISE"));
 	}
 
 	@Test

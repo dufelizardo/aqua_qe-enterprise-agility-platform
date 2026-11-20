@@ -55,6 +55,8 @@ services:
       AUTH_INTERNAL_URL: http://keycloak:8180
       AUTH_REALM: aquaqe-dev
       AUTH_CLIENT_SECRET: aquaqe-web-local
+      # Cada usuário robot.<persona> recebe o seu papel na unidade raiz no primeiro acesso (SSD 8.5).
+      AQUAQE_PERSONA_ROLES: "true"
     ports:
       - "${AQUA_API_PORT:-8080}:8080"
     depends_on:

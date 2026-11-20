@@ -129,7 +129,7 @@ kubectl -n aqua-qe-agility-platform-prod create secret generic auth-client --fro
 kubectl apply -f k8s/argocd/            # todas; ou só uma, ex.: kubectl apply -f k8s/argocd/dev.yaml
 ```
 
-**Primeiro acesso à produção.** O realm `aquaqe-prod` nasce sem usuários. Entre em http://aquaqe-auth.local/admin com o usuário do segredo `keycloak-admin`, escolha o realm `aquaqe-prod` e crie os usuários, com nome, sobrenome e e-mail preenchidos.
+**Primeiro acesso à produção.** O realm `aquaqe-prod` nasce sem usuários. Entre em http://aquaqe-auth.local/admin com o usuário do segredo `keycloak-admin`, escolha o realm `aquaqe-prod` e crie os usuários, com nome, sobrenome e e-mail preenchidos. Antes do primeiro login, indique o administrador da plataforma no overlay de prod (`AQUAQE_ADMIN_USERNAME=<usuário do Keycloak>` no `app-config`): ele recebe `PLATFORM_ADMIN` na unidade raiz no primeiro acesso e, a partir daí, cria a estrutura organizacional e atribui os demais papéis.
 
 **Senha do banco já criada.** O PostgreSQL só lê `POSTGRES_PASSWORD` na primeira subida. Trocar o segredo depois disso não troca a senha do banco.
 

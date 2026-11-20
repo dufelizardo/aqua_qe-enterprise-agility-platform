@@ -35,6 +35,8 @@ A plataforma substitui, em um único produto, o conjunto de gestão de trabalho,
 
 ## 3. Visão de contexto
 
+Nível 1 do modelo C4. As seções 4 e 5 são os níveis 2 (containers) e 3 (componentes); o modelo lógico de dados está na seção 6 e o físico no [SSD, seção 9](SSD.md#9-esquema-físico).
+
 ```mermaid
 flowchart LR
     U["Usuários<br/>BO, PM/PO, LTi, UX, QA, squads, admin"]
@@ -57,6 +59,8 @@ flowchart LR
 Linhas tracejadas indicam integrações que entram depois do MVP. Todas as integrações externas são opcionais: a plataforma funciona sem elas.
 
 ## 4. Visão de containers
+
+Nível 2 do modelo C4.
 
 ```mermaid
 flowchart TB
@@ -102,11 +106,15 @@ flowchart TB
 
 ## 5. Módulos do monólito
 
+Nível 3 do modelo C4 (componentes da API).
+
 A API é um único artefato de deploy, dividido em módulos por domínio do [PRD, seção 7](PRD.md). Três regras valem para todos:
 
 1. Um módulo só acessa outro pela API pública dele (interfaces Java) ou reagindo a eventos. Acesso direto a tabelas ou classes internas de outro módulo é proibido.
 2. Cada módulo é dono das suas tabelas, em schema próprio do banco.
 3. As fronteiras são verificadas automaticamente nos testes de build (ADR-04).
+
+As convenções da API comuns a todos os módulos (formato de erro e de listagem, SSD seção 1) ficam no pacote `shared`, um módulo aberto que não depende de nenhum outro. Quando um módulo precisa de uma decisão de outro que depende dele, define uma interface e o outro a implementa, como o `TransitionGuard` abaixo; é assim que `organization` pede ao `access` a verificação de "gerir configuração" sem criar ciclo.
 
 ```mermaid
 flowchart TB

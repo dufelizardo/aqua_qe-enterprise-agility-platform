@@ -41,7 +41,8 @@ aquaqe:
     internal-url: ${AUTH_INTERNAL_URL:http://localhost:8180}
     realm: ${AUTH_REALM:aquaqe-dev}
     client-id: ${AUTH_CLIENT_ID:aquaqe-web}
-    # Personas do modo dev-persona, uma por papel do SSD (seção 2); a primeira é a padrão.
+    # Personas do modo dev-persona, uma por papel do SSD (seção 2); a primeira é a padrão. Também são os usuários
+    # de teste do realm aquaqe-dev (Robot no CI).
     dev-personas:
       - { username: robot.pm, name: Paula Produto, email: robot.pm@aquaqe.local, role: PRODUCT_MANAGER }
       - { username: robot.admin, name: Alice Admin, email: robot.admin@aquaqe.local, role: PLATFORM_ADMIN }
@@ -51,6 +52,12 @@ aquaqe:
       - { username: robot.qa, name: Quezia Qualidade, email: robot.qa@aquaqe.local, role: QA_ENGINEER }
       - { username: robot.squad, name: Sergio Squad, email: robot.squad@aquaqe.local, role: SQUAD_MEMBER }
       - { username: robot.viewer, name: Vera Leitura, email: robot.viewer@aquaqe.local, role: VIEWER }
+  # Papéis iniciais na unidade raiz (SSD, seção 8.5), dados no primeiro acesso de cada conta.
+  access:
+    # Usuário do IdP que recebe PLATFORM_ADMIN na raiz (o "usuário inicial indicado na instalação").
+    admin-username: ${AQUAQE_ADMIN_USERNAME:}
+    # Cada persona recebe o seu papel na raiz. Sempre ligado no modo dev-persona; proibido em produção.
+    persona-roles: ${AQUAQE_PERSONA_ROLES:false}
 
 server:
   # Atrás do nginx e do Traefik: usa X-Forwarded-* para montar o redirect do login com o endereço que o navegador vê.
