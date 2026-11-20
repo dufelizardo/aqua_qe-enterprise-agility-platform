@@ -452,7 +452,7 @@ Documentação                    Gates — Pronto para Construir    4 de 6
 - Encerrar uma sprint mostra antes quantos itens não concluídos voltarão ao backlog.
 - Squad sem nenhuma sprint não vê o seletor no quadro; a aba Sprints explica que o uso é opcional.
 - "Novo item" pede o tipo; os tipos e os pais permitidos vêm de `GET /artifact-types`.
-- **Situação (2026-11-20):** o **Quadro** está implementado em `/squad`, com o mesmo componente das outras telas e "Novo item" (tipo, pai opcional ou obrigatório conforme o tipo, e Squad). As colunas padrão juntam os status dos três fluxos de FL1 (itens, Task e Problema de Produção); cada squad agrupa como quiser em "Configurar quadro". As abas **Backlog** (com `rank`) e **Sprints** ainda não existem: entram com as sprints (issue #48).
+- **Situação (2026-11-20):** o **Quadro** está implementado em `/squad`, com o mesmo componente das outras telas e "Novo item" (tipo, pai opcional ou obrigatório conforme o tipo, e Squad). As colunas padrão juntam os status dos três fluxos de FL1 (itens, Task e Problema de Produção); cada squad agrupa como quiser em "Configurar quadro". As abas **Backlog** e **Sprints** foram implementadas em 2026-11-20. O Backlog lista os itens de FL1 ainda não iniciados na ordem de prioridade, com subir e descer (`rank`) e "Incluir na sprint…" nas sprints planejadas ou ativas da squad do item. Sprints tem a escolha da squad, criar (nome, objetivo, datas), iniciar, encerrar com o aviso de quantos itens voltarão ao backlog e retirar itens. No Quadro, o seletor de sprint aparece quando alguma squad do workspace tem sprint aberta. Por ora a reordenação é por botões; arrastar no Backlog fica para depois.
 
 ### 7.8 Work Item Details (UI-16)
 

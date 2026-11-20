@@ -33,3 +33,15 @@ ${LEVEL_NAV_SQUAD}                  css=[data-testid="nav-squad"]
 ${LEVEL_NEW_PARENT}                 css=[data-testid="new-item-parent"]
 ${LEVEL_NEW_TYPE}                   css=[data-testid="new-item-type"]
 ${LEVEL_UNIT_TRAIL}                 css=[data-testid="unit-trail"]
+# Abas da tela de FL1 e sprints (UX/UI 7.7).
+${SQUAD_NAV}                        css=[data-testid="nav-squad"]
+${SQUAD_TAB_BACKLOG}                css=[data-testid="tab-backlog"]
+${SQUAD_TAB_SPRINTS}                css=[data-testid="tab-sprints"]
+${SPRINTS_SQUAD}                    css=[data-testid="sprints-squad"]
+${SPRINT_NAME}                      css=[data-testid="sprint-name"]
+${SPRINT_CREATE}                    css=[data-testid="sprint-create"]
+${SPRINT_CLOSE_YES}                 css=[data-testid="sprint-close-yes"]
+${SPRINT_CLOSE_CONFIRM}             css=[data-testid="sprint-close-confirm"]
+# Linha da sprint pelo nome; linha do backlog pelo título.
+${SPRINT_ROW_BY_NAME}               css=[data-testid="sprints-list"] > li:has([data-testid="sprint-open"]:text-is("{}"))
+${BACKLOG_ROW_BY_TITLE}             css=[data-testid="backlog-item"]:has(.title:text-is("{}"))

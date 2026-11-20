@@ -32,3 +32,11 @@ CT-003 - PRD-RF-012: Validate Tactical - criar Feature sob a Iniciativa e mover 
     ...    ${portfolio_root_name}    ${portfolio_unit_base}    ${portfolio_unit_label}    ${tactical_cadeia_base}
     ...    ${tactical_cadeia_label}    ${portfolio_initiative_base}    ${tactical_feature_base}
     ...    ${portfolio_initiative_description}
+
+CT-004 - PRD-RF-015: Validate Squad - sprint criada, com item, iniciada e encerrada
+    [Documentation]    Abas Backlog e Sprints da tela de FL1; o encerramento avisa quantos itens voltam ao backlog.
+    [Tags]    UI    Squad    Sprint    PRD-RF-015
+    SQUAD - SPRINT COMPLETA    ${portfolio_admin_username}    ${portfolio_admin_display_name}
+    ...    ${portfolio_root_name}    ${portfolio_unit_base}    ${portfolio_unit_label}    ${tactical_cadeia_base}
+    ...    ${tactical_cadeia_label}    ${squad_unit_base}    ${squad_unit_label}    ${squad_level_name}
+    ...    ${squad_task_base}    ${squad_sprint_base}

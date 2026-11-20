@@ -62,6 +62,14 @@ class ArtifactController {
 		service.archive(artifact);
 	}
 
+	@PostMapping("/{artifact}/rank")
+	ArtifactView rank(@PathVariable String artifact, @RequestBody RankRequest body) {
+		return service.rank(artifact, body.beforeId(), body.afterId());
+	}
+
+	record RankRequest(UUID beforeId, UUID afterId) {
+	}
+
 	@GetMapping("/{artifact}/children")
 	Items<ArtifactView> children(@PathVariable String artifact,
 			@RequestParam(defaultValue = "false") boolean archived) {

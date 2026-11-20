@@ -87,3 +87,38 @@ Tactical - Criar Feature Sob Iniciativa
     Fill New Child Item    ${title}    ${description}    ${parent_label}    ${cadeia_name}
     Submit New Initiative
     Wait For Card In Column    BACKLOG    ${title}
+
+Squad - Abrir Quadro
+    [Documentation]    Abre a tela de FL1 pelo menu e garante o quadro do workspace.
+    [Arguments]    ${level_name}
+    Click Squad Nav Link
+    Wait For Level Board Page    ${level_name}
+    ${missing}=    Get Create Board Button Count
+    IF    ${missing} > 0
+        Click Create Board
+    END
+    Wait For Portfolio Board
+
+Squad - Criar Task
+    [Documentation]    "Novo item" do tipo Task, sem pai, na Squad; nasce em A Fazer.
+    [Arguments]    ${title}    ${squad_name}
+    Fill New Item Without Parent    Task    ${title}    ${squad_name}
+    Submit New Initiative
+    Wait For Card In Column    TODO    ${title}
+
+Squad - Ciclo Da Sprint
+    [Documentation]    Cria a sprint, inclui a Task pelo Backlog, inicia e encerra; o aviso diz que 1 item volta ao
+    ...    backlog (UX/UI 7.7).
+    [Arguments]    ${squad_name}    ${sprint_name}    ${task_title}
+    Open Sprints Tab For Squad    ${squad_name}
+    Create Sprint In Tab    ${sprint_name}
+    Wait For Sprint State    ${sprint_name}    Planejada
+    Include Backlog Item In Sprint    ${task_title}    ${sprint_name}
+    Open Sprints Tab For Squad    ${squad_name}
+    Click Sprint Action    ${sprint_name}    sprint-start
+    Wait For Sprint State    ${sprint_name}    Ativa
+    Click Sprint Action    ${sprint_name}    sprint-close
+    ${text}=    Get Close Confirmation Text
+    Should Contain    ${text}    1 item(ns)
+    Confirm Sprint Close
+    Wait For Sprint State    ${sprint_name}    Encerrada

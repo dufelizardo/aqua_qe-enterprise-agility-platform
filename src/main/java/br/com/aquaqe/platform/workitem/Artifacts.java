@@ -78,6 +78,11 @@ public class Artifacts {
 		return service.inBoardScope(artifactId, orgUnitId);
 	}
 
+	/** Status atual do artefato, sem verificar leitura (uso interno: encerrar sprint). */
+	public UUID statusOf(UUID artifactId) {
+		return repository.find(artifactId).orElseThrow(ApiException::notFound).statusId();
+	}
+
 	/** O artefato no formato da API (SSD 3.4). */
 	public ArtifactView view(UUID artifactId) {
 		return service.views(List.of(repository.find(artifactId).orElseThrow(ApiException::notFound))).getFirst();

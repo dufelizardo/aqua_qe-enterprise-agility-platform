@@ -18,3 +18,8 @@ ${tactical_feature_base}            Robot UI Feature
 # Títulos das telas = nomes dos níveis da instalação padrão (GET /org-levels; Proposta 06).
 ${portfolio_level_name}             Portfólio
 ${tactical_level_name}              Cadeia
+${squad_level_name}                 Squad
+${squad_unit_base}                  Robot UI Squad SQ
+${squad_unit_label}                 Squad
+${squad_task_base}                  Robot UI Task
+${squad_sprint_base}                Robot UI Sprint

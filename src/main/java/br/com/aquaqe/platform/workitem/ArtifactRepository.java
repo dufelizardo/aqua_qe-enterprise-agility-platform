@@ -91,7 +91,8 @@ class ArtifactRepository {
 	List<Row> search(Filter filter, Collection<UUID> scope, long offset, int limit) {
 		StringBuilder sql = new StringBuilder("select " + COLUMNS + " from workitem.artifact a where ");
 		Map<String, Object> params = where(sql, filter, scope);
-		sql.append(" order by a.created_at desc, a.key offset :offset limit :limit");
+		sql.append(filter.byRank() ? " order by a.rank, a.created_at, a.key" : " order by a.created_at desc, a.key");
+		sql.append(" offset :offset limit :limit");
 		JdbcClient.StatementSpec spec = jdbc.sql(sql.toString()).params(params);
 		return spec.param("offset", offset).param("limit", limit).query((rs, n) -> row(rs)).list();
 	}
@@ -144,6 +145,26 @@ class ArtifactRepository {
 			conditions.add(condition);
 			params.put(name, value);
 		}
+	}
+
+	java.math.BigDecimal rankOf(UUID id) {
+		return jdbc.sql("select rank from workitem.artifact where id = :id").param("id", id)
+			.query(java.math.BigDecimal.class).single();
+	}
+
+	/** Posição vizinha a {@code rank}, ignorando o próprio item: a maior abaixo ({@code before}) ou a menor acima. */
+	java.util.Optional<java.math.BigDecimal> neighborRank(java.math.BigDecimal rank, UUID ignore, boolean before) {
+		String sql = before
+				? "select max(rank) from workitem.artifact where rank < :rank and id <> :ignore"
+				: "select min(rank) from workitem.artifact where rank > :rank and id <> :ignore";
+		// max/min sem linhas devolve nulo: lido pela coluna para não falhar na conversão.
+		return jdbc.sql(sql).param("rank", rank).param("ignore", ignore)
+			.query((rs, n) -> rs.getBigDecimal(1)).list().stream().filter(java.util.Objects::nonNull).findFirst();
+	}
+
+	void setRank(UUID id, java.math.BigDecimal rank) {
+		jdbc.sql("update workitem.artifact set rank = :rank, updated_at = now() where id = :id")
+			.param("id", id).param("rank", rank).update();
 	}
 
 	/** O artefato, ou um ancestral dele, está numa das unidades (o item aparece num quadro dessa subárvore)? */
@@ -255,7 +276,7 @@ class ArtifactRepository {
 
 	/** Filtros de {@code GET /artifacts} (SSD 3.4) já resolvidos para ids. {@code null} ignora o critério. */
 	record Filter(Collection<UUID> workspaceUnits, Collection<UUID> typeIds, Collection<UUID> statusIds, UUID orgUnitId,
-			UUID parentId, UUID ownerId, UUID assigneeId, String q, boolean archived) {
+			UUID parentId, UUID ownerId, UUID assigneeId, String q, boolean archived, boolean byRank) {
 	}
 
 	record Row(UUID id, String key, UUID typeId, UUID parentId, String path, UUID orgUnitId, UUID statusId, String title,

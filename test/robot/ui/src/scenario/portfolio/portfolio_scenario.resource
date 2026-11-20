@@ -50,3 +50,20 @@ TACTICAL - CRIAR E MOVER FEATURE
     Tactical - Abrir Quadro
     Tactical - Criar Feature Sob Iniciativa    ${feature}    ${description}    ${key} · ${initiative}    ${cadeia}
     Portfolio - Mover Iniciativa    ${feature}    BACKLOG    REFINEMENT
+
+SQUAD - SPRINT COMPLETA
+    [Documentation]    Portfólio, Cadeia e Squad novos; Task na Squad; sprint criada, com a Task, iniciada e encerrada.
+    [Arguments]    ${username}    ${display_name}    ${root_name}    ${portfolio_base}    ${portfolio_label}
+    ...    ${cadeia_base}    ${cadeia_label}    ${squad_base}    ${squad_label}    ${squad_level_name}    ${task_base}
+    ...    ${sprint_base}
+    ${portfolio}=    Portfolio - Preparar Portfólio    ${username}    ${display_name}    ${root_name}
+    ...    ${portfolio_base}    ${portfolio_label}
+    ${cadeia}=    Unique Name    ${cadeia_base}
+    Admin - Criar Unidade Sob    ${portfolio}    ${cadeia}    ${cadeia_label}
+    ${squad}=    Unique Name    ${squad_base}
+    Admin - Criar Unidade Sob    ${cadeia}    ${squad}    ${squad_label}
+    ${task}=    Unique Name    ${task_base}
+    ${sprint}=    Unique Name    ${sprint_base}
+    Squad - Abrir Quadro    ${squad_level_name}
+    Squad - Criar Task    ${task}    ${squad}
+    Squad - Ciclo Da Sprint    ${squad}    ${sprint}    ${task}
