@@ -6,8 +6,7 @@ Resource            ../../../resource/config/schema/schema.resource
 
 *** Keywords ***
 GET Me - Status Code 200
-    [Documentation]    A persona autenticada recebe os próprios dados. As atribuições ainda vêm vazias: entram com o
-    ...    módulo access.
+    [Documentation]    A persona autenticada recebe os próprios dados e o seu papel na unidade raiz (SSD 3.1 e 8.5).
     [Arguments]    ${persona}
     ${response}=    GET Me As Persona    ${persona}
     Should Be Equal As Integers    ${response.status_code}    200
@@ -15,7 +14,8 @@ GET Me - Status Code 200
     Validate Object Schema    ${body}    ${IDENTITY_ME_SCHEMA}
     Should Be Equal    ${body}[username]    robot.${persona}
     Should Be Equal    ${body}[email]    robot.${persona}@aquaqe.local
-    Should Be Empty    ${body}[assignments]
+    ${roles}=    Evaluate    [a['role'] for a in $body['assignments']]
+    Should Contain    ${roles}    ${get_me_persona_roles}[${persona}]
     RETURN    ${response}
 
 GET Me - Status Code 401 - Sem Token

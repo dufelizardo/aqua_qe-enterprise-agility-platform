@@ -4,3 +4,5 @@ Documentation       Agregador único de schemas: todo FLOW importa este arquivo,
 Resource            ../../schema/common/common_schema.resource
 # IDENTITY
 Resource            ../../schema/identity/identity_schema.resource
+# ORGANIZATION
+Resource            ../../schema/organization/organization_schema.resource

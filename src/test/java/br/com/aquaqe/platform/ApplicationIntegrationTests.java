@@ -2,6 +2,7 @@ package br.com.aquaqe.platform;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
@@ -78,7 +79,8 @@ class ApplicationIntegrationTests {
 				.claim("name", "Ana Silva")
 				.claim("email", "ana.silva@aquaqe.local"))))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.id").value("0b9d6c1e-3f52-4c1a-8f0e-5a1b2c3d4e5f"))
+			// O id é o da conta local, criada no primeiro acesso (SSD 1.2), não o "sub" do IdP.
+			.andExpect(jsonPath("$.id").value(matchesPattern("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")))
 			.andExpect(jsonPath("$.username").value("ana.pm"))
 			.andExpect(jsonPath("$.name").value("Ana Silva"))
 			.andExpect(jsonPath("$.email").value("ana.silva@aquaqe.local"))

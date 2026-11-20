@@ -150,7 +150,7 @@ Decidido em 2026-11-20. A matriz acima diz **o que** cada papel faz; esta seçã
 2. **Leitura para baixo.** Quem pode ler um artefato lê também todos os descendentes dele, em qualquer unidade, inclusive documentos e anexos. É só leitura: editar um descendente de outro ramo exige papel na unidade dele.
 3. **Resumo para cima (REV-02).** Quem pode ler um artefato vê o **resumo** de todos os ancestrais dele: chave, tipo, título, status, início da descrição e status dos documentos. Não vê o conteúdo dos documentos, os anexos nem os demais campos. O resumo aparece só no contexto herdado; abrir o ancestral exige poder lê-lo.
 4. **Vínculo de atendimento.** O vínculo "atende a" não estende papéis. Ele só autoriza ligar: a unidade de um artefato filho precisa pertencer à unidade do pai, estar abaixo dela ou atendê-la; senão, `ORG_UNITS_NOT_LINKED`.
-5. **Escolha do pai entre ramos (a validar).** Quem pode criar um artefato em uma unidade vê o resumo dos artefatos das unidades atendidas por ela, só na seleção do pai. Sem isso, a Cadeia não teria como encontrar a Iniciativa do portfólio que atende.
+5. **Escolha do pai entre ramos.** Quem pode criar um artefato em uma unidade vê o resumo dos artefatos das unidades atendidas por ela, só na seleção do pai. Sem isso, a Cadeia não teria como encontrar a Iniciativa do portfólio que atende.
 6. **Listagem e busca seguem o detalhe.** Tudo o que o usuário pode abrir aparece nas listagens e na busca (regras 1 e 2); o que ele não pode abrir não aparece, nem como contagem.
 7. **Resposta fora do escopo.** Artefato que o usuário não pode ler: `404 NOT_FOUND`, sem revelar que existe. Artefato que ele lê, mas não pode editar: `403 FORBIDDEN`.
 8. **Fase 2.** Os níveis de visibilidade Private, Shared e Enterprise (RF-SC06 a 08) só **acrescentam** leituras a estas regras; nenhum caso permitido no MVP passa a ser negado.
@@ -254,6 +254,29 @@ Regras:
 - Deve haver exatamente um nível para cada Flight Level; níveis sem Flight Level servem só para agrupar.
 - Unidades não são excluídas, apenas desativadas.
 - Um vínculo só é aceito entre unidades que não estejam na mesma linha da árvore (uma não é ancestral da outra).
+- A unidade raiz é criada na instalação e é única; não pode ser desativada. Toda unidade nova tem pai ativo.
+- `PATCH` exige o `version` lido (seção 1.5).
+
+Detalhe de unidade (`GET /org-units/{id}`; também é a resposta de `POST` e `PATCH`). `path` vai da raiz até o pai:
+
+```json
+{
+  "id": "5b0e7c1a-2d4f-4a8e-9c3b-1f2e3d4c5b6a",
+  "name": "Cadeia Pagamentos",
+  "level": { "key": "CADEIA", "name": "Cadeia", "position": 4, "flightLevel": "FL2" },
+  "parentId": "7d2a1f90-55aa-4e0c-b0a1-9c8d7e6f5a4b",
+  "active": true,
+  "version": 0,
+  "path": [
+    { "id": "0f1e2d3c-4b5a-4968-8776-655443322110", "name": "Empresa", "level": "ENTERPRISE" },
+    { "id": "7d2a1f90-55aa-4e0c-b0a1-9c8d7e6f5a4b", "name": "Portfólio A", "level": "PORTFOLIO" }
+  ],
+  "links": {
+    "serves": [ { "id": "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d", "name": "Portfólio B", "level": "PORTFOLIO" } ],
+    "servedBy": []
+  }
+}
+```
 
 O trabalho entre ramos acontece no artefato: o pai de uma Feature pode ser uma Iniciativa de outro ramo quando a unidade da Feature pertence ou atende à unidade da Iniciativa. Sem esse vínculo, a API devolve `ORG_UNITS_NOT_LINKED`.
 
@@ -1026,7 +1049,7 @@ No MVP, quem edita o documento pode ter o mesmo papel de quem o aprova. Exigir q
 
 - Os oito papéis da seção 2.
 - Os cinco níveis organizacionais do exemplo da seção 3.2. Quem instala pode substituí-los por outra lista antes de criar as unidades.
-- Uma unidade raiz `ENTERPRISE` e um usuário inicial com `PLATFORM_ADMIN` nela, indicado na instalação.
+- Uma unidade raiz `ENTERPRISE` e um usuário inicial com `PLATFORM_ADMIN` nela, indicado na instalação (variável `AQUAQE_ADMIN_USERNAME`, com o usuário do IdP; o papel é dado no primeiro acesso). Fora de produção, cada persona de teste recebe o seu papel na raiz (`AQUAQE_PERSONA_ROLES`, sempre ligado no modo sem senha).
 - Nenhum quadro: o primeiro quadro de cada unidade é criado por quem a administra.
 
 ## 9. Esquema físico
@@ -1080,7 +1103,7 @@ A tabela `story_rule_ref` não aparece no diagrama do SAD; ela materializa a ref
 
 ## 10. Pendências
 
-- **Estrutura organizacional configurável** — as regras de escopo foram decididas (seção 2.1); falta validar a regra 5 (escolha do pai entre ramos) e definir a edição de níveis depois da instalação (Fase 3).
+- **Estrutura organizacional configurável** — as regras de escopo foram decididas (seção 2.1); falta definir a edição de níveis depois da instalação (Fase 3).
 - **Itens "a validar" deste documento:** papéis padrão e matriz de permissões; status dos workflows de FL2 e FL1; gates padrão; seções e aprovadores dos templates; tipos de bloco.
 - **Segregação de funções:** impedir que o autor de um documento seja o aprovador, e que quem executa a transição seja quem aprova o gate.
 - **Editor de documentos:** a decisão de construir ou adotar pode alterar o formato de blocos da seção 6.
