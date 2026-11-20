@@ -16,6 +16,19 @@
     <kbd aria-hidden="true">/</kbd>
   </form>
 
+  @if (workspace.selectable()) {
+    <button mat-button class="workspace" [matMenuTriggerFor]="workspaceMenu" data-testid="workspace-selector">
+      {{ workspace.current()?.name ?? 'Escolha o workspace' }} <span aria-hidden="true">▾</span>
+    </button>
+    <mat-menu #workspaceMenu="matMenu">
+      @for (item of workspace.workspaces(); track item.id) {
+        <button mat-menu-item (click)="chooseWorkspace(item.id)" [attr.data-testid]="'workspace-' + item.id">
+          {{ item.name }}
+        </button>
+      }
+    </mat-menu>
+  }
+
   @if (session.devMode()) {
     <span class="dev-badge" data-testid="dev-badge" title="Ambiente de desenvolvimento: sem senha, troque a persona no menu do avatar">
       DEV · sem senha

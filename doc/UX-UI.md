@@ -328,6 +328,7 @@ Ancestral que o usuário não pode abrir aparece só com o resumo (título, stat
 - **Dados:** `GET /me`, `GET /me/workspaces`.
 - **Comportamento:** com uma única unidade, a tela é pulada. A escolha é lembrada no navegador e enviada em `X-Workspace-Id`.
 - **Estado vazio:** "Você ainda não tem acesso a nenhuma unidade. Peça ao administrador da plataforma." Sem menu lateral.
+- **Situação (2026-11-20):** implementada em `/workspace`. As telas que listam itens levam a ela quando não há workspace escolhido; o seletor do cabeçalho aparece com mais de uma unidade. Por ora o menu lateral continua visível nesta tela.
 
 ### 7.2 Home — Meu trabalho
 
@@ -361,6 +362,7 @@ Meu trabalho
 - **Dados:** `GET /boards`, `GET /boards/{id}/view`; na lista, `GET /artifacts` com `level` FL3.
 - **Ações:** "Nova Iniciativa" (`POST /artifacts`); mover cartão (seção 6.2); filtros por responsável e texto.
 - **Estado vazio:** se não há quadro de FL3 na unidade, quem pode gerir quadros vê "Criar quadro de portfólio" (`POST /boards`); os demais veem a explicação.
+- **Situação (2026-11-20):** implementada em `/portfolio`, com quadro, lista, filtro por texto (chave, título ou responsável), "Nova Iniciativa" (com a escolha do Portfólio entre as unidades de FL3 do workspace) e movimentação por arraste ou por "Mover para…". Ainda faltam: configurar o quadro, reordenar na coluna (`rank`), o resumo do gate no cartão e a coluna de business case na lista.
 
 ### 7.4 Initiative Workspace (UI-06)
 

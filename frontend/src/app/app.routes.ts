@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 
 import { adminGuard } from './core/admin.guard';
 import { authGuard } from './core/auth.guard';
+import { workspaceGuard } from './core/workspace.service';
 
 /** Rotas do MVP (UX/UI, seção 5). A landing é pública; o restante exige sessão. */
 export const routes: Routes = [
@@ -22,10 +23,15 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/home/home').then((m) => m.Home),
       },
       {
+        path: 'workspace',
+        title: 'Workspace · AQuA-QE',
+        loadComponent: () => import('./pages/workspace/workspace-select').then((m) => m.WorkspaceSelect),
+      },
+      {
         path: 'portfolio',
         title: 'Portfolio · AQuA-QE',
-        loadComponent: () => import('./pages/placeholder/placeholder').then((m) => m.Placeholder),
-        data: { screen: 'Portfolio Management', level: 'FL3' },
+        canActivate: [workspaceGuard],
+        loadComponent: () => import('./pages/portfolio/portfolio').then((m) => m.Portfolio),
       },
       {
         path: 'tactical',

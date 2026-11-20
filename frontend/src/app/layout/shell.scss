@@ -75,6 +75,18 @@
   color: #fff;
 }
 
+/* Seletor de workspace (UX/UI 4): só aparece com mais de uma unidade. */
+.workspace {
+  margin-left: auto;
+  color: #fff;
+  font-weight: 700;
+  white-space: nowrap;
+
+  + .dev-badge {
+    margin-left: 0;
+  }
+}
+
 .dev-badge {
   margin-left: auto;
   padding: 3px 10px;

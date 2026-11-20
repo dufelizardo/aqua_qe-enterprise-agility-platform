@@ -89,6 +89,14 @@ class ArtifactService {
 		return PageResponse.of(views(rows), page, repository.count(filter, caller.scope()));
 	}
 
+	/** Itens não arquivados de um nível na subárvore da unidade, que o usuário lê (regras 1, 2 e 6), para os quadros. */
+	List<ArtifactView> itemsOfLevel(UUID orgUnitId, String level, int limit) {
+		Caller caller = caller();
+		Filter filter = new Filter(orgUnits.subtrees(List.of(orgUnitId)), typeIds(null, level), null, null, null, null,
+			null, null, false);
+		return views(repository.search(filter, caller.scope(), 0, limit));
+	}
+
 	List<ArtifactView> children(String ref, boolean archived) {
 		Row parent = readable(ref, caller());
 		// Todo filho é descendente de um artefato legível: a regra 2 o torna legível também.
