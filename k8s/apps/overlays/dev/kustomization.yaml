@@ -1,0 +1,42 @@
+# Ambiente dev: branch developer, http://aquaqe-dev.local, sem senha (persona, ADR-17).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: aquaqe-dev
+
+resources:
+  - ../../base
+
+# newTag é atualizado pelo publish-image.yml a cada push na developer (SHA do commit).
+images:
+  - name: ghcr.io/dufelizardo/aqua-qe-platform
+    newTag: developer
+  - name: ghcr.io/dufelizardo/aqua-qe-platform-frontend
+    newTag: developer
+
+configMapGenerator:
+  - name: app-config
+    literals:
+      - DATABASE_URL=jdbc:postgresql://postgres:5432/aquaqe
+      - DATABASE_USERNAME=aquaqe
+      - AUTH_PUBLIC_URL=http://aquaqe-auth.local
+      - AUTH_INTERNAL_URL=http://keycloak.aquaqe-auth.svc.cluster.local:8080
+      - AUTH_REALM=aquaqe-dev
+      # Dev sem senha (ADR-17): a API age como persona; troca pelo menu do avatar.
+      - AQUAQE_AUTH_MODE=dev-persona
+      - AQUAQE_ENVIRONMENT=dev
+      - JAVA_TOOL_OPTIONS=-XX:MaxRAMPercentage=60 -XX:+ExitOnOutOfMemoryError
+  - name: mdns-config
+    literals:
+      - MDNS_NOME=aquaqe-dev.local
+      # IP do Ingress (Traefik) no MetalLB, o mesmo dos ambientes do Mais Saúde Pública.
+      - MDNS_IP=192.168.0.200
+
+patches:
+  - target:
+      kind: Ingress
+      name: frontend
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: aquaqe-dev.local

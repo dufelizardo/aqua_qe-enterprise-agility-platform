@@ -1,0 +1,64 @@
+# Aplicações do ArgoCD (GitOps). Aplicar uma vez no servidor: kubectl apply -f k8s/argocd/applications.yaml
+# Cada uma acompanha uma branch: dev ← developer; prod e auth ← main.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: aquaqe-auth
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/dufelizardo/aqua_qe-enterprise-agility-platform.git
+    targetRevision: main
+    path: k8s/auth
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: aquaqe-auth
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: aquaqe-dev
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/dufelizardo/aqua_qe-enterprise-agility-platform.git
+    targetRevision: developer
+    path: k8s/apps/overlays/dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: aquaqe-dev
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: aquaqe-prod
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/dufelizardo/aqua_qe-enterprise-agility-platform.git
+    targetRevision: main
+    path: k8s/apps/overlays/prod
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: aquaqe-prod
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

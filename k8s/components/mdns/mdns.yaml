@@ -1,0 +1,62 @@
+# Anuncia o nome do ambiente na rede local por mDNS (mesmo mecanismo da ADR-0169 do Mais Saúde Pública):
+# qualquer aparelho do Wi-Fi abre http://<nome>.local sem mexer no arquivo hosts.
+# Usa a rede do servidor (hostNetwork) porque o mDNS só circula no Wi-Fi. Cada ambiente informa, no ConfigMap
+# mdns-config, o nome (MDNS_NOME) e o IP do Ingress que ele resolve (MDNS_IP). Ver doc/OPERACAO.md, seção 2.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mdns
+  labels:
+    app: aquaqe-mdns
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: aquaqe-mdns
+  template:
+    metadata:
+      labels:
+        app: aquaqe-mdns
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+      containers:
+        - name: mdns
+          image: python:3.13-alpine
+          command: ["python", "-u", "/app/anunciador.py"]
+          env:
+            # Interface do servidor por onde o mDNS circula. MDNS_NOME e MDNS_IP vêm do mdns-config do ambiente.
+            - name: MDNS_INTERFACE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+          envFrom:
+            - configMapRef:
+                name: mdns-config
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+            limits:
+              cpu: 50m
+              memory: 48Mi
+          volumeMounts:
+            - name: anunciador
+              mountPath: /app
+              readOnly: true
+      volumes:
+        - name: anunciador
+          configMap:
+            name: mdns-anunciador

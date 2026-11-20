@@ -1,0 +1,21 @@
+name: Spike
+description: Investigação com prazo para responder uma pergunta antes de implementar.
+title: "[Spike] "
+labels: ["tipo: spike"]
+body:
+  - type: textarea
+    id: pergunta
+    attributes:
+      label: Pergunta a responder
+    validations:
+      required: true
+  - type: input
+    id: prazo
+    attributes:
+      label: Limite de tempo
+      placeholder: 2 dias
+  - type: textarea
+    id: saida
+    attributes:
+      label: Resultado esperado
+      description: Ex.: proposta de ADR, protótipo descartável, comparação de alternativas.

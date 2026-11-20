@@ -1,0 +1,36 @@
+# Identidade compartilhada (Keycloak), sincronizada pelo ArgoCD a partir da main: http://aquaqe-auth.local
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: aquaqe-auth
+
+resources:
+  - postgres.yaml
+  - keycloak.yaml
+
+components:
+  - ../components/mdns
+
+configMapGenerator:
+  - name: keycloak-realms
+    files:
+      - realms/aquaqe-prod.json
+  - name: keycloak-theme
+    files:
+      - theme/aquaqe/login/theme.properties
+      - theme/aquaqe/login/template.ftl
+      - theme/aquaqe/login/messages/messages_pt_BR.properties
+      - theme/aquaqe/login/messages/messages_en.properties
+      - theme/aquaqe/login/resources/css/aquaqe.css
+      - theme/aquaqe/login/resources/img/logo.png
+      - theme/aquaqe/login/resources/img/favicon.ico
+      - theme/aquaqe/login/resources/fonts/manrope-latin-400-normal.woff2
+      - theme/aquaqe/login/resources/fonts/manrope-latin-500-normal.woff2
+      - theme/aquaqe/login/resources/fonts/manrope-latin-600-normal.woff2
+      - theme/aquaqe/login/resources/fonts/manrope-latin-700-normal.woff2
+      - theme/aquaqe/login/resources/fonts/manrope-latin-800-normal.woff2
+  - name: mdns-config
+    literals:
+      - MDNS_NOME=aquaqe-auth.local
+      # IP do Ingress (Traefik) no MetalLB, o mesmo dos ambientes do Mais Saúde Pública.
+      - MDNS_IP=192.168.0.200

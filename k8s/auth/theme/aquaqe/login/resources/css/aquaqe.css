@@ -1,0 +1,236 @@
+/* Identidade visual do AQuA-QE no login (UX/UI, seções 3 e 10; protótipo doc/prototype/AQuA-QE Project.dc.html). */
+
+@font-face { font-family: 'Manrope'; font-weight: 400; font-display: swap; src: url('../fonts/manrope-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Manrope'; font-weight: 500; font-display: swap; src: url('../fonts/manrope-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Manrope'; font-weight: 600; font-display: swap; src: url('../fonts/manrope-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Manrope'; font-weight: 700; font-display: swap; src: url('../fonts/manrope-latin-700-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Manrope'; font-weight: 800; font-display: swap; src: url('../fonts/manrope-latin-800-normal.woff2') format('woff2'); }
+
+:root {
+  --aq-navy-900: #0f2233;
+  --aq-blue-500: #1e9bd7;
+  --aq-blue-700: #0b5e8e;
+  --aq-amber-500: #f9ae1b;
+  --aq-border: #d5dde5;
+  --aq-text-muted: #64748b;
+
+  --pf-v5-global--FontFamily--text: 'Manrope', system-ui, sans-serif;
+  --pf-v5-global--FontFamily--heading: 'Manrope', system-ui, sans-serif;
+  --pf-v5-global--link--Color: var(--aq-blue-700);
+  --pf-v5-global--link--Color--hover: var(--aq-navy-900);
+  --pf-v5-global--primary-color--100: var(--aq-navy-900);
+  --pf-v5-global--primary-color--200: #000;
+}
+
+body.aquaqe-body {
+  margin: 0;
+  background: #fff;
+  font-family: 'Manrope', system-ui, sans-serif;
+  color: var(--aq-navy-900);
+}
+
+.aquaqe-split {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+  min-height: 100vh;
+}
+
+/* Coluna do formulário: anula o fundo e o cartão do tema padrão. */
+.aquaqe-form-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 48px clamp(24px, 7vw, 96px);
+}
+
+.aquaqe-form-column .pf-v5-c-login,
+.aquaqe-form-column .pf-v5-c-login__container {
+  display: block;
+  min-height: 0;
+  padding: 0;
+  background: none;
+  max-width: 460px;
+  width: 100%;
+}
+
+.aquaqe-form-column .pf-v5-c-login__main {
+  background: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.aquaqe-form-column .pf-v5-c-login__main-header,
+.aquaqe-form-column .pf-v5-c-login__main-body,
+.aquaqe-form-column .pf-v5-c-login__main-footer {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.aquaqe-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 56px;
+  padding: 0;
+}
+
+.aquaqe-brand-logo { width: 44px; height: 44px; }
+
+.aquaqe-brand-name {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--aq-navy-900);
+}
+
+#kc-page-title {
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--aq-navy-900);
+  margin: 0;
+}
+
+.aquaqe-subtitle {
+  margin: 8px 0 12px;
+  font-size: 15px;
+  color: var(--aq-text-muted);
+}
+
+.aquaqe-form-column .pf-v5-c-form__label-text {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--aq-navy-900);
+}
+
+.aquaqe-form-column .pf-v5-c-form-control {
+  --pf-v5-c-form-control--BorderRadius: 12px;
+  --pf-v5-c-form-control--after--BorderColor: var(--aq-border);
+  --pf-v5-c-form-control--before--BorderColor: var(--aq-border);
+  border-radius: 12px;
+  min-height: 48px;
+  font: 500 15px 'Manrope', system-ui, sans-serif;
+}
+
+.aquaqe-form-column .pf-v5-c-button.pf-m-primary {
+  --pf-v5-c-button--m-primary--BackgroundColor: var(--aq-navy-900);
+  --pf-v5-c-button--m-primary--hover--BackgroundColor: #000;
+  border-radius: 12px;
+  padding: 14px;
+  font: 800 15px 'Manrope', system-ui, sans-serif;
+}
+
+.aquaqe-form-column .pf-v5-c-button.pf-m-secondary {
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+/* Painel da direita: gradiente azul, marca ao fundo e a mensagem do produto. */
+.aquaqe-panel {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 20px;
+  min-height: 320px;
+  padding: clamp(32px, 5vw, 72px);
+  background: linear-gradient(160deg, var(--aq-blue-700), var(--aq-navy-900));
+  color: #fff;
+}
+
+.aquaqe-panel-mark {
+  position: absolute;
+  top: -60px;
+  right: -80px;
+  width: 520px;
+  opacity: 0.12;
+  filter: grayscale(1) brightness(3);
+}
+
+.aquaqe-panel-kicker {
+  font: 600 12px ui-monospace, 'JetBrains Mono', monospace;
+  letter-spacing: 0.08em;
+  color: var(--aq-amber-500);
+}
+
+.aquaqe-panel-title {
+  max-width: 460px;
+  font-size: 38px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+}
+
+.aquaqe-panel-text {
+  max-width: 460px;
+  font-size: 15px;
+  line-height: 1.5;
+  opacity: 0.8;
+}
+
+@media (max-width: 760px) {
+  .aquaqe-panel { display: none; }
+}
+
+/* Ajustes sobre o tema padrão: sem a barra azul do cartão, campos com borda própria e idioma discreto. */
+.aquaqe-form-column .pf-v5-c-login__main {
+  border: 0;
+  --pf-v5-c-login__main--BorderTopWidth: 0;
+}
+
+.aquaqe-form-column .pf-v5-c-login__main::before,
+.aquaqe-form-column .pf-v5-c-login__main::after {
+  display: none;
+}
+
+.aquaqe-form-column .pf-v5-c-form-control {
+  border: 1px solid var(--aq-border);
+  background: #fff;
+}
+
+.aquaqe-form-column .pf-v5-c-form-control::before,
+.aquaqe-form-column .pf-v5-c-form-control::after {
+  border: 0;
+}
+
+.aquaqe-form-column .pf-v5-c-form-control:focus-within {
+  border-color: var(--aq-blue-500);
+  box-shadow: 0 0 0 3px rgba(30, 155, 215, 0.18);
+}
+
+.aquaqe-form-column .pf-v5-c-form-control input {
+  outline: none;
+}
+
+.aquaqe-form-column .pf-v5-c-input-group .pf-v5-c-button.pf-m-control {
+  border: 1px solid var(--aq-border);
+  border-left: 0;
+  border-radius: 0 12px 12px 0;
+}
+
+.aquaqe-form-column .pf-v5-c-input-group .pf-v5-c-form-control {
+  border-radius: 12px 0 0 12px;
+}
+
+.aquaqe-form-column .pf-v5-c-login__main-header {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  border-top: 0;
+  padding-top: 0;
+}
+
+/* Idioma no topo, à direita; título e subtítulo logo abaixo. */
+.aquaqe-form-column .pf-v5-c-login__main-header-utilities {
+  order: -1;
+  align-self: flex-end;
+  margin-bottom: 16px;
+}
+
+.aquaqe-form-column .pf-v5-c-login__main-header-utilities .pf-v5-c-form-control {
+  min-height: 0;
+  width: auto;
+  font-size: 13px;
+  border-radius: 8px;
+}

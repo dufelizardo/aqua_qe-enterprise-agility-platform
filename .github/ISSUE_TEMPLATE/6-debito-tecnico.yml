@@ -1,0 +1,21 @@
+name: Débito técnico
+description: Algo que funciona, mas precisa ser corrigido ou melhorado no código, nos testes ou na infraestrutura.
+title: "[Débito] "
+labels: ["tipo: débito técnico"]
+body:
+  - type: textarea
+    id: situacao
+    attributes:
+      label: Situação atual
+    validations:
+      required: true
+  - type: textarea
+    id: impacto
+    attributes:
+      label: Impacto de não corrigir
+    validations:
+      required: true
+  - type: textarea
+    id: proposta
+    attributes:
+      label: Proposta

@@ -1,0 +1,23 @@
+name: Épico
+description: Agrupa histórias e tarefas de um mesmo objetivo (equivale aos épicos EP01 a EP10 do PRD).
+title: "[Épico] "
+labels: ["tipo: épico"]
+body:
+  - type: textarea
+    id: objetivo
+    attributes:
+      label: Objetivo
+    validations:
+      required: true
+  - type: input
+    id: prd
+    attributes:
+      label: Épico ou domínio do PRD
+      placeholder: EP05 — Governance & Compliance
+  - type: textarea
+    id: itens
+    attributes:
+      label: Itens
+      description: Liste as issues filhas como tarefas para acompanhar o progresso.
+      placeholder: |
+        - [ ] #

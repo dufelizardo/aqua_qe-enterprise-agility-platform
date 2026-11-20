@@ -1,0 +1,41 @@
+name: Bug
+description: Comportamento diferente do especificado.
+title: "[Bug] "
+labels: ["tipo: bug"]
+body:
+  - type: dropdown
+    id: ambiente
+    attributes:
+      label: Ambiente
+      options: [dev (aquaqe-dev.local), prod (aquaqe.local), local (docker compose), CI]
+    validations:
+      required: true
+  - type: textarea
+    id: passos
+    attributes:
+      label: Passos para reproduzir
+      placeholder: |
+        1. Entrar como robot.pm
+        2. Abrir ...
+        3. Clicar em ...
+    validations:
+      required: true
+  - type: textarea
+    id: esperado
+    attributes:
+      label: Resultado esperado
+      description: Cite a especificação, se houver (PRD-RF, SSD, UX/UI).
+    validations:
+      required: true
+  - type: textarea
+    id: obtido
+    attributes:
+      label: Resultado obtido
+      description: Mensagem de erro, identificador de correlação, captura de tela.
+    validations:
+      required: true
+  - type: input
+    id: versao
+    attributes:
+      label: Versão ou commit
+      description: A versão aparece no rodapé da release ou no SHA do overlay do ambiente.

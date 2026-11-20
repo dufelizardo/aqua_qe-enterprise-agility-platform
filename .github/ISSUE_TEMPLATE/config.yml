@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Dúvidas e ideias
+    url: https://github.com/dufelizardo/aqua_qe-enterprise-agility-platform/discussions
+    about: Perguntas, ideias ainda sem forma de história e conversas sobre o produto vão nas Discussions.
+  - name: Documentação
+    url: https://github.com/dufelizardo/aqua_qe-enterprise-agility-platform/tree/main/doc
+    about: PRD, SAD, SSD, UX/UI, QA e operação.

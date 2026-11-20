@@ -1,0 +1,42 @@
+# Ambiente prod: branch main, http://aquaqe.local, realm aquaqe-prod.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: aquaqe-prod
+
+resources:
+  - ../../base
+
+# newTag é atualizado pelo publish-image.yml a cada push na main (SHA do commit).
+images:
+  - name: ghcr.io/dufelizardo/aqua-qe-platform
+    newTag: main
+  - name: ghcr.io/dufelizardo/aqua-qe-platform-frontend
+    newTag: main
+
+configMapGenerator:
+  - name: app-config
+    literals:
+      - DATABASE_URL=jdbc:postgresql://postgres:5432/aquaqe
+      - DATABASE_USERNAME=aquaqe
+      - AUTH_PUBLIC_URL=http://aquaqe-auth.local
+      - AUTH_INTERNAL_URL=http://keycloak.aquaqe-auth.svc.cluster.local:8080
+      - AUTH_REALM=aquaqe-prod
+      # Login real; a API recusa subir em prod no modo sem senha (ADR-17).
+      - AQUAQE_AUTH_MODE=oidc
+      - AQUAQE_ENVIRONMENT=prod
+      - JAVA_TOOL_OPTIONS=-XX:MaxRAMPercentage=60 -XX:+ExitOnOutOfMemoryError
+  - name: mdns-config
+    literals:
+      - MDNS_NOME=aquaqe.local
+      # IP do Ingress (Traefik) no MetalLB, o mesmo dos ambientes do Mais Saúde Pública.
+      - MDNS_IP=192.168.0.200
+
+patches:
+  - target:
+      kind: Ingress
+      name: frontend
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: aquaqe.local

@@ -1,0 +1,57 @@
+# Promoção automática developer → main: quando o PR de promoção tem todos os checks obrigatórios verdes, faz o merge.
+# Mesmo desenho do LoneWolf (ADR-0003 de lá): projeto solo, sem aprovação obrigatória, então um merge simples basta,
+# sem --admin. Segredo necessário: AUTOMERGE_PAT (fine-grained, Contents e Pull requests com leitura e escrita).
+# Sem o PAT, o merge feito pelo token padrão não dispararia o publish-image.yml na main.
+name: Auto-merge de promoção
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: auto-merge-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  admin-merge:
+    if: github.head_ref == 'developer'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Esperar os checks obrigatórios e mergear
+        env:
+          GH_TOKEN: ${{ secrets.AUTOMERGE_PAT }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          pr="${{ github.event.pull_request.number }}"
+          required="backend frontend robot-dryrun acceptance"
+          for i in $(seq 1 150); do
+            sha=$(gh pr view "$pr" --json headRefOid --jq '.headRefOid')
+            runs=$(gh api "repos/${GH_REPO}/commits/${sha}/check-runs?per_page=100" --jq '.check_runs')
+            missing=0
+            for check in $required; do
+              found=$(echo "$runs" | jq --arg c "$check" '[.[] | select(.name == $c)] | length')
+              [ "$found" -eq 0 ] && missing=1
+            done
+            failed=$(echo "$runs" | jq '[.[] | select(.name != "admin-merge" and (.conclusion=="failure" or .conclusion=="cancelled" or .conclusion=="timed_out"))] | length')
+            if [ "$failed" -gt 0 ]; then
+              echo "Um check falhou; a promoção não será mergeada."
+              exit 1
+            fi
+            pending=$(echo "$runs" | jq '[.[] | select(.name != "admin-merge" and (.conclusion==null or .conclusion==""))] | length')
+            if [ "$missing" -eq 0 ] && [ "$pending" -eq 0 ]; then
+              echo "Checks obrigatórios (${required}) concluídos em ${sha}. Mergeando."
+              gh pr merge "$pr" --merge
+              exit 0
+            fi
+            echo "Tentativa $i: missing=${missing} pending=${pending}"
+            sleep 20
+          done
+          echo "Os checks não terminaram a tempo."
+          exit 1

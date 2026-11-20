@@ -1,0 +1,95 @@
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/" aria-label="AQuA-QE, página inicial">
+      <img src="logo-mark.png" alt="" width="44" height="44" />
+      <span class="brand-text">
+        <span class="brand-name">AQuA-QE</span>
+        <span class="brand-sub">Enterprise Agility Platform</span>
+      </span>
+    </a>
+    <nav class="links" aria-label="Seções">
+      <a href="#ideias">Produto</a>
+      <a href="#flight-levels">Flight Levels</a>
+      <a href="#roteiro">Roteiro</a>
+      <a [href]="repositoryUrl + '/tree/main/doc'" target="_blank" rel="noopener">Documentação</a>
+    </nav>
+    <button type="button" class="btn-outline" (click)="enter()" data-testid="landing-enter">
+      {{ session.authenticated() ? 'Ir para o sistema' : 'Entrar no sistema' }}
+    </button>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="kicker">Gestão de portfólio, fluxo de valor e governança</span>
+        <h1 data-testid="landing-title">Da estratégia à execução, com rastreabilidade de ponta a ponta</h1>
+        <p class="lead">
+          Plataforma corporativa que reúne, em um único produto, gestão de trabalho, documentação e gestão de testes,
+          sem plugins e sem serviços contratados à parte.
+        </p>
+        <p class="status">Em desenvolvimento: o MVP está em construção.</p>
+        <button type="button" class="btn-primary" (click)="enter()">
+          {{ session.authenticated() ? 'Ir para o sistema' : 'Entrar no sistema' }}
+        </button>
+      </div>
+
+      <div class="layers" id="flight-levels" aria-label="Os três níveis do modelo Flight Levels">
+        @for (level of levels; track level.code) {
+          <div class="layer" [attr.data-level]="level.code">
+            <span class="code">{{ level.code }}</span>
+            <div>
+              <strong>{{ level.name }} · {{ level.who }}</strong>
+              <span>{{ level.artifact }}</span>
+            </div>
+          </div>
+        }
+        <img class="layers-mark" src="logo-mark.png" alt="" />
+      </div>
+    </div>
+  </section>
+
+  <section class="ideas" id="ideias">
+    <div class="wrap">
+      <h2>Três ideias diferenciam o produto</h2>
+      <div class="cards">
+        @for (idea of ideas; track idea.title) {
+          <article class="card">
+            <h3>{{ idea.title }}</h3>
+            <p>{{ idea.text }}</p>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="roadmap" id="roteiro">
+    <div class="wrap">
+      <h2>Roteiro</h2>
+      <p class="note">Faseamento proposto, ainda a validar (PRD, seção 13).</p>
+      <div class="cards">
+        @for (step of roadmap; track step.phase) {
+          <article class="card-dark">
+            <h3>{{ step.phase }}</h3>
+            <p>{{ step.text }}</p>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <span class="brand-text">
+      <span class="brand-name">AQuA-QE</span>
+      <span class="brand-sub">Enterprise Agility Platform</span>
+    </span>
+    <span class="footer-links">
+      <a [href]="repositoryUrl" target="_blank" rel="noopener">Repositório</a>
+      <a [href]="repositoryUrl + '/tree/main/doc'" target="_blank" rel="noopener">Documentação</a>
+      <span>Distribuído sob a licença MIT.</span>
+    </span>
+  </div>
+</footer>

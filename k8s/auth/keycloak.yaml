@@ -1,0 +1,156 @@
+# Keycloak do ambiente prod (ADR-15). O dev roda sem senha (ADR-17) e não usa o Keycloak. O realm é importado na
+# primeira subida (k8s/auth/realms/aquaqe-prod.json). Realms já existentes não são reimportados; mudanças depois disso são feitas no console.
+# Segredos (criados uma vez no servidor, doc/OPERACAO.md): keycloak-db, keycloak-admin e keycloak-realms.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  labels:
+    app: aquaqe-keycloak
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: aquaqe-keycloak
+  template:
+    metadata:
+      labels:
+        app: aquaqe-keycloak
+    spec:
+      containers:
+        - name: keycloak
+          image: quay.io/keycloak/keycloak:26.8.2
+          args: ["start", "--import-realm"]
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: management
+              containerPort: 9000
+          env:
+            - name: KC_DB
+              value: postgres
+            - name: KC_DB_URL
+              value: jdbc:postgresql://keycloak-postgres:5432/keycloak
+            - name: KC_DB_USERNAME
+              value: keycloak
+            - name: KC_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-db
+                  key: password
+            # O navegador usa o nome mDNS; as APIs dos ambientes chamam o Service interno (backchannel).
+            - name: KC_HOSTNAME
+              value: http://aquaqe-auth.local
+            - name: KC_HOSTNAME_BACKCHANNEL_DYNAMIC
+              value: "true"
+            - name: KC_HTTP_ENABLED
+              value: "true"
+            - name: KC_PROXY_HEADERS
+              value: xforwarded
+            - name: KC_HEALTH_ENABLED
+              value: "true"
+            - name: JAVA_OPTS_KC_HEAP
+              value: -XX:MaxRAMPercentage=65
+            - name: KC_BOOTSTRAP_ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-admin
+                  key: username
+            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-admin
+                  key: password
+            # Variáveis usadas na importação do realm de prod. O dev não usa o Keycloak (sem senha, ADR-17);
+            # o realm aquaqe-dev só existe no compose local e no CI.
+            - name: AQUAQE_PROD_URL
+              value: http://aquaqe.local
+            - name: AQUAQE_PROD_WEB_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-realms
+                  key: prod-web-secret
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 896Mi
+          startupProbe:
+            httpGet:
+              path: /health/started
+              port: management
+            periodSeconds: 10
+            failureThreshold: 60
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: management
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: management
+            periodSeconds: 30
+            failureThreshold: 5
+          volumeMounts:
+            - name: realms
+              mountPath: /opt/keycloak/data/import
+              readOnly: true
+            - name: theme
+              mountPath: /opt/keycloak/themes/aquaqe
+              readOnly: true
+      volumes:
+        - name: realms
+          configMap:
+            name: keycloak-realms
+        # Tema de login (k8s/auth/theme/aquaqe). O ConfigMap não aceita "/" nas chaves; os itens montam a árvore.
+        - name: theme
+          configMap:
+            name: keycloak-theme
+            items:
+              - { key: theme.properties, path: login/theme.properties }
+              - { key: template.ftl, path: login/template.ftl }
+              - { key: messages_pt_BR.properties, path: login/messages/messages_pt_BR.properties }
+              - { key: messages_en.properties, path: login/messages/messages_en.properties }
+              - { key: aquaqe.css, path: login/resources/css/aquaqe.css }
+              - { key: logo.png, path: login/resources/img/logo.png }
+              - { key: favicon.ico, path: login/resources/img/favicon.ico }
+              - { key: manrope-latin-400-normal.woff2, path: login/resources/fonts/manrope-latin-400-normal.woff2 }
+              - { key: manrope-latin-500-normal.woff2, path: login/resources/fonts/manrope-latin-500-normal.woff2 }
+              - { key: manrope-latin-600-normal.woff2, path: login/resources/fonts/manrope-latin-600-normal.woff2 }
+              - { key: manrope-latin-700-normal.woff2, path: login/resources/fonts/manrope-latin-700-normal.woff2 }
+              - { key: manrope-latin-800-normal.woff2, path: login/resources/fonts/manrope-latin-800-normal.woff2 }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+spec:
+  selector:
+    app: aquaqe-keycloak
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: keycloak
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: aquaqe-auth.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: keycloak
+                port:
+                  number: 8080

@@ -1,0 +1,70 @@
+<header class="header" data-testid="app-header">
+  <a class="brand" routerLink="/home" data-testid="brand">
+    <img class="logo" src="logo-mark.png" alt="" width="32" height="32" />
+    <span class="name">AQuA-QE</span>
+  </a>
+
+  <form class="search" role="search" (submit)="$event.preventDefault(); search(searchInput.value)">
+    <input
+      #searchInput
+      type="search"
+      name="q"
+      placeholder="Buscar artefatos e documentos"
+      aria-label="Buscar artefatos e documentos"
+      data-testid="search-input"
+    />
+    <kbd aria-hidden="true">/</kbd>
+  </form>
+
+  @if (session.devMode()) {
+    <span class="dev-badge" data-testid="dev-badge" title="Ambiente de desenvolvimento: sem senha, troque a persona no menu do avatar">
+      DEV · sem senha
+    </span>
+  }
+
+  @if (session.user(); as user) {
+    <button
+      mat-button
+      class="profile"
+      [matMenuTriggerFor]="profileMenu"
+      data-testid="profile-button"
+      [attr.aria-label]="'Perfil de ' + session.displayName()"
+    >
+      <span class="avatar" aria-hidden="true">{{ session.initials() }}</span>
+    </button>
+    <mat-menu #profileMenu="matMenu" xPosition="before">
+      <div class="profile-card" data-testid="profile-name">
+        <strong>{{ session.displayName() }}</strong>
+        @if (user.email) {
+          <span class="muted">{{ user.email }}</span>
+        }
+      </div>
+      @if (session.devMode()) {
+        <div class="menu-label">Trocar persona</div>
+        @for (persona of session.devPersonas(); track persona.username) {
+          <button
+            mat-menu-item
+            (click)="switchPersona(persona.username)"
+            [class.current]="persona.username === user.username"
+            [attr.data-testid]="'persona-' + persona.username"
+          >
+            {{ persona.name }} <span class="role">{{ persona.role }}</span>
+          </button>
+        }
+      } @else {
+        <button mat-menu-item (click)="logout()" data-testid="logout">Sair</button>
+      }
+    </mat-menu>
+  }
+</header>
+
+<div class="body">
+  <nav class="sidebar" aria-label="Navegação principal" data-testid="sidebar">
+    @for (item of menu; track item.path) {
+      <a [routerLink]="item.path" routerLinkActive="active" [attr.data-testid]="item.testId">{{ item.label }}</a>
+    }
+  </nav>
+  <main class="content">
+    <router-outlet />
+  </main>
+</div>
