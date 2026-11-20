@@ -1,7 +1,7 @@
 # Publica as imagens no ghcr.io a cada push na developer (ambiente dev) e na main (ambiente prod) e grava o SHA
 # no overlay do ambiente; o ArgoCD do servidor percebe o commit e atualiza o ambiente (mesmo desenho da ADR-0015
 # do Mais Saúde Pública). Na main, cria também a release da versão do pom.xml.
-# Segredo necessário: AUTOMERGE_PAT (token com permissão de escrita no repositório), para o commit de pin
+# Segredo necessário: ENTERPRISE_AGILITY_PLATAFORM (token com permissão de escrita no repositório), para o commit de pin
 # poder entrar na branch protegida e disparar o ArgoCD.
 name: Publicar imagens (ghcr.io)
 
@@ -54,7 +54,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref_name }}
-          token: ${{ secrets.AUTOMERGE_PAT }}
+          token: ${{ secrets.ENTERPRISE_AGILITY_PLATAFORM }}
       - name: Pinar o overlay do ambiente no SHA deste build
         run: |
           case "${{ github.ref_name }}" in
@@ -62,8 +62,9 @@ jobs:
             main) overlay=k8s/apps/overlays/prod ;;
           esac
           sed -i "s#newTag: .*#newTag: ${{ github.sha }}#" "$overlay/kustomization.yaml"
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Commits da esteira saem em nome do dono do repositório (o mesmo do token), não de um bot.
+          git config user.name "${{ github.repository_owner }}"
+          git config user.email "${{ github.repository_owner_id }}+${{ github.repository_owner }}@users.noreply.github.com"
           git add "$overlay/kustomization.yaml"
           if git diff --cached --quiet; then
             echo "Overlay já pinado nesta imagem."
