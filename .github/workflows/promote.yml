@@ -2,7 +2,7 @@
 # Quando o "Pipeline de Promoção" termina verde num push da developer, abre o PR de promoção para a main (ou
 # reaproveita o que já está aberto). No PR roda a aceitação Robot completa; com todos os checks verdes, o
 # auto-merge.yml faz o merge, e o push na main publica a imagem de prod (publish-image.yml).
-# Segredo necessário: AUTOMERGE_PAT. PRs abertos com o token padrão do workflow não disparam outros workflows,
+# Segredo necessário: ENTERPRISE_AGILITY_PLATAFORM. PRs abertos com o token padrão do workflow não disparam outros workflows,
 # e os checks do PR nunca rodariam.
 name: Promoção automática
 
@@ -26,7 +26,7 @@ jobs:
     steps:
       - name: Abrir o PR developer → main, se houver o que promover
         env:
-          GH_TOKEN: ${{ secrets.AUTOMERGE_PAT }}
+          GH_TOKEN: ${{ secrets.ENTERPRISE_AGILITY_PLATAFORM }}
           GH_REPO: ${{ github.repository }}
           SHA: ${{ github.event.workflow_run.head_sha }}
         run: |

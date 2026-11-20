@@ -1,6 +1,6 @@
 # Promoção automática developer → main: quando o PR de promoção tem todos os checks obrigatórios verdes, faz o merge.
 # Mesmo desenho do LoneWolf (ADR-0003 de lá): projeto solo, sem aprovação obrigatória, então um merge simples basta,
-# sem --admin. Segredo necessário: AUTOMERGE_PAT (fine-grained, Contents e Pull requests com leitura e escrita).
+# sem --admin. Segredo necessário: ENTERPRISE_AGILITY_PLATAFORM (fine-grained, Contents e Pull requests com leitura e escrita).
 # Sem o PAT, o merge feito pelo token padrão não dispararia o publish-image.yml na main.
 name: Auto-merge de promoção
 
@@ -26,7 +26,7 @@ jobs:
     steps:
       - name: Esperar os checks obrigatórios e mergear
         env:
-          GH_TOKEN: ${{ secrets.AUTOMERGE_PAT }}
+          GH_TOKEN: ${{ secrets.ENTERPRISE_AGILITY_PLATAFORM }}
           GH_REPO: ${{ github.repository }}
         run: |
           pr="${{ github.event.pull_request.number }}"
