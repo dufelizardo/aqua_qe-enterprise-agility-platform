@@ -192,7 +192,7 @@ flowchart LR
 | Squad Workspace | UI-15 | `/squad/:aba` | MVP |
 | Work Item Details | UI-16 | `/items/:key` | MVP |
 | Resultados de busca | — | `/search` | MVP |
-| Administração | — | `/admin/:secao` (`/admin/organizacao`) | MVP |
+| Administração | — | `/admin/:secao` (`/admin/organizacao`); níveis de configuração na seção 7.11 | MVP |
 | Atalho por chave | — | `/a/:key` redireciona para a tela do tipo | MVP |
 | Executive Overview, Ideas, Capacity Planning, Living Documentation Hub, Governance Center, Traceability | UI-03, 05, 09, 10, 17, 18 | — | 2 |
 
@@ -511,6 +511,17 @@ No celular as duas colunas se empilham, e escolher uma unidade rola a tela até 
 - Publicar uma nova versão de workflow ou de template pede confirmação e informa o efeito: artefatos existentes passam ao novo workflow; documentos existentes mantêm o template antigo.
 - O editor de gate oferece os seis tipos de regra da seção 5.2 do SSD em um formulário por tipo, sem exigir que o administrador escreva JSON.
 - A verificação de integridade mostra "Trilha íntegra" ou o primeiro registro inconsistente.
+
+### 7.11 Níveis de configuração
+
+Princípio adotado da [Proposta 03](ADMIN-PROPOSAL.md#1-princípio-adotado-três-níveis-de-configuração): toda configuração tem um nível, um responsável e um lugar. Um nível nunca aparece no lugar de outro.
+
+| Nível | Exemplos | Quem configura | Onde |
+|---|---|---|---|
+| **Pessoal** | Tema, idioma, notificações, widgets da home | O próprio usuário | Menu do avatar › Preferências (REV-10) |
+| **Organizacional** | Estrutura e vínculos, usuários e papéis, workflows e gates, templates, auditoria | `PLATFORM_ADMIN` na unidade ou acima dela | Administração (seção 7.10) |
+| **Conta e login** | Senha, MFA, sessões, provedores de identidade | O usuário (conta) e o administrador do realm (políticas) | Console do Keycloak (SAD, ADR-08) |
+| **Plataforma** | Módulos habilitados, endereços, segredos, integrações (Fase 2), parâmetros técnicos | Quem opera a instalação | Deploy: variáveis, Helm e Kustomize ([OPERACAO](OPERACAO.md)); integrações na Administração |
 
 ## 8. Fluxos de interação
 

@@ -99,7 +99,8 @@ A ancoragem externa do último hash já é pendência no SAD.
 1. Definir um SLA de atraso da auditoria e uma métrica de lag da outbox, com alerta.
 2. Definir o comportamento para um evento que falha repetidamente: parar e alertar, que é o coerente com a cadeia de hash, em vez de pular o evento.
 3. Proibir a limpeza de um evento da outbox antes de ele estar gravado na auditoria.
-4. Manter o consumidor único no MVP. A ordem global é o que torna a cadeia simples. Cadeias por agregado ou particionadas só se justificam se o volume medido exigir; registrar isso como risco no [SAD, seção 12](SAD.md#12-riscos).
+4. Incluir as operações administrativas (estrutura organizacional, papéis e configuração) entre as ações auditadas. Os eventos `org_unit.*` foram acrescentados ao [SSD 7.2](SSD.md#72-catálogo) em 2026-11-20 ([Proposta 03](ADMIN-PROPOSAL.md#6-o-que-a-análise-revelou-no-produto-atual)).
+5. Manter o consumidor único no MVP. A ordem global é o que torna a cadeia simples. Cadeias por agregado ou particionadas só se justificam se o volume medido exigir; registrar isso como risco no [SAD, seção 12](SAD.md#12-riscos).
 
 ### REV-04 — Modelo organizacional (ADR-14)
 
