@@ -101,6 +101,25 @@ class ConfigurationRepository implements ArtifactConfiguration {
 	}
 
 	@Override
+	public List<Status> sequenceOfLevel(String level) {
+		return jdbc.sql("""
+				select s.key, min(s.name) as name, min(s.phase) as phase, min(s.category) as category,
+				       min(s.position) as position
+				  from configuration.workflow_status s
+				  join configuration.workflow w on w.id = s.workflow_id and w.active
+				  join configuration.workflow_artifact_type wt on wt.workflow_id = w.id
+				  join configuration.artifact_type t on t.id = wt.artifact_type_id
+				 where t.level = :level and s.position is not null
+				 group by s.key
+				 order by min(s.position), s.key
+				""")
+			.param("level", level)
+			.query((rs, n) -> new Status(null, rs.getString("key"), rs.getString("name"), rs.getString("phase"),
+				rs.getString("category"), rs.getObject("position", Integer.class)))
+			.list();
+	}
+
+	@Override
 	public List<StatusTransition> transitionsFrom(UUID statusId) {
 		List<Map.Entry<UUID, UUID>> pairs = jdbc.sql("""
 				select tr.id, tr.to_status_id from configuration.workflow_transition tr

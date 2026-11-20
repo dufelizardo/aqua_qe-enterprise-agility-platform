@@ -214,6 +214,16 @@ Em cada tabela, a coluna **RF** indica o requisito do PRD atendido.
 }
 ```
 
+`GET /me/workspaces`: uma entrada por unidade em que o usuário tem papel, com os papéis nela:
+
+```json
+{
+  "items": [
+    { "id": "7d2a1f90-55aa-4e0c-b0a1-9c8d7e6f5a4b", "name": "Portfólio Canais Digitais", "level": "PORTFOLIO", "roles": ["PRODUCT_MANAGER"] }
+  ]
+}
+```
+
 MFA (PRD-RF-037) não tem endpoint: é aplicado pelo IdP antes da emissão do token.
 
 ### 3.2 `organization`
@@ -634,6 +644,13 @@ Resumo (`GET /artifacts/FEAT-1024/documents`):
 Um quadro pertence a uma unidade organizacional e a um nível (FL3, FL2 ou FL1), e mostra os artefatos daquele nível na subárvore da unidade. Cada coluna mapeia um ou mais status do workflow e pertence a uma fase (`UPSTREAM` ou `DOWNSTREAM`).
 
 Mover um cartão entre colunas é executar a transição correspondente (`POST /artifacts/{artifact}/transitions`). O quadro não tem endpoint próprio de movimentação, para que nenhum movimento escape do gate.
+
+Criação (`POST /boards`, corpo `{ "orgUnitId", "level", "name" }`, implementada em 2026-11-20):
+- `name` é opcional; o padrão é "*nome da unidade* · *nível*".
+- As colunas nascem uma por status em sequência dos workflows do nível, na ordem da posição, sem o `Cancelado`. Artefatos cancelados não aparecem no quadro.
+- A fase da coluna é a do status. Nos workflows sem fase (Task e Problema de Produção), status `TODO` ficam em `UPSTREAM` e os demais em `DOWNSTREAM`.
+- A visão traz até 500 cartões, só os que o usuário lê (seção 2.1, regras 1, 2 e 6). `gateSummary` vem nulo até o módulo `governance`.
+- Ainda não implementados: `PATCH /boards/{id}`, ordenação (`rank`) e sprints.
 
 Visão do quadro (`GET /boards/{id}/view`, filtros `sprintId`, `assigneeId`, `type`):
 

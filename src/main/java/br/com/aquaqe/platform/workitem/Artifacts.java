@@ -56,6 +56,14 @@ public class Artifacts {
 		return repository.changeStatus(artifactId, statusId, expectedVersion);
 	}
 
+	/**
+	 * Itens de um nível (FL1, FL2 ou FL3) na subárvore da unidade que o usuário corrente lê, sem os arquivados, do mais
+	 * recente para o mais antigo. Base dos quadros (SSD 3.9).
+	 */
+	public List<ArtifactView> itemsOfLevel(UUID orgUnitId, String level, int limit) {
+		return service.itemsOfLevel(orgUnitId, level, limit);
+	}
+
 	/** O artefato no formato da API (SSD 3.4). */
 	public ArtifactView view(UUID artifactId) {
 		return service.views(List.of(repository.find(artifactId).orElseThrow(ApiException::notFound))).getFirst();

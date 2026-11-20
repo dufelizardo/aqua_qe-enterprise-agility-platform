@@ -1,0 +1,182 @@
+<header class="page-header">
+  <p class="eyebrow">FL3 · {{ workspace.current()?.name }}</p>
+  <h1 data-testid="page-title">Portfolio</h1>
+  <p class="lead">As Iniciativas do workspace no fluxo estratégico.</p>
+</header>
+
+<div class="toolbar">
+  <div class="toggle" role="group" aria-label="Modo de exibição">
+    <button type="button" [class.on]="mode() === 'quadro'" (click)="mode.set('quadro')" data-testid="mode-board">Quadro</button>
+    <button type="button" [class.on]="mode() === 'lista'" (click)="mode.set('lista')" data-testid="mode-list">Lista</button>
+  </div>
+  <input
+    class="filter"
+    type="search"
+    placeholder="Filtrar por chave, título ou responsável"
+    aria-label="Filtrar Iniciativas"
+    [value]="filter()"
+    (input)="filter.set(value($event))"
+    data-testid="portfolio-filter"
+  />
+  @if (canCreate()) {
+    <button type="button" class="btn primary" (click)="openCreate()" data-testid="new-initiative">Nova Iniciativa</button>
+  }
+</div>
+
+@if (creating()) {
+  <form class="card create" (submit)="$event.preventDefault(); createInitiative()" data-testid="new-initiative-form">
+    <h2>Nova Iniciativa</h2>
+    <label for="init-title">Título</label>
+    <input
+      id="init-title"
+      maxlength="200"
+      [value]="newTitle()"
+      (input)="newTitle.set(value($event))"
+      [attr.aria-invalid]="!!fieldError(createError(), 'title')"
+      data-testid="new-initiative-title"
+    />
+    <label for="init-description">Descrição</label>
+    <textarea
+      id="init-description"
+      rows="3"
+      [value]="newDescription()"
+      (input)="newDescription.set(value($event))"
+      data-testid="new-initiative-description"
+    ></textarea>
+    <label for="init-unit">Portfólio</label>
+    <select id="init-unit" [value]="newUnit()" (change)="newUnit.set(value($event))" data-testid="new-initiative-unit">
+      @for (unit of portfolioUnits(); track unit.id) {
+        <option [value]="unit.id" [selected]="unit.id === newUnit()">{{ unit.name }}</option>
+      }
+    </select>
+    @if (portfolioUnits().length === 0) {
+      <p class="hint">Não há unidade de nível estratégico (FL3) neste workspace. Peça ao administrador.</p>
+    }
+    @if (createError(); as error) {
+      <p class="field-error" data-testid="new-initiative-error">{{ messageOf(error) }}</p>
+    }
+    <div class="actions">
+      <button type="submit" class="btn primary" [disabled]="busy() || !newUnit()" data-testid="new-initiative-submit">Criar</button>
+      <button type="button" class="btn" (click)="creating.set(false)">Cancelar</button>
+    </div>
+  </form>
+}
+
+@if (loading()) {
+  <div class="skeleton" data-testid="portfolio-loading" aria-busy="true"><span></span><span></span><span></span></div>
+} @else if (loadError(); as error) {
+  <div class="card" role="alert">
+    <p>{{ error }}</p>
+    <button type="button" class="btn" (click)="load()">Tentar novamente</button>
+  </div>
+} @else if (mode() === 'lista') {
+  <div class="card table-wrap">
+    <table data-testid="portfolio-list">
+      <thead>
+        <tr><th>Chave</th><th>Título</th><th>Responsável</th><th>Status</th><th>Features</th></tr>
+      </thead>
+      <tbody>
+        @for (item of filteredList(); track item.id) {
+          <tr data-testid="portfolio-row">
+            <td class="mono">{{ item.key }}</td>
+            <td>{{ item.title }}</td>
+            <td>{{ item.owner?.name ?? '—' }}</td>
+            <td><span class="status">{{ item.status.name }}</span></td>
+            <td>{{ item.childCount }}</td>
+          </tr>
+        } @empty {
+          <tr><td colspan="5" class="muted">Nenhuma Iniciativa neste workspace.</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+} @else if (!board()) {
+  <div class="card empty" data-testid="portfolio-empty">
+    @if (canManageBoards()) {
+      <p>Este workspace ainda não tem quadro de portfólio.</p>
+      <button type="button" class="btn primary" [disabled]="busy()" (click)="createBoard()" data-testid="create-board">
+        Criar quadro de portfólio
+      </button>
+    } @else {
+      <p>Este workspace ainda não tem quadro de portfólio. Quem gere quadros (PM, Tech Lead ou administrador) pode criá-lo.</p>
+    }
+  </div>
+} @else {
+  <div class="board" cdkDropListGroup data-testid="portfolio-board">
+    @for (group of [{ label: 'Upstream', columns: upstream() }, { label: 'Downstream', columns: downstream() }]; track group.label) {
+      <section class="phase" [attr.aria-label]="group.label">
+        <h2 class="phase-label">{{ group.label }}</h2>
+        <div class="columns">
+          @for (column of group.columns; track column.id) {
+            <div
+              class="column"
+              [class.dimmed]="!isTarget(column)"
+              cdkDropList
+              [cdkDropListData]="column"
+              [cdkDropListEnterPredicate]="canEnter"
+              (cdkDropListDropped)="onDrop($event)"
+              [attr.data-testid]="'column-' + column.statusKeys[0]"
+            >
+              <h3>{{ column.name }} <span class="count">{{ column.cards.length }}</span></h3>
+              @for (card of column.cards; track card.id) {
+                <article
+                  class="card-item"
+                  cdkDrag
+                  [cdkDragData]="card"
+                  [cdkDragDisabled]="busy()"
+                  (cdkDragStarted)="onDragStart($event)"
+                  [attr.data-testid]="'card-' + card.key"
+                >
+                  <header>
+                    <span class="type">Iniciativa</span>
+                    <span class="mono">{{ card.key }}</span>
+                    <button
+                      type="button"
+                      class="more"
+                      [matMenuTriggerFor]="moveMenu"
+                      (menuOpened)="openMoveMenu(card)"
+                      [attr.aria-label]="'Ações de ' + card.key"
+                      data-testid="card-menu"
+                    >
+                      ⋯
+                    </button>
+                  </header>
+                  <p class="title">{{ card.title }}</p>
+                  <footer>
+                    @if (card.owner) {
+                      <span class="avatar" [title]="card.owner.name">{{ initials(card.owner.name) }}</span>
+                    }
+                    @if (card.size) {
+                      <span class="size">{{ card.size }}</span>
+                    }
+                  </footer>
+                  <mat-menu #moveMenu="matMenu">
+                    <div class="menu-label">Mover para…</div>
+                    @if (menuOptions(); as options) {
+                      @for (option of options; track option.id) {
+                        <button
+                          mat-menu-item
+                          [disabled]="!option.canExecute || busy()"
+                          (click)="move(card, option)"
+                          [attr.data-testid]="'move-to-' + option.to.key"
+                        >
+                          {{ option.to.name }}
+                        </button>
+                      } @empty {
+                        <span class="menu-label">Nenhuma transição a partir daqui.</span>
+                      }
+                    } @else {
+                      <span class="menu-label">Carregando…</span>
+                    }
+                  </mat-menu>
+                </article>
+              } @empty {
+                <p class="muted empty-column">Nenhuma Iniciativa.</p>
+              }
+            </div>
+          }
+        </div>
+      </section>
+    }
+  </div>
+}

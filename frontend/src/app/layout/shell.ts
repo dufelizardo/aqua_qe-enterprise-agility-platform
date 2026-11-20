@@ -4,6 +4,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { SessionService } from '../core/session.service';
+import { WorkspaceService } from '../core/workspace.service';
 
 /** Estrutura das telas internas: cabeçalho com busca, menu lateral por Flight Level e conteúdo (UX/UI, seção 4). */
 @Component({
@@ -14,6 +15,7 @@ import { SessionService } from '../core/session.service';
 })
 export class Shell {
   protected readonly session = inject(SessionService);
+  protected readonly workspace = inject(WorkspaceService);
   private readonly router = inject(Router);
   private readonly searchInput = viewChild.required<ElementRef<HTMLInputElement>>('searchInput');
 
@@ -43,7 +45,15 @@ export class Shell {
   }
 
   protected switchPersona(username: string): void {
-    void this.session.switchPersona(username);
+    // Os papéis mudam com a persona; os workspaces também.
+    void this.session.switchPersona(username).then(() => this.workspace.load());
+  }
+
+  protected chooseWorkspace(id: string): void {
+    this.workspace.choose(id);
+    // Recarrega a tela atual com o novo workspace.
+    const url = this.router.url;
+    void this.router.navigateByUrl('/workspace', { skipLocationChange: true }).then(() => this.router.navigateByUrl(url));
   }
 
   protected logout(): void {

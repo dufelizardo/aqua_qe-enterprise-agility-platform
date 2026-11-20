@@ -24,6 +24,13 @@ public interface ArtifactConfiguration {
 	/** Ids dos status com a chave e/ou a categoria informadas (filtros de listagem); {@code null} ignora o critério. */
 	Set<UUID> statusIds(String key, String category);
 
+	/**
+	 * Status em sequência dos workflows ativos de um nível, sem repetir a chave e sem os de fora da sequência
+	 * (Cancelado), na ordem da posição. É a base das colunas padrão dos quadros (SSD 3.9). {@code id} vem nulo, porque
+	 * a mesma chave pode existir em mais de um workflow.
+	 */
+	List<Status> sequenceOfLevel(String level);
+
 	/** Transições do workflow que saem do status informado (SSD 8.2). */
 	List<StatusTransition> transitionsFrom(UUID statusId);
 

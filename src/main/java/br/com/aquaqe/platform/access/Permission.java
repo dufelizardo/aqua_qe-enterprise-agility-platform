@@ -8,6 +8,9 @@ public enum Permission {
 	/** "Gerir configuração e papéis". */
 	MANAGE_CONFIGURATION(Set.of("PLATFORM_ADMIN")),
 
+	/** "Gerir quadros e sprints". */
+	MANAGE_BOARDS(Set.of("PLATFORM_ADMIN", "PRODUCT_MANAGER", "TECH_LEAD")),
+
 	/** "Criar e editar Iniciativa" (FL3). */
 	EDIT_FL3(Set.of("PLATFORM_ADMIN", "BUSINESS_OWNER", "PRODUCT_MANAGER")),
 
