@@ -468,6 +468,7 @@ Os valores-alvo são provisórios; o PRD lista sua definição como pendência.
 - **Valores definitivos dos atributos de qualidade** da seção 11 e volumes esperados (usuários, artefatos).
 - **Especificações ausentes** que afetam módulos da Fase 2 e 3: OKRs, dependências, capacity planning, IA.
 - **Contratos de API:** especificados no [SSD](SSD.md).
+- **Modelos de trabalho e templates de quadro** ([Proposta 05](CONFIG-PROPOSAL.md#3-decisões-tomadas-2026-11-20)): o modelo (Kanban, Scrum) fica implícito no MVP (quadro configurável + sprint opcional); templates de quadro serão aplicados por cópia; herança e publicação seguem na Fase 3 (RF-CE04 a 10). Falta o Workflow Designer (UI-26) para cada unidade ter o próprio fluxo.
 - **Privacidade e dados pessoais:** inventário, finalidade, visibilidade e retenção dos dados pessoais, e a convivência da eliminação com a auditoria imutável ([REV-14](REVIEW-01.md#rev-14--privacidade-e-dados-pessoais)).
 
 ## 14. Rastreabilidade — requisitos do MVP
