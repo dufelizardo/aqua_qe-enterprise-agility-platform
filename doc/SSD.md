@@ -103,6 +103,10 @@ Formato Problem Details, com campos adicionais:
 | `ORG_UNITS_NOT_LINKED` | 422 | O pai está em outro ramo e não há vínculo de atendimento entre as unidades. |
 | `TRANSITION_NOT_ALLOWED` | 422 | A transição não existe no workflow a partir do status atual. |
 | `GATE_BLOCKED` | 422 | Regras do gate não atendidas. Traz `failedRules` (seção 5.3). |
+| `SPRINT_ITEM_NOT_ALLOWED` | 422 | Item que não é de FL1 da própria squad, ou arquivado, incluído em sprint (seção 3.9). |
+| `SPRINT_STATE` | 409 | Ação incompatível com o estado da sprint (iniciar sem estar planejada, encerrar sem estar ativa, alterar encerrada). |
+| `SPRINT_ALREADY_ACTIVE` | 409 | A squad já tem uma sprint ativa. |
+| `ITEM_IN_ANOTHER_SPRINT` | 409 | O item já está em outra sprint não encerrada. |
 | `APPROVAL_NOT_APPLICABLE` | 422 | A regra indicada não é de aprovação ou não pertence a um gate de saída do status atual. |
 
 ## 2. Papéis e permissões
@@ -472,7 +476,7 @@ Como as regras de escopo foram aplicadas (2026-11-20):
 
 Vínculos: `type` é um de `RELATES_TO`, `ORIGINATES_FROM`, `DUPLICATES`. `ORIGINATES_FROM` é o vínculo de um Bug ou Problema de Produção com o artefato de origem.
 
-Ordenação (`POST /artifacts/{artifact}/rank`): o corpo traz `beforeId` ou `afterId`; a API recalcula a posição do artefato em relação ao vizinho informado.
+Ordenação (`POST /artifacts/{artifact}/rank`): o corpo traz `beforeId` ou `afterId`; a API recalcula a posição do artefato em relação ao vizinho informado. Implementada em 2026-11-20: a ordem é **global** (um número por artefato, novos itens entram no fim), então qualquer lista ordenada por ela respeita a mesma prioridade. `GET /artifacts?sort=rank` lista nessa ordem, e as colunas dos quadros também a usam. Exige a permissão de edição do nível; o vizinho precisa ser legível.
 
 ### 3.5 `workflow`
 
@@ -709,6 +713,12 @@ Regras de sprint:
 - Só itens de FL1 da própria squad entram em uma sprint. Um item está em no máximo uma sprint não encerrada.
 - Ao encerrar, itens não concluídos saem da sprint e voltam ao backlog.
 - Squads em fluxo contínuo simplesmente não criam sprints.
+
+Implementação (2026-11-20):
+- **Sprint:** `squadId` (unidade ativa de FL1), `name` (até 120), `goal` (até 1.000), `startDate` e `endDate` (`AAAA-MM-DD`, fim não antes do início), `state` e `itemCount`. Iniciar sem data de início usa a data do dia; encerrar sem data de fim também.
+- Criar, alterar, iniciar, encerrar e incluir ou retirar itens exige gerir quadros na squad (PM, TL ou administrador). Listar sprints e itens, só estar autenticado; os itens aparecem conforme a leitura (seção 2.1).
+- Encerrar responde `{ "sprint": {…}, "returnedToBacklog": n }`. Os itens concluídos (categoria `DONE`) ficam como histórico da sprint.
+- `GET /boards/{id}/view?sprintId=…` mostra só os itens da sprint.
 
 ### 3.10 `audit` e busca
 

@@ -18,6 +18,19 @@
   <p class="lead">{{ setup().lead }}</p>
 </header>
 
+@if (setup().level === 'FL1') {
+  <nav class="tabs" role="tablist" aria-label="Seções" data-testid="squad-tabs">
+    <button type="button" role="tab" [class.on]="tab() === 'quadro'" [attr.aria-selected]="tab() === 'quadro'" (click)="showTab('quadro')" data-testid="tab-board">Quadro</button>
+    <button type="button" role="tab" [class.on]="tab() === 'backlog'" [attr.aria-selected]="tab() === 'backlog'" (click)="showTab('backlog')" data-testid="tab-backlog">Backlog</button>
+    <button type="button" role="tab" [class.on]="tab() === 'sprints'" [attr.aria-selected]="tab() === 'sprints'" (click)="showTab('sprints')" data-testid="tab-sprints">Sprints</button>
+  </nav>
+}
+
+@if (tab() === 'backlog') {
+  <app-squad-backlog />
+} @else if (tab() === 'sprints') {
+  <app-squad-sprints />
+} @else {
 <div class="toolbar">
   <div class="toggle" role="group" aria-label="Modo de exibição">
     <button type="button" [class.on]="mode() === 'quadro'" (click)="mode.set('quadro')" data-testid="mode-board">Quadro</button>
@@ -32,6 +45,16 @@
     (input)="filter.set(value($event))"
     data-testid="board-filter"
   />
+  @if (sprintOptions().length > 0) {
+    <select aria-label="Sprint" [value]="sprintFilter()" (change)="filterBySprint(value($event))" data-testid="board-sprint">
+      <option value="" [selected]="sprintFilter() === ''">Todos os itens</option>
+      @for (sprint of sprintOptions(); track sprint.id) {
+        <option [value]="sprint.id" [selected]="sprint.id === sprintFilter()">
+          {{ sprint.name }}{{ sprint.state === 'ACTIVE' ? ' (ativa)' : '' }}
+        </option>
+      }
+    </select>
+  }
   <label class="check">
     <input type="checkbox" [checked]="onlyBlocked()" (change)="onlyBlocked.set(!onlyBlocked())" data-testid="filter-blocked" />
     Só bloqueados
@@ -279,4 +302,5 @@
       </section>
     }
   </div>
+}
 }

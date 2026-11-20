@@ -85,7 +85,7 @@ class ArtifactService {
 		Filter filter = new Filter(workspace, typeIds(query.get("type"), query.get("level")),
 			statusIds(query.get("statusKey"), query.get("statusCategory")), uuid(query, "orgUnitId"),
 			uuid(query, "parentId"), uuid(query, "ownerId"), uuid(query, "assigneeId"), query.get("q"),
-			Boolean.parseBoolean(query.getOrDefault("archived", "false")));
+			Boolean.parseBoolean(query.getOrDefault("archived", "false")), "rank".equals(query.get("sort")));
 		List<Row> rows = repository.search(filter, caller.scope(), page.offset(), page.size());
 		return PageResponse.of(views(rows), page, repository.count(filter, caller.scope()));
 	}
@@ -94,14 +94,14 @@ class ArtifactService {
 	List<ArtifactView> itemsOfLevel(UUID orgUnitId, String level, int limit) {
 		Caller caller = caller();
 		Filter filter = new Filter(orgUnits.subtrees(List.of(orgUnitId)), typeIds(null, level), null, null, null, null,
-			null, null, false);
+			null, null, false, true);
 		return views(repository.search(filter, caller.scope(), 0, limit));
 	}
 
 	/** Itens não arquivados do nível, nos status informados, na subárvore da unidade, de todos os usuários (WIP). */
 	long countForBoard(UUID orgUnitId, String level, Collection<UUID> statusIds) {
 		Filter filter = new Filter(orgUnits.subtrees(List.of(orgUnitId)), typeIds(null, level), statusIds, null, null,
-			null, null, null, false);
+			null, null, null, false, false);
 		return repository.count(filter, null);
 	}
 
@@ -213,6 +213,35 @@ class ArtifactService {
 			repository.movePaths(current.path(), path);
 		}
 		return views(List.of(repository.find(current.id()).orElseThrow())).getFirst();
+	}
+
+	/**
+	 * Reposiciona o artefato na ordenação (SSD 3.4, {@code POST /artifacts/{artifact}/rank}): imediatamente antes de
+	 * {@code beforeId} ou depois de {@code afterId}. A ordem é global, então qualquer lista ordenada por {@code rank}
+	 * (backlog, colunas do quadro) a respeita.
+	 */
+	@Transactional
+	ArtifactView rank(String ref, UUID beforeId, UUID afterId) {
+		Caller caller = caller();
+		Row row = readable(ref, caller);
+		requireEdit(caller, row, typeOf(row));
+		if ((beforeId == null) == (afterId == null)) {
+			throw ApiException.validation("beforeId", "informe beforeId ou afterId");
+		}
+		UUID neighborId = beforeId != null ? beforeId : afterId;
+		if (neighborId.equals(row.id())) {
+			throw ApiException.validation(beforeId != null ? "beforeId" : "afterId", "use outro item como referência");
+		}
+		Row neighbor = repository.find(neighborId)
+			.filter(n -> repository.readable(n.id(), caller.scope()))
+			.orElseThrow(() -> ApiException.validation(beforeId != null ? "beforeId" : "afterId", "item não encontrado"));
+		java.math.BigDecimal anchor = repository.rankOf(neighbor.id());
+		java.math.BigDecimal step = java.math.BigDecimal.valueOf(1000);
+		java.math.BigDecimal rank = repository.neighborRank(anchor, row.id(), beforeId != null)
+			.map(other -> other.add(anchor).divide(java.math.BigDecimal.valueOf(2)))
+			.orElseGet(() -> beforeId != null ? anchor.subtract(step) : anchor.add(step));
+		repository.setRank(row.id(), rank);
+		return views(List.of(repository.find(row.id()).orElseThrow())).getFirst();
 	}
 
 	/** Arquiva (SSD 3.4): não apaga; exige que não haja filhos ativos. */

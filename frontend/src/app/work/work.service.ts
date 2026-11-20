@@ -33,6 +33,18 @@ export interface Artifact {
   blockedReason: string | null;
 }
 
+/** Sprint de uma squad (SSD 3.9). */
+export interface Sprint {
+  id: string;
+  squadId: string;
+  name: string;
+  goal: string | null;
+  startDate: string | null;
+  endDate: string | null;
+  state: 'PLANNED' | 'ACTIVE' | 'CLOSED';
+  itemCount: number;
+}
+
 /** Tipo de artefato da instalação (SSD 3.3 e 8.1). */
 export interface ArtifactType {
   key: string;
@@ -151,8 +163,54 @@ export class WorkService {
     );
   }
 
-  boardView(id: string): Promise<BoardView> {
-    return firstValueFrom(this.http.get<BoardView>(`${API}/boards/${id}/view`));
+  boardView(id: string, sprintId?: string | null): Promise<BoardView> {
+    const params: Record<string, string> = sprintId ? { sprintId } : {};
+    return firstValueFrom(this.http.get<BoardView>(`${API}/boards/${id}/view`, { params }));
+  }
+
+  /** Itens de FL1 ainda não iniciados, na ordem do backlog (SSD 3.4, sort=rank). */
+  async backlog(): Promise<Artifact[]> {
+    const response = await firstValueFrom(
+      this.http.get<{ items: Artifact[] }>(`${API}/artifacts`, {
+        params: { level: 'FL1', statusCategory: 'TODO', sort: 'rank', size: 100 },
+      }),
+    );
+    return response.items;
+  }
+
+  /** Reposiciona o item antes ou depois de outro (SSD 3.4). */
+  rank(artifact: string, position: { beforeId?: string; afterId?: string }): Promise<Artifact> {
+    return firstValueFrom(this.http.post<Artifact>(`${API}/artifacts/${artifact}/rank`, position));
+  }
+
+  // ------------------------------------------------------------------------------------ sprints (SSD 3.9)
+
+  async sprints(squadId: string): Promise<Sprint[]> {
+    return (await firstValueFrom(this.http.get<{ items: Sprint[] }>(`${API}/org-units/${squadId}/sprints`))).items;
+  }
+
+  createSprint(body: { squadId: string; name: string; goal?: string; startDate?: string; endDate?: string }): Promise<Sprint> {
+    return firstValueFrom(this.http.post<Sprint>(`${API}/sprints`, body));
+  }
+
+  startSprint(id: string): Promise<Sprint> {
+    return firstValueFrom(this.http.post<Sprint>(`${API}/sprints/${id}/start`, null));
+  }
+
+  closeSprint(id: string): Promise<{ sprint: Sprint; returnedToBacklog: number }> {
+    return firstValueFrom(this.http.post<{ sprint: Sprint; returnedToBacklog: number }>(`${API}/sprints/${id}/close`, null));
+  }
+
+  async sprintItems(id: string): Promise<Artifact[]> {
+    return (await firstValueFrom(this.http.get<{ items: Artifact[] }>(`${API}/sprints/${id}/items`))).items;
+  }
+
+  addToSprint(id: string, artifact: string): Promise<unknown> {
+    return firstValueFrom(this.http.put(`${API}/sprints/${id}/items/${artifact}`, null));
+  }
+
+  removeFromSprint(id: string, artifact: string): Promise<unknown> {
+    return firstValueFrom(this.http.delete(`${API}/sprints/${id}/items/${artifact}`));
   }
 
   async artifacts(level: string): Promise<Artifact[]> {
@@ -229,4 +287,27 @@ export function configProblems(columns: ColumnConfig[]): string[] {
     }
   });
   return problems;
+}
+
+/** Unidades ativas de um Flight Level dentro do workspace (a unidade escolhida e as abaixo dela). */
+export function unitsOfLevelIn<T extends { id: string; parentId: string | null; active: boolean; level: { flightLevel: string | null }; name: string }>(
+  units: T[],
+  workspaceId: string | null,
+  flightLevel: string,
+): T[] {
+  if (!workspaceId) {
+    return [];
+  }
+  const parentOf = new Map(units.map((u) => [u.id, u.parentId]));
+  const inside = (id: string): boolean => {
+    for (let current: string | null | undefined = id; current; current = parentOf.get(current)) {
+      if (current === workspaceId) {
+        return true;
+      }
+    }
+    return false;
+  };
+  return units
+    .filter((u) => u.active && u.level.flightLevel === flightLevel && inside(u.id))
+    .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
 }

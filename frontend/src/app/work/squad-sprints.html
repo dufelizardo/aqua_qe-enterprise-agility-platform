@@ -1,0 +1,77 @@
+<section class="panel" data-testid="sprints-panel">
+  @if (squads().length === 0) {
+    <p class="muted">Não há unidade de {{ levels.nameOf('FL1') }} neste workspace.</p>
+  } @else {
+    <div class="row">
+      <label for="sprint-squad">{{ levels.nameOf('FL1') }}</label>
+      <select id="sprint-squad" [value]="squadId()" (change)="chooseSquad(value($event))" data-testid="sprints-squad">
+        @for (squad of squads(); track squad.id) {
+          <option [value]="squad.id" [selected]="squad.id === squadId()">{{ squad.name }}</option>
+        }
+      </select>
+    </div>
+    <p class="hint">Sprints são opcionais: quem trabalha em fluxo contínuo simplesmente não cria sprints.</p>
+
+    @if (canManage()) {
+      <form class="row create" (submit)="$event.preventDefault(); create()" data-testid="sprint-form">
+        <input placeholder="Nome da sprint" maxlength="120" [value]="newName()" (input)="newName.set(value($event))" data-testid="sprint-name" />
+        <input placeholder="Objetivo" maxlength="1000" [value]="newGoal()" (input)="newGoal.set(value($event))" data-testid="sprint-goal" />
+        <input type="date" aria-label="Início" [value]="newStart()" (input)="newStart.set(value($event))" />
+        <input type="date" aria-label="Fim" [value]="newEnd()" (input)="newEnd.set(value($event))" />
+        <button type="submit" class="btn primary" [disabled]="busy() || !newName().trim()" data-testid="sprint-create">Criar sprint</button>
+      </form>
+    }
+
+    @if (closing(); as pending) {
+      <div class="notice" role="alert" data-testid="sprint-close-confirm">
+        Encerrar "{{ pending.sprint.name }}"? {{ pending.returning }} item(ns) não concluído(s) voltarão ao backlog.
+        <button type="button" class="btn primary" [disabled]="busy()" (click)="confirmClose()" data-testid="sprint-close-yes">Encerrar</button>
+        <button type="button" class="btn" (click)="closing.set(null)">Cancelar</button>
+      </div>
+    }
+    @if (error(); as e) {
+      <p class="field-error" data-testid="sprints-error">{{ messageOf(e) }}</p>
+    }
+
+    <ul class="list" data-testid="sprints-list">
+      @for (sprint of sprints(); track sprint.id) {
+        <li class="item" [attr.data-testid]="'sprint-' + sprint.state">
+          <div class="row">
+            <button type="button" class="link" (click)="toggle(sprint)" data-testid="sprint-open">{{ sprint.name }}</button>
+            <span class="badge" [class.active]="sprint.state === 'ACTIVE'">{{ stateLabel(sprint.state) }}</span>
+            <span class="muted">{{ sprint.itemCount }} item(ns)</span>
+            @if (sprint.startDate || sprint.endDate) {
+              <span class="muted">{{ sprint.startDate ?? '?' }} → {{ sprint.endDate ?? '?' }}</span>
+            }
+            @if (canManage() && sprint.state === 'PLANNED') {
+              <button type="button" class="btn" [disabled]="busy()" (click)="start(sprint)" data-testid="sprint-start">Iniciar</button>
+            }
+            @if (canManage() && sprint.state === 'ACTIVE') {
+              <button type="button" class="btn" [disabled]="busy()" (click)="askClose(sprint)" data-testid="sprint-close">Encerrar</button>
+            }
+          </div>
+          @if (sprint.goal) {
+            <p class="muted">{{ sprint.goal }}</p>
+          }
+          @if (openSprint() === sprint.id) {
+            <ul class="sub" data-testid="sprint-items">
+              @for (item of items(); track item.id) {
+                <li>
+                  <span class="mono">{{ item.key }}</span> {{ item.title }}
+                  <span class="muted">· {{ item.status.name }}</span>
+                  @if (canManage() && sprint.state !== 'CLOSED') {
+                    <button type="button" class="link danger" (click)="remove(sprint, item)">retirar</button>
+                  }
+                </li>
+              } @empty {
+                <li class="muted">Nenhum item. Inclua pelo Backlog.</li>
+              }
+            </ul>
+          }
+        </li>
+      } @empty {
+        <li class="muted">Nenhuma sprint nesta {{ levels.nameOf('FL1') }}.</li>
+      }
+    </ul>
+  }
+</section>

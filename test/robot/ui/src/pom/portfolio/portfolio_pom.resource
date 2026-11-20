@@ -122,3 +122,55 @@ Fill New Child Item
     Wait For Elements State    ${LEVEL_NEW_PARENT} >> css=option >> text=${parent_label}    attached    timeout=30s
     Select Options By    ${LEVEL_NEW_PARENT}    label    ${parent_label}
     Select Options By    ${PORTFOLIO_NEW_UNIT}    label    ${unit_name}
+
+Click Squad Nav Link
+    Click    ${SQUAD_NAV}
+
+Fill New Item Without Parent
+    [Documentation]    Novo item escolhendo o tipo pelo rótulo, sem item pai, na unidade informada.
+    [Arguments]    ${type_label}    ${title}    ${unit_name}
+    Click    ${PORTFOLIO_NEW_INITIATIVE}
+    Select Options By    ${LEVEL_NEW_TYPE}    label    ${type_label}
+    Fill Text    ${PORTFOLIO_NEW_TITLE}    ${title}
+    Select Options By    ${PORTFOLIO_NEW_UNIT}    label    ${unit_name}
+
+Open Sprints Tab For Squad
+    [Arguments]    ${squad_name}
+    Click    ${SQUAD_TAB_SPRINTS}
+    Wait For Elements State    ${SPRINTS_SQUAD}    visible    timeout=30s
+    Select Options By    ${SPRINTS_SQUAD}    label    ${squad_name}
+
+Create Sprint In Tab
+    [Arguments]    ${name}
+    Fill Text    ${SPRINT_NAME}    ${name}
+    Click    ${SPRINT_CREATE}
+
+Sprint Row
+    [Arguments]    ${name}
+    ${row}=    Evaluate    $SPRINT_ROW_BY_NAME.replace('{}', $name)
+    RETURN    ${row}
+
+Wait For Sprint State
+    [Arguments]    ${name}    ${state_label}
+    ${row}=    Sprint Row    ${name}
+    Wait For Condition    Text    ${row} >> css=.badge    ==    ${state_label}    timeout=30s
+
+Click Sprint Action
+    [Arguments]    ${name}    ${testid}
+    ${row}=    Sprint Row    ${name}
+    Click    ${row} >> css=[data-testid="${testid}"]
+
+Include Backlog Item In Sprint
+    [Arguments]    ${title}    ${sprint_name}
+    Click    ${SQUAD_TAB_BACKLOG}
+    ${row}=    Evaluate    $BACKLOG_ROW_BY_TITLE.replace('{}', $title)
+    Wait For Elements State    ${row} >> css=[data-testid="backlog-sprint"]    visible    timeout=30s
+    Select Options By    ${row} >> css=[data-testid="backlog-sprint"]    label    ${sprint_name}
+
+Get Close Confirmation Text
+    Wait For Elements State    ${SPRINT_CLOSE_CONFIRM}    visible    timeout=30s
+    ${text}=    Get Text    ${SPRINT_CLOSE_CONFIRM}
+    RETURN    ${text}
+
+Confirm Sprint Close
+    Click    ${SPRINT_CLOSE_YES}

@@ -51,8 +51,9 @@ class BoardController {
 
 	@GetMapping("/{id}/view")
 	BoardView view(@PathVariable UUID id, @RequestParam(required = false) String type,
-			@RequestParam(required = false) UUID assigneeId, @RequestParam(required = false) Boolean blocked) {
-		return service.view(id, type, assigneeId, blocked);
+			@RequestParam(required = false) UUID assigneeId, @RequestParam(required = false) Boolean blocked,
+			@RequestParam(required = false) UUID sprintId) {
+		return service.view(id, type, assigneeId, blocked, sprintId);
 	}
 
 	record CreateBoard(UUID orgUnitId, String level, String name) {

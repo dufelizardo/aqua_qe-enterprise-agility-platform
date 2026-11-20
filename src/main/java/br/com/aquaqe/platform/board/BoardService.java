@@ -53,15 +53,17 @@ class BoardService {
 	private final CurrentUser currentUser;
 	private final ArtifactConfiguration configuration;
 	private final Artifacts artifacts;
+	private final SprintService sprints;
 
 	BoardService(JdbcClient jdbc, OrgUnits orgUnits, Authorization authorization, CurrentUser currentUser,
-			ArtifactConfiguration configuration, Artifacts artifacts) {
+			ArtifactConfiguration configuration, Artifacts artifacts, SprintService sprints) {
 		this.jdbc = jdbc;
 		this.orgUnits = orgUnits;
 		this.authorization = authorization;
 		this.currentUser = currentUser;
 		this.configuration = configuration;
 		this.artifacts = artifacts;
+		this.sprints = sprints;
 	}
 
 	List<Board> boards(UUID orgUnitId, String level) {
@@ -144,14 +146,16 @@ class BoardService {
 	}
 
 	/** Colunas com os cartões que o usuário lê (SSD 2.1, regras 1, 2 e 6) e a situação do WIP de cada uma. */
-	BoardView view(UUID id, String type, UUID assigneeId, Boolean blocked) {
+	BoardView view(UUID id, String type, UUID assigneeId, Boolean blocked, UUID sprintId) {
 		Board board = board(id);
+		Set<UUID> inSprint = sprintId == null ? null : sprints.itemIdSet(sprintId);
 		List<ArtifactView> items = artifacts.itemsOfLevel(board.orgUnitId(), board.level(), VIEW_LIMIT);
 		Map<String, List<Card>> byStatus = new HashMap<>();
 		for (ArtifactView item : items) {
 			if ((type != null && !type.equals(item.type()))
 					|| (assigneeId != null && (item.assignee() == null || !assigneeId.equals(item.assignee().id())))
-					|| (blocked != null && blocked != item.blocked())) {
+					|| (blocked != null && blocked != item.blocked())
+					|| (inSprint != null && !inSprint.contains(item.id()))) {
 				continue;
 			}
 			byStatus.computeIfAbsent(item.status().key(), k -> new ArrayList<>())

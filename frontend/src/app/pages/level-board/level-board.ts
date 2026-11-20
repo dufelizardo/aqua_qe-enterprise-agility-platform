@@ -8,6 +8,8 @@ import { LevelsService } from '../../core/levels.service';
 import { ApiError, fieldError, messageOf, toApiError } from '../../core/api-error';
 import { WorkspaceService } from '../../core/workspace.service';
 import { BoardConfig } from '../../work/board-config';
+import { SquadBacklog } from '../../work/squad-backlog';
+import { SquadSprints } from '../../work/squad-sprints';
 import { LEVEL_SETUPS, LevelSetup, MANAGE_ROLES_NOTE } from './level-setup';
 import {
   Artifact,
@@ -16,10 +18,12 @@ import {
   BoardColumn,
   BoardView,
   Card,
+  Sprint,
   TransitionOption,
   WorkService,
   executable,
   transitionInto,
+  unitsOfLevelIn,
 } from '../../work/work.service';
 
 /**
@@ -29,7 +33,7 @@ import {
  */
 @Component({
   selector: 'app-level-board',
-  imports: [CdkDropListGroup, CdkDropList, CdkDrag, MatMenuModule, MatSnackBarModule, BoardConfig],
+  imports: [CdkDropListGroup, CdkDropList, CdkDrag, MatMenuModule, MatSnackBarModule, BoardConfig, SquadBacklog, SquadSprints],
   templateUrl: './level-board.html',
   styleUrl: './level-board.scss',
 })
@@ -60,6 +64,11 @@ export class LevelBoard {
   protected readonly board = signal<Board | null>(null);
   protected readonly view = signal<BoardView | null>(null);
   protected readonly mode = signal<'quadro' | 'lista'>('quadro');
+  /** Abas da tela de FL1 (UX/UI 7.7): Quadro, Backlog e Sprints. */
+  protected readonly tab = signal<'quadro' | 'backlog' | 'sprints'>('quadro');
+  /** Sprints planejadas e ativas das squads do workspace, para o seletor do quadro (vazio = sem seletor). */
+  protected readonly sprintOptions = signal<Sprint[]>([]);
+  protected readonly sprintFilter = signal('');
   protected readonly filter = signal('');
   protected readonly list = signal<Artifact[]>([]);
   protected readonly busy = signal(false);
@@ -122,6 +131,8 @@ export class LevelBoard {
         this.creating.set(false);
         this.configuring.set(false);
         this.board.set(null);
+        this.tab.set('quadro');
+        this.sprintFilter.set('');
         void this.load();
       });
     });
@@ -144,6 +155,7 @@ export class LevelBoard {
       }
       await this.levels.load();
       this.context.set(await this.organization.unit(workspaceId));
+      await this.loadSprintOptions(workspaceId);
       const boards = await this.work.boards(workspaceId, this.setup().level);
       this.board.set(boards[0] ?? null);
       await this.refresh();
@@ -157,7 +169,7 @@ export class LevelBoard {
   protected async refresh(): Promise<void> {
     const board = this.board();
     const [view, list] = await Promise.all([
-      board ? this.work.boardView(board.id) : Promise.resolve(null),
+      board ? this.work.boardView(board.id, this.sprintFilter() || null) : Promise.resolve(null),
       this.work.artifacts(this.setup().level),
     ]);
     this.view.set(view);
@@ -181,13 +193,18 @@ export class LevelBoard {
   protected async openCreate(): Promise<void> {
     this.creating.set(true);
     this.createError.set(null);
+    // Define o tipo padrão já, antes de esperar a API: assim a escolha do usuário feita nesse meio-tempo não é desfeita.
+    const initial = this.creatableTypes()[0]?.key ?? '';
+    this.newType.set(initial);
     const units = await this.organization.allUnits();
     const options = unitsInWorkspace(units, this.workspace.currentWorkspaceId()).filter(
       (unit) => unit.active && unit.level.flightLevel === this.setup().level,
     );
     this.levelUnits.set(options);
     this.newUnit.set(options[0]?.id ?? '');
-    await this.chooseType(this.creatableTypes()[0]?.key ?? '');
+    if (this.newType() === initial) {
+      await this.chooseType(initial);
+    }
   }
 
   /** Troca o tipo e carrega os possíveis pais: itens que o usuário lê, dos tipos permitidos (SSD 8.1). */
@@ -201,6 +218,9 @@ export class LevelBoard {
     }
     const levels = [...new Set(this.types().filter((t) => type.parentTypes.includes(t.key)).map((t) => t.level))];
     const lists = await Promise.all(levels.map((level) => this.work.artifacts(level)));
+    if (this.newType() !== key) {
+      return; // o usuário já trocou de tipo enquanto os pais carregavam
+    }
     const candidates = lists.flat().filter((a) => type.parentTypes.includes(a.type));
     this.parentCandidates.set(candidates);
     if (type.parentRequired) {
@@ -281,6 +301,35 @@ export class LevelBoard {
       await this.refresh();
       this.toast(`${card.key} movida para ${option.to.name}.`);
     });
+  }
+
+  // ---------------------------------------------------------------------------------------- sprints (FL1)
+
+  /** Só a tela de FL1 tem sprints; o seletor aparece quando alguma squad do workspace usa sprint (UX/UI 7.7). */
+  private async loadSprintOptions(workspaceId: string): Promise<void> {
+    if (this.setup().level !== 'FL1') {
+      this.sprintOptions.set([]);
+      return;
+    }
+    const squads = unitsOfLevelIn(await this.organization.allUnits(), workspaceId, 'FL1');
+    const lists = await Promise.all(squads.map((s) => this.work.sprints(s.id)));
+    this.sprintOptions.set(lists.flat().filter((s) => s.state !== 'CLOSED'));
+  }
+
+  protected async filterBySprint(id: string): Promise<void> {
+    this.sprintFilter.set(id);
+    await this.refresh();
+  }
+
+  protected async showTab(tab: 'quadro' | 'backlog' | 'sprints'): Promise<void> {
+    this.tab.set(tab);
+    if (tab === 'quadro') {
+      const workspaceId = this.workspace.currentWorkspaceId();
+      if (workspaceId) {
+        await this.loadSprintOptions(workspaceId);
+      }
+      await this.refresh();
+    }
   }
 
   // ---------------------------------------------------------------------------------------- configurar e bloquear
