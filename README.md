@@ -117,7 +117,7 @@ O faseamento é uma proposta ainda a validar ([PRD, seção 13](doc/PRD.md)).
 ├── test/robot/         aceitação Robot Framework (LKDF): api/ e ui/
 ├── k8s/                manifestos: apps/ (dev e prod), auth/ (Keycloak), components/mdns, argocd/
 ├── compose.yaml        ambiente local e de CI
-├── .github/workflows/  pipeline de promoção, publicação de imagens, auto-merge, vigilância de cópias
+├── .github/workflows/  pipeline, promoção automática com retentativas, publicação de imagens, vigilância de cópias
 └── doc/
     ├── PRD.md          requisitos de produto
     ├── SAD.md          arquitetura

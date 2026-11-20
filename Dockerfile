@@ -1,10 +1,12 @@
-# API do AQuA-QE (Spring Boot). Build com o Maven Wrapper do projeto; imagem final só com o JRE.
-FROM eclipse-temurin:25-jdk-alpine AS build
+# API do AQuA-QE (Spring Boot). O build usa a imagem oficial do Maven (sem baixar o Maven pelo wrapper, que falhou
+# por instabilidade do repositório central); a imagem final só tem o JRE.
+FROM maven:3.9.11-eclipse-temurin-25-alpine AS build
 WORKDIR /src
-COPY mvnw pom.xml ./
-COPY .mvn .mvn
+COPY pom.xml ./
 COPY src src
-RUN --mount=type=cache,target=/root/.m2 sh ./mvnw -B -q package -DskipTests
+# Retentativas do transporte HTTP do Maven para downloads de dependências (rede instável).
+RUN --mount=type=cache,target=/root/.m2 mvn -B -q package -DskipTests \
+      -Daether.connector.http.retryHandler.count=5 -Daether.connector.requestTimeout=120000
 
 FROM eclipse-temurin:25-jre-alpine
 WORKDIR /app

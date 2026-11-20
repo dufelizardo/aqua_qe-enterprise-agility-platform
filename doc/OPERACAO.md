@@ -94,6 +94,8 @@ feature/* ──PR──▶ developer ──(pipeline verde)──▶ PR automá
 
 Para segurar uma promoção, feche o PR automático: ele é reaberto no próximo push verde da `developer`.
 
+**Quando algo falha** (ADR-18): passos de rede tentam até 3 vezes; na aceitação, os testes que falham rodam mais uma vez e, se passarem, viram issue com a label `teste instável`; se o job de aceitação inteiro falhar, o `retry-acceptance.yml` o reexecuta até 2 vezes e comenta no PR. Falhas de backend, frontend ou dry-run não são retentadas. Esgotadas as tentativas, o PR fica aberto e nada vai para a prod.
+
 ## 4. Configuração única no GitHub
 
 1. **Branch `developer`** criada a partir da `main` e definida como branch padrão de trabalho.
