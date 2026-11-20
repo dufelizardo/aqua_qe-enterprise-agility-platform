@@ -1,0 +1,196 @@
+<header class="page-header">
+  <p class="eyebrow">Administração</p>
+  <h1 data-testid="page-title">Estrutura organizacional</h1>
+  <p class="lead">Unidades da organização, o nível de cada uma e os vínculos "atende a" entre ramos.</p>
+</header>
+
+@if (loading() && units().length === 0) {
+  <div class="skeleton" data-testid="org-loading" aria-busy="true" aria-label="Carregando a estrutura">
+    <span></span><span></span><span></span>
+  </div>
+} @else if (loadError(); as error) {
+  <div class="card error" role="alert" data-testid="org-load-error">
+    <p>{{ error }}</p>
+    <button type="button" class="btn" (click)="load()">Tentar novamente</button>
+  </div>
+} @else {
+  <div class="layout">
+    <section class="card tree-panel" aria-labelledby="levels-title">
+      <h2 id="levels-title">Níveis</h2>
+      <ul class="levels" data-testid="org-levels">
+        @for (level of levels(); track level.key) {
+          <li [attr.data-testid]="'org-level-' + level.key">
+            {{ level.name }}
+            @if (level.flightLevel) {
+              <span class="fl">{{ level.flightLevel }}</span>
+            }
+          </li>
+        }
+      </ul>
+      <p class="hint">Os níveis são definidos na instalação e não mudam por aqui.</p>
+
+      <h2>Unidades</h2>
+      <ul class="tree" role="tree" data-testid="org-tree">
+        @for (row of rows(); track row.unit.id) {
+          <li role="treeitem" [attr.aria-level]="row.depth + 1" [attr.aria-selected]="row.unit.id === selectedId()">
+            <button
+              type="button"
+              class="tree-item"
+              [class.selected]="row.unit.id === selectedId()"
+              [class.inactive]="!row.unit.active"
+              [style.padding-left.px]="12 + row.depth * 20"
+              (click)="pick(row.unit.id)"
+              data-testid="org-tree-item"
+            >
+              <span class="unit-name">{{ row.unit.name }}</span>
+              <span class="unit-level">{{ row.unit.level.name }}</span>
+              @if (!row.unit.active) {
+                <span class="badge">desativada</span>
+              }
+            </button>
+          </li>
+        }
+      </ul>
+      @if (onlyRoot()) {
+        <p class="hint" data-testid="org-empty">
+          Só existe a unidade raiz. Escolha-a e use "Nova unidade aqui" para montar a estrutura.
+        </p>
+      }
+    </section>
+
+    @if (detail(); as unit) {
+      <section class="card detail" aria-labelledby="detail-title" data-testid="org-detail">
+        <nav class="path" aria-label="Caminho até a raiz" data-testid="org-detail-path">
+          @for (ref of unit.path; track ref.id) {
+            <button type="button" class="link" (click)="select(ref.id)">{{ ref.name }}</button>
+            <span aria-hidden="true">›</span>
+          }
+          <span>{{ unit.name }}</span>
+        </nav>
+        <h2 id="detail-title" data-testid="org-detail-name">{{ unit.name }}</h2>
+        <p class="meta">
+          {{ unit.level.name }}
+          @if (unit.level.flightLevel) {
+            · {{ unit.level.flightLevel }}
+          }
+          · <span data-testid="org-detail-status">{{ unit.active ? 'ativa' : 'desativada' }}</span>
+        </p>
+
+        @if (conflict()) {
+          <div class="notice" role="alert" data-testid="org-conflict">
+            Este item foi alterado por outra pessoa.
+            <button type="button" class="btn" (click)="reloadKeepingInput()" data-testid="org-conflict-reload">
+              Recarregar
+            </button>
+          </div>
+        }
+
+        <form class="row" (submit)="$event.preventDefault(); rename()">
+          <label for="rename">Nome</label>
+          <input
+            id="rename"
+            [value]="renameName()"
+            (input)="renameName.set(value($event))"
+            maxlength="120"
+            [attr.aria-invalid]="!!fieldError(renameError(), 'name')"
+            data-testid="org-rename-input"
+          />
+          <button type="submit" class="btn primary" [disabled]="busy()" data-testid="org-rename-submit">Renomear</button>
+          @if (fieldError(renameError(), 'name') || fieldError(renameError(), 'active'); as message) {
+            <p class="field-error" data-testid="org-rename-error">{{ message }}</p>
+          }
+        </form>
+
+        @if (unit.parentId) {
+          <button type="button" class="btn" [disabled]="busy()" (click)="toggleActive()" data-testid="org-toggle-active">
+            {{ unit.active ? 'Desativar unidade' : 'Reativar unidade' }}
+          </button>
+        }
+
+        @if (unit.active && childLevels().length > 0) {
+          <h3>Nova unidade aqui</h3>
+          <form class="row" (submit)="$event.preventDefault(); createChild()">
+            <label for="new-name">Nome</label>
+            <input
+              id="new-name"
+              [value]="newName()"
+              (input)="newName.set(value($event))"
+              maxlength="120"
+              [attr.aria-invalid]="!!fieldError(createError(), 'name')"
+              data-testid="org-new-name"
+            />
+            <label for="new-level">Nível</label>
+            <select id="new-level" [value]="newLevel()" (change)="newLevel.set(value($event))" data-testid="org-new-level">
+              @for (level of childLevels(); track level.key) {
+                <option [value]="level.key" [selected]="level.key === newLevel()">{{ level.name }}</option>
+              }
+            </select>
+            <button type="submit" class="btn primary" [disabled]="busy()" data-testid="org-new-submit">Criar</button>
+            @if (createError(); as error) {
+              <p class="field-error" data-testid="org-new-error">{{ messageOf(error) }}</p>
+            }
+          </form>
+        }
+
+        <h3>Vínculos "atende a"</h3>
+        <p class="hint">Um vínculo permite ligar artefatos entre ramos; ele não dá papéis na outra unidade.</p>
+        <div class="links">
+          <div>
+            <h4>Atende a</h4>
+            <ul data-testid="org-serves-list">
+              @for (ref of unit.links.serves; track ref.id) {
+                <li>
+                  {{ ref.name }}
+                  <button
+                    type="button"
+                    class="link danger"
+                    [disabled]="busy()"
+                    (click)="removeLink(ref.id)"
+                    [attr.aria-label]="'Remover vínculo com ' + ref.name"
+                    data-testid="org-unlink"
+                  >
+                    remover
+                  </button>
+                </li>
+              } @empty {
+                <li class="muted">Nenhuma unidade.</li>
+              }
+            </ul>
+          </div>
+          <div>
+            <h4>É atendida por</h4>
+            <ul data-testid="org-served-by-list">
+              @for (ref of unit.links.servedBy; track ref.id) {
+                <li>{{ ref.name }}</li>
+              } @empty {
+                <li class="muted">Nenhuma unidade.</li>
+              }
+            </ul>
+          </div>
+        </div>
+        @if (unit.active && candidates().length > 0) {
+          <form class="row" (submit)="$event.preventDefault(); addLink()">
+            <label for="link-target">Passa a atender a</label>
+            <select
+              id="link-target"
+              [value]="linkTarget()"
+              (change)="linkTarget.set(value($event))"
+              data-testid="org-link-target"
+            >
+              <option value="">Escolha uma unidade de outro ramo</option>
+              @for (candidate of candidates(); track candidate.id) {
+                <option [value]="candidate.id">{{ candidate.name }} ({{ candidate.level.name }})</option>
+              }
+            </select>
+            <button type="submit" class="btn primary" [disabled]="busy() || !linkTarget()" data-testid="org-link-submit">
+              Adicionar vínculo
+            </button>
+            @if (linkError(); as error) {
+              <p class="field-error" data-testid="org-link-error">{{ messageOf(error) }}</p>
+            }
+          </form>
+        }
+      </section>
+    }
+  </div>
+}

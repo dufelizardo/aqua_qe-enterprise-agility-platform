@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 
+import { adminGuard } from './core/admin.guard';
 import { authGuard } from './core/auth.guard';
 
 /** Rotas do MVP (UX/UI, seção 5). A landing é pública; o restante exige sessão. */
@@ -37,6 +38,18 @@ export const routes: Routes = [
         title: 'Squad · AQuA-QE',
         loadComponent: () => import('./pages/placeholder/placeholder').then((m) => m.Placeholder),
         data: { screen: 'Squad Workspace', level: 'FL1' },
+      },
+      {
+        path: 'admin',
+        canActivate: [adminGuard],
+        children: [
+          { path: '', pathMatch: 'full', redirectTo: 'organizacao' },
+          {
+            path: 'organizacao',
+            title: 'Estrutura organizacional · AQuA-QE',
+            loadComponent: () => import('./admin/admin-organization').then((m) => m.AdminOrganization),
+          },
+        ],
       },
       {
         path: 'busca',

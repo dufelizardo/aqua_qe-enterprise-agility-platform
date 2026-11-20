@@ -192,7 +192,7 @@ flowchart LR
 | Squad Workspace | UI-15 | `/squad/:aba` | MVP |
 | Work Item Details | UI-16 | `/items/:key` | MVP |
 | Resultados de busca | — | `/search` | MVP |
-| Administração | — | `/admin/:secao` | MVP |
+| Administração | — | `/admin/:secao` (`/admin/organizacao`) | MVP |
 | Atalho por chave | — | `/a/:key` redireciona para a tela do tipo | MVP |
 | Executive Overview, Ideas, Capacity Planning, Living Documentation Hub, Governance Center, Traceability | UI-03, 05, 09, 10, 17, 18 | — | 2 |
 
@@ -481,6 +481,24 @@ Documentação                    Gates — Pronto para Construir    4 de 6
 ### 7.10 Administração
 
 Visível apenas para `PLATFORM_ADMIN`. Uma página com seções no menu interno.
+
+**Situação (2026-11-20):** a seção Estrutura organizacional está implementada em `/admin/organizacao`; quem não é `PLATFORM_ADMIN` não vê o item Admin e, se abrir o endereço, volta para a home. As demais seções entram junto com os endpoints delas e, até lá, não aparecem.
+
+```text
++---------------------------+--------------------------------------------------------+
+| Níveis (só leitura)       | Empresa › Portfólio A › Cadeia Pagamentos              |
+| [Empresa] [Portfólio FL3] | Cadeia Pagamentos                                      |
+| [Cadeia FL2] [Squad FL1]  | Cadeia · FL2 · ativa                                   |
+|                           | Nome [______________] [Renomear]  [Desativar unidade]  |
+| Unidades                  | Nova unidade aqui: Nome [____] Nível [Squad v] [Criar] |
+|  Empresa                  | Vínculos "atende a"                                    |
+|   Portfólio A             |   Atende a: Portfólio B (remover)                      |
+|    > Cadeia Pagamentos    |   É atendida por: —                                    |
+|   Portfólio B             |   Passa a atender a [unidade de outro ramo v] [Adicionar]|
++---------------------------+--------------------------------------------------------+
+```
+
+No celular as duas colunas se empilham, e escolher uma unidade rola a tela até o detalhe. "Nova unidade aqui" só oferece níveis de posição maior que o da unidade escolhida, e "Passa a atender a" só oferece unidades ativas de outro ramo (SSD 3.2).
 
 | Seção | Conteúdo | Dados e ações |
 |---|---|---|
