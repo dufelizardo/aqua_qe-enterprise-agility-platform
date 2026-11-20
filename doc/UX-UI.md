@@ -148,14 +148,16 @@ O ponto verde de "operacional" sobre o avatar, presente no protótipo, não é u
 | Item | Tela | Visível para |
 |---|---|---|
 | Home | Meu trabalho | todos |
-| Portfolio | Portfolio Management (FL3) | todos |
-| Tactical | Tactical Board (FL2) | todos |
-| Squad | Squad Workspace (FL1) | todos |
+| *nome do nível ligado a FL3* | Portfolio Management (FL3) | todos |
+| *nome do nível ligado a FL2* | Tactical Board (FL2) | todos |
+| *nome do nível ligado a FL1* | Squad Workspace (FL1) | todos |
 | Admin | Administração | `PLATFORM_ADMIN` |
+
+Os itens de Flight Level levam o **nome do nível organizacional** ligado a cada Flight Level na configuração (`GET /org-levels`); na instalação padrão, "Portfólio", "Cadeia" e "Squad". O mesmo nome é o título da tela e o rótulo da unidade no formulário de criação. A interface nunca usa nomes de nível fixos no código ([Proposta 06](NAVIGATION-PROPOSAL.md#3-decisões-tomadas-2026-11-20), NAV-D1).
 
 Os módulos Living Documentation, Quality, Governance e Analytics do [PRD, seção 9](PRD.md) entram no menu nas fases em que forem entregues; no MVP não aparecem, nem desabilitados.
 
-**Trilha de navegação:** unidade ativa, depois os ancestrais do artefato aberto. Cada parte é um link.
+**Trilha de navegação:** unidade ativa, depois os ancestrais do artefato aberto. Cada parte é um link. Implementada para a unidade ativa nas telas de Flight Level (2026-11-20): o caminho até a raiz, o nível e o Flight Level da unidade e, separado, "Atende a" com as unidades atendidas, que nunca aparecem como ancestrais (Proposta 06, NAV-008 e NAV-010).
 
 ## 5. Mapa de telas e rotas
 
@@ -330,7 +332,7 @@ Ancestral que o usuário não pode abrir aparece só com o resumo (título, stat
 - **Dados:** `GET /me`, `GET /me/workspaces`.
 - **Comportamento:** com uma única unidade, a tela é pulada. A escolha é lembrada no navegador e enviada em `X-Workspace-Id`.
 - **Estado vazio:** "Você ainda não tem acesso a nenhuma unidade. Peça ao administrador da plataforma." Sem menu lateral.
-- **Situação (2026-11-20):** implementada em `/workspace`. As telas que listam itens levam a ela quando não há workspace escolhido; o seletor do cabeçalho aparece com mais de uma unidade. Por ora o menu lateral continua visível nesta tela.
+- **Situação (2026-11-20):** implementada em `/workspace`. As telas que listam itens levam a ela quando não há workspace escolhido. As opções são a **árvore** das unidades em que o usuário tem papel e das unidades ativas abaixo delas, indentada, com o nome do nível de cada uma e os papéis que valem nela (os da unidade acima, pela regra 1 do SSD 2.1). Unidades desativadas não aparecem. Sem escolha lembrada e com uma única unidade com papel, ela é escolhida sozinha. O seletor do cabeçalho mostra a mesma árvore (Proposta 06). Por ora o menu lateral continua visível nesta tela.
 
 ### 7.2 Home — Meu trabalho
 

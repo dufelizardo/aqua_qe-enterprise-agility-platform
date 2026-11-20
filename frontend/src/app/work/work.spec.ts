@@ -2,6 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
+import { LevelsService } from '../core/levels.service';
 import { WorkspaceService } from '../core/workspace.service';
 import { BoardColumn, ColumnConfig, TransitionOption, configProblems, executable, transitionInto } from './work.service';
 
@@ -30,6 +31,16 @@ describe('transitionInto', () => {
 describe('WorkspaceService', () => {
   let workspace: WorkspaceService;
   let http: HttpTestingController;
+  const lvl = (key: string, position: number) => ({ key, name: key, position, flightLevel: null });
+  const unit = (id: string, parentId: string | null, active = true, levelKey = 'PORTFOLIO', position = 3) => ({
+    id,
+    name: id,
+    level: lvl(levelKey, position),
+    parentId,
+    active,
+    version: 0,
+  });
+  const units = [unit('root', null, true, 'ENTERPRISE', 1), unit('a', 'root'), unit('b', 'root'), unit('off', 'root', false)];
 
   beforeEach(() => {
     localStorage.clear();
@@ -40,34 +51,55 @@ describe('WorkspaceService', () => {
 
   afterEach(() => http.verify());
 
-  it('com uma única unidade, escolhe sozinho e esconde o seletor', async () => {
-    const loading = workspace.load();
-    http.expectOne('/api/v1/me/workspaces').flush({
-      items: [{ id: 'root', name: 'Empresa', level: 'ENTERPRISE', roles: ['PRODUCT_MANAGER'] }],
-    });
+  const flush = async (loading: Promise<void>, roleUnits: unknown[]) => {
+    http.expectOne('/api/v1/me/workspaces').flush({ items: roleUnits });
+    http.expectOne((r) => r.url === '/api/v1/org-units').flush({ items: units, page: 0, totalPages: 1 });
     await loading;
+  };
+
+  it('com uma única unidade com papel, escolhe essa unidade e oferece a árvore abaixo dela, sem as desativadas', async () => {
+    await flush(workspace.load(), [{ id: 'root', name: 'Empresa', level: 'ENTERPRISE', roles: ['PRODUCT_MANAGER'] }]);
     expect(workspace.current()?.id).toBe('root');
-    expect(workspace.selectable()).toBe(false);
+    expect(workspace.workspaces().map((w) => `${w.depth}:${w.id}`)).toEqual(['0:root', '1:a', '1:b']);
+    expect(workspace.selectable()).toBe(true);
     expect(workspace.hasRole('PRODUCT_MANAGER')).toBe(true);
     expect(workspace.hasRole('PLATFORM_ADMIN')).toBe(false);
   });
 
-  it('com várias unidades, espera a escolha e a lembra', async () => {
-    const items = [
-      { id: 'a', name: 'Portfólio A', level: 'PORTFOLIO', roles: ['PRODUCT_MANAGER'] },
-      { id: 'b', name: 'Portfólio B', level: 'PORTFOLIO', roles: ['VIEWER'] },
+  it('com papéis em várias unidades, espera a escolha, herda os papéis de cima e lembra a escolha', async () => {
+    const roleUnits = [
+      { id: 'a', name: 'a', level: 'PORTFOLIO', roles: ['PRODUCT_MANAGER'] },
+      { id: 'b', name: 'b', level: 'PORTFOLIO', roles: ['VIEWER'] },
     ];
-    let loading = workspace.load();
-    http.expectOne('/api/v1/me/workspaces').flush({ items });
-    await loading;
+    await flush(workspace.load(), roleUnits);
     expect(workspace.current()).toBeNull();
-    expect(workspace.selectable()).toBe(true);
+    expect(workspace.workspaces().map((w) => w.id)).toEqual(['a', 'b']);
 
     workspace.choose('b');
-    loading = workspace.load();
-    http.expectOne('/api/v1/me/workspaces').flush({ items });
+    await flush(workspace.load(), roleUnits);
+    expect(workspace.current()?.roles).toEqual(['VIEWER']);
+  });
+});
+
+describe('LevelsService', () => {
+  it('usa os nomes de nível da configuração, mesmo diferentes da instalação padrão (Proposta 06)', async () => {
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    const levels = TestBed.inject(LevelsService);
+    const http = TestBed.inject(HttpTestingController);
+    expect(levels.nameOf('FL3')).toBe('FL3');
+    const loading = levels.load();
+    http.expectOne('/api/v1/org-levels').flush({
+      items: [
+        { key: 'EMPRESA', name: 'Empresa', position: 1, flightLevel: null },
+        { key: 'PRODUTO', name: 'Produto', position: 2, flightLevel: 'FL3' },
+        { key: 'VALUE_STREAM', name: 'Value Stream', position: 3, flightLevel: 'FL2' },
+        { key: 'TEAM', name: 'Team', position: 4, flightLevel: 'FL1' },
+      ],
+    });
     await loading;
-    expect(workspace.current()?.name).toBe('Portfólio B');
+    expect([levels.nameOf('FL3'), levels.nameOf('FL2'), levels.nameOf('FL1')]).toEqual(['Produto', 'Value Stream', 'Team']);
+    expect(levels.nameOfKey('VALUE_STREAM')).toBe('Value Stream');
+    http.verify();
   });
 });
 

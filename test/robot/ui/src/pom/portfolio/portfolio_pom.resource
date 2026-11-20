@@ -7,11 +7,6 @@ Resource            ../../resource/locators/portfolio/portfolio_locator.resource
 Click Portfolio Nav Link
     Click    ${PORTFOLIO_NAV_LINK}
 
-Wait For Portfolio Page
-    Wait For Condition    Text    ${PORTFOLIO_PAGE_TITLE}    ==    Portfolio    timeout=30s
-    Wait For Elements State    css=[data-testid="board"], [data-testid="board-empty"]    visible
-    ...    timeout=30s
-
 Get Create Board Button Count
     ${count}=    Get Element Count    ${PORTFOLIO_CREATE_BOARD}
     RETURN    ${count}

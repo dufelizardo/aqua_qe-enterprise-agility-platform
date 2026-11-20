@@ -3,7 +3,8 @@ import { Component, computed, effect, inject, input, signal, untracked } from '@
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
-import { OrgUnit, OrganizationService } from '../../admin/organization.service';
+import { OrgUnit, OrgUnitDetail, OrganizationService } from '../../admin/organization.service';
+import { LevelsService } from '../../core/levels.service';
 import { ApiError, fieldError, messageOf, toApiError } from '../../core/api-error';
 import { WorkspaceService } from '../../core/workspace.service';
 import { BoardConfig } from '../../work/board-config';
@@ -37,10 +38,19 @@ export class LevelBoard {
   private readonly organization = inject(OrganizationService);
   private readonly snackBar = inject(MatSnackBar);
   protected readonly workspace = inject(WorkspaceService);
+  protected readonly levels = inject(LevelsService);
 
   /** Chave do nível, vinda dos dados da rota. */
   readonly screen = input<keyof typeof LEVEL_SETUPS>('portfolio');
   protected readonly setup = computed<LevelSetup>(() => LEVEL_SETUPS[this.screen()]);
+  /** Título da tela e rótulo da unidade: o nome do nível ligado ao Flight Level, vindo da configuração. */
+  protected readonly levelName = computed(() => this.levels.nameOf(this.setup().level));
+  /** Unidade ativa com o caminho até a raiz e os vínculos, para a trilha (Proposta 06, NAV-008 e NAV-010). */
+  protected readonly context = signal<OrgUnitDetail | null>(null);
+  protected readonly newLabel = computed(() => {
+    const types = this.creatableTypes();
+    return types.length === 1 ? `Criar ${types[0]!.name}` : 'Novo item';
+  });
   protected readonly manageNote = MANAGE_ROLES_NOTE;
   /** Tipos de artefato da instalação (nome, pais permitidos), para os cartões e o formulário. */
   protected readonly types = signal<ArtifactType[]>([]);
@@ -132,6 +142,8 @@ export class LevelBoard {
       if (this.types().length === 0) {
         this.types.set(await this.work.artifactTypes());
       }
+      await this.levels.load();
+      this.context.set(await this.organization.unit(workspaceId));
       const boards = await this.work.boards(workspaceId, this.setup().level);
       this.board.set(boards[0] ?? null);
       await this.refresh();

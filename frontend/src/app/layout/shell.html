@@ -22,8 +22,14 @@
     </button>
     <mat-menu #workspaceMenu="matMenu">
       @for (item of workspace.workspaces(); track item.id) {
-        <button mat-menu-item (click)="chooseWorkspace(item.id)" [attr.data-testid]="'workspace-' + item.id">
-          {{ item.name }}
+        <button
+          mat-menu-item
+          (click)="chooseWorkspace(item.id)"
+          [class.current]="item.id === workspace.current()?.id"
+          [style.padding-left.px]="16 + item.depth * 16"
+          [attr.data-testid]="'workspace-' + item.id"
+        >
+          {{ item.name }} <span class="role">{{ levels.nameOfKey(item.level) }}</span>
         </button>
       }
     </mat-menu>
@@ -73,7 +79,7 @@
 
 <div class="body">
   <nav class="sidebar" aria-label="Navegação principal" data-testid="sidebar">
-    @for (item of menu; track item.path) {
+    @for (item of menu(); track item.path) {
       <a [routerLink]="item.path" routerLinkActive="active" [attr.data-testid]="item.testId">{{ item.label }}</a>
     }
     @if (session.isPlatformAdmin()) {

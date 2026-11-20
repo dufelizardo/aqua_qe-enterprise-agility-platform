@@ -3,37 +3,63 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
+import { OrgUnit, OrganizationService, buildTree } from '../admin/organization.service';
+
 /** Unidade em que o usuário tem papel (GET /me/workspaces, SSD 3.1). */
-export interface Workspace {
+export interface RoleUnit {
   id: string;
   name: string;
   level: string;
   roles: string[];
 }
 
+/**
+ * Unidade que pode ser o workspace: uma unidade com papel ou qualquer unidade ativa abaixo dela (SSD 2.1, regra 1),
+ * com a profundidade na árvore e os papéis que valem nela (os das unidades acima, com papel).
+ */
+export interface Workspace {
+  id: string;
+  name: string;
+  level: string;
+  depth: number;
+  roles: string[];
+}
+
 const STORAGE_KEY = 'aquaqe.workspace';
 
 /**
- * Workspace ativo (UX/UI 7.1): a unidade em que o usuário está trabalhando. A escolha é lembrada no navegador e enviada
- * em X-Workspace-Id nas chamadas à API. Com uma única unidade, ela é escolhida sozinha.
+ * Workspace ativo (UX/UI 7.1; Proposta 06): a unidade em que o usuário está trabalhando, escolhida na árvore
+ * organizacional. A escolha é lembrada no navegador e enviada em X-Workspace-Id nas chamadas à API. Sem escolha
+ * lembrada e com uma única unidade com papel, ela é escolhida sozinha.
  */
 @Injectable({ providedIn: 'root' })
 export class WorkspaceService {
   private readonly http = inject(HttpClient);
+  private readonly organization = inject(OrganizationService);
 
-  readonly workspaces = signal<Workspace[]>([]);
+  readonly roleUnits = signal<RoleUnit[]>([]);
+  private readonly units = signal<OrgUnit[]>([]);
   readonly loaded = signal(false);
   private readonly currentId = signal<string | null>(null);
+
+  /** Árvore das unidades que o usuário pode escolher, sem as desativadas (Proposta 06, NAV-019). */
+  readonly workspaces = computed<Workspace[]>(() => selectableTree(this.units(), this.roleUnits()));
   readonly current = computed(() => this.workspaces().find((w) => w.id === this.currentId()) ?? null);
-  /** O seletor do cabeçalho só aparece com mais de uma unidade (UX/UI 4). */
+  /** O seletor do cabeçalho só aparece com mais de uma opção (UX/UI 4). */
   readonly selectable = computed(() => this.workspaces().length > 1);
 
   async load(): Promise<void> {
-    const response = await firstValueFrom(this.http.get<{ items: Workspace[] }>('/api/v1/me/workspaces'));
-    this.workspaces.set(response.items);
+    const [response, units] = await Promise.all([
+      firstValueFrom(this.http.get<{ items: RoleUnit[] }>('/api/v1/me/workspaces')),
+      this.organization.allUnits(),
+    ]);
+    this.roleUnits.set(response.items);
+    this.units.set(units);
+    const options = this.workspaces();
     const remembered = readStorage();
     const chosen =
-      response.items.find((w) => w.id === remembered) ?? (response.items.length === 1 ? response.items[0] : undefined);
+      options.find((w) => w.id === remembered) ??
+      (response.items.length === 1 ? options.find((w) => w.id === response.items[0]!.id) : undefined);
     this.currentId.set(chosen?.id ?? null);
     this.loaded.set(true);
   }
@@ -52,6 +78,42 @@ export class WorkspaceService {
   hasRole(...roles: string[]): boolean {
     return this.current()?.roles.some((role) => roles.includes(role)) ?? false;
   }
+}
+
+/**
+ * Unidades com papel e as ativas abaixo delas, em ordem de árvore; cada uma com os papéis que valem nela (regra 1 do
+ * SSD 2.1: o papel vale na unidade e abaixo). A profundidade é relativa à unidade com papel mais alta.
+ */
+export function selectableTree(units: OrgUnit[], roleUnits: RoleUnit[]): Workspace[] {
+  const rolesAt = new Map(roleUnits.map((r) => [r.id, r.roles]));
+  const parentOf = new Map(units.map((u) => [u.id, u.parentId]));
+  const inheritedRoles = (id: string): string[] => {
+    const roles = new Set<string>();
+    for (let current: string | null | undefined = id; current; current = parentOf.get(current)) {
+      rolesAt.get(current)?.forEach((role) => roles.add(role));
+    }
+    return [...roles];
+  };
+  const result: Workspace[] = [];
+  let baseDepth: number | null = null;
+  for (const row of buildTree(units)) {
+    const roles = inheritedRoles(row.unit.id);
+    if (!row.unit.active || roles.length === 0) {
+      continue;
+    }
+    baseDepth ??= row.depth;
+    result.push({
+      id: row.unit.id,
+      name: row.unit.name,
+      level: row.unit.level.key,
+      depth: Math.max(0, row.depth - baseDepth),
+      roles,
+    });
+  }
+  // Papéis sem a árvore carregada (ex.: falha ao listar unidades): ao menos as unidades com papel.
+  return result.length > 0 || units.length > 0
+    ? result
+    : roleUnits.map((r) => ({ id: r.id, name: r.name, level: r.level, depth: 0, roles: r.roles }));
 }
 
 /** Telas que listam itens exigem workspace; sem ele, o usuário vai à seleção (UX/UI 7.1). */

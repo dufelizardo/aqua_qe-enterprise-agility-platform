@@ -1,6 +1,20 @@
 <header class="page-header">
-  <p class="eyebrow">{{ setup().level }} · {{ workspace.current()?.name }}</p>
-  <h1 data-testid="page-title">{{ setup().title }}</h1>
+  @if (context(); as unit) {
+    <nav class="trail" aria-label="Unidade ativa" data-testid="unit-trail">
+      @for (ref of unit.path; track ref.id) {
+        <span [title]="levels.nameOfKey(ref.level)">{{ ref.name }}</span>
+        <span aria-hidden="true">›</span>
+      }
+      <strong [title]="unit.level.name">{{ unit.name }}</strong>
+      <span class="level-tag">{{ unit.level.name }}{{ unit.level.flightLevel ? ' · ' + unit.level.flightLevel : '' }}</span>
+      @if (unit.links.serves.length > 0) {
+        <span class="serves" data-testid="unit-serves">
+          Atende a: {{ unit.links.serves.map(s => s.name).join(', ') }}
+        </span>
+      }
+    </nav>
+  }
+  <h1 data-testid="page-title">{{ levelName() }}</h1>
   <p class="lead">{{ setup().lead }}</p>
 </header>
 
@@ -28,7 +42,7 @@
     </button>
   }
   @if (canCreate()) {
-    <button type="button" class="btn primary" (click)="openCreate()" data-testid="new-item">{{ setup().newLabel }}</button>
+    <button type="button" class="btn primary" (click)="openCreate()" data-testid="new-item">{{ newLabel() }}</button>
   }
 </div>
 
@@ -50,7 +64,7 @@
 
 @if (creating()) {
   <form class="card create" (submit)="$event.preventDefault(); createItem()" data-testid="new-item-form">
-    <h2>{{ setup().newLabel }}</h2>
+    <h2>{{ newLabel() }}</h2>
     @if (creatableTypes().length > 1) {
       <label for="item-type">Tipo</label>
       <select id="item-type" [value]="newType()" (change)="chooseType(value($event))" data-testid="new-item-type">
@@ -90,14 +104,14 @@
         <p class="hint">Nenhum item pai disponível neste workspace para este tipo.</p>
       }
     }
-    <label for="item-unit">{{ setup().unitLabel }}</label>
+    <label for="item-unit">{{ levelName() }}</label>
     <select id="item-unit" [value]="newUnit()" (change)="newUnit.set(value($event))" data-testid="new-item-unit">
       @for (unit of levelUnits(); track unit.id) {
         <option [value]="unit.id" [selected]="unit.id === newUnit()">{{ unit.name }}</option>
       }
     </select>
     @if (levelUnits().length === 0) {
-      <p class="hint">Não há unidade de {{ setup().level }} ({{ setup().unitLabel }}) neste workspace. Peça ao administrador.</p>
+      <p class="hint">Não há unidade de {{ levelName() }} ({{ setup().level }}) neste workspace. Peça ao administrador.</p>
     }
     @if (createError(); as error) {
       <p class="field-error" data-testid="new-item-error">{{ messageOf(error) }}</p>
@@ -127,7 +141,7 @@
   <div class="card table-wrap">
     <table data-testid="board-list">
       <thead>
-        <tr><th>Chave</th><th>Tipo</th><th>Título</th><th>Responsável</th><th>Status</th><th>{{ setup().childrenLabel }}</th></tr>
+        <tr><th>Chave</th><th>Tipo</th><th>Título</th><th>Responsável</th><th>Status</th><th>Itens filhos</th></tr>
       </thead>
       <tbody>
         @for (item of filteredList(); track item.id) {
@@ -140,7 +154,7 @@
             <td>{{ item.childCount }}</td>
           </tr>
         } @empty {
-          <tr><td colspan="6" class="muted">{{ setup().emptyItems }} neste workspace.</td></tr>
+          <tr><td colspan="6" class="muted">Nenhum item neste workspace.</td></tr>
         }
       </tbody>
     </table>
@@ -148,12 +162,12 @@
 } @else if (!board()) {
   <div class="card empty" data-testid="board-empty">
     @if (canManageBoards()) {
-      <p>Este workspace ainda não tem {{ setup().boardLabel }}.</p>
+      <p>Este workspace ainda não tem quadro de {{ levelName() }} ({{ setup().level }}).</p>
       <button type="button" class="btn primary" [disabled]="busy()" (click)="createBoard()" data-testid="create-board">
-        Criar {{ setup().boardLabel }}
+        Criar quadro
       </button>
     } @else {
-      <p>Este workspace ainda não tem {{ setup().boardLabel }}. {{ manageNote }}</p>
+      <p>Este workspace ainda não tem quadro de {{ levelName() }} ({{ setup().level }}). {{ manageNote }}</p>
     }
   </div>
 } @else {
@@ -257,7 +271,7 @@
                   </mat-menu>
                 </article>
               } @empty {
-                <p class="muted empty-column">{{ setup().emptyItems }}.</p>
+                <p class="muted empty-column">Nenhum item.</p>
               }
             </div>
           }
