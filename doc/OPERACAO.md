@@ -13,11 +13,11 @@ Como os ambientes do AQuA-QE são publicados e o que precisa ser feito uma únic
 
 ## 1. Ambientes
 
-| Ambiente | Branch | Endereço | Namespace | Acesso |
-|---|---|---|---|---|
-| Desenvolvimento | `developer` | http://aquaqe-dev.local | `aquaqe-dev` | Sem senha: entra como persona e troca pelo menu do avatar (ADR-17) |
-| Produção | `main` | http://aquaqe.local | `aquaqe-prod` | Login pelo Keycloak, realm `aquaqe-prod`, com "Lembrar-me" de 30 dias |
-| Identidade | `main` | http://aquaqe-auth.local | `aquaqe-auth` | Console do Keycloak em `/admin` |
+| Ambiente | Branch | Endereço | Namespace | Acesso | Situação |
+|---|---|---|---|---|---|
+| Desenvolvimento | `developer` | http://aquaqe-dev.local | `aqua-qe-agility-platform-dev` | Sem senha: entra como persona e troca pelo menu do avatar (ADR-17) | No ar desde 2026-11-20 |
+| Produção | `main` | http://aquaqe.local | `aqua-qe-agility-platform-prod` | Login pelo Keycloak, realm `aquaqe-prod`, com "Lembrar-me" de 30 dias | Adiado: falta memória no servidor |
+| Identidade | `main` | http://aquaqe-auth.local | `aqua-qe-agility-platform-auth` | Console do Keycloak em `/admin` | Adiado, junto com a produção |
 
 Os endereços abrem em qualquer aparelho conectado à rede de casa, sem configurar nada no aparelho: o servidor anuncia os nomes por mDNS ([seção 2](#2-nomes-na-rede-mdns)). Fora da rede, eles não são acessíveis.
 
@@ -100,7 +100,7 @@ Para segurar uma promoção, feche o PR automático: ele é reaberto no próximo
 
 1. **Branch `developer`** criada a partir da `main` e definida como branch padrão de trabalho.
 2. **Segredo `ENTERPRISE_AGILITY_PLATAFORM`**: token pessoal fine-grained, só deste repositório, com `Contents` e `Pull requests` em leitura e escrita (sem `Administration`, como o `WOLK_KEY` do LoneWolf). É usado para abrir o PR de promoção, fazer o merge e gravar o SHA nos overlays. Merges e pushes feitos com o token padrão do workflow não disparam outros workflows, e a esteira pararia no meio.
-3. **Proteção da `main`**: exigir PR e os checks `backend`, `frontend`, `robot-dryrun` e `acceptance`. Deixar `enforce_admins` **desligado**, senão o commit de pin feito com o PAT é recusado (lição da ADR-0015 do Mais Saúde Pública).
+3. **Proteção da `main`** (aplicada em 2026-11-20): exige PR, sem aprovação obrigatória, porque o auto-merge mescla sozinho; exige os checks `backend`, `frontend`, `robot-dryrun` e `acceptance`; bloqueia force push e exclusão. `enforce_admins` fica **desligado**, senão o commit de pin feito com o PAT é recusado (lição da ADR-0015 do Mais Saúde Pública).
 4. **Pacotes do ghcr.io públicos**: depois do primeiro `publish-image.yml`, em *Packages*, tornar `aqua-qe-platform` e `aqua-qe-platform-frontend` públicos. Pacotes novos nascem privados, e o K3s não consegue baixar a imagem sem credencial.
 
 ## 5. Configuração única no servidor
