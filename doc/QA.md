@@ -174,6 +174,7 @@ A **matriz de rastreabilidade** (requisito → suítes → casos → último res
 | **Identidade** | Login, seleção de workspace, `WORKSPACE_REQUIRED`, `UNAUTHENTICATED`, usuário desativado sem acesso. | [SSD, seção 4.1](SSD.md#41-login-e-seleção-de-workspace) | `PRD-RF-036` a `038`, `F07` |
 | **Jornadas (UI)** | Os cinco fluxos da [UX/UI, seção 8](UX-UI.md#8-fluxos-de-interação): mover cartão e ser bloqueado; pedir e dar aprovação; editar, aprovar e reabrir documento; conflito de edição; criar Feature a partir da Iniciativa. | UX/UI 8.1 a 8.5 | `smoke`, PRD-RF de cada fluxo |
 | **Interface (UI)** | Estados comuns, mensagens de erro, ações ocultas ou desabilitadas por papel, painel de contexto herdado com ancestral sem acesso. | UX/UI [6.9](UX-UI.md#69-painel-de-contexto-herdado), [6.10](UX-UI.md#610-estados-comuns), [9](UX-UI.md#9-mensagens-de-erro) | `regression` |
+| **Estrutura organizacional** | API (`test/robot/api/test/organization`): níveis, criação, nível do pai, 404, vínculos (cenário C2) e 403 para quem não gere configuração. UI (`test/robot/ui/test/admin`): criar, renomear, Cadeia compartilhada e o item Admin oculto para quem não é `PLATFORM_ADMIN`. | [SSD, seções 3.2 e 2.1](SSD.md#32-organization), UX/UI [7.10](UX-UI.md#710-administração) | `ADR-14`, `REV-01`, `REV-04` |
 | **Segurança de aplicação** | Itens verificáveis do OWASP ASVS nível 2 por HTTP: cabeçalhos, sessão, controle de acesso, validação de entrada, tratamento de erro sem vazamento. | REV-13 | `security`, `ASVS-*` |
 
 ## 8. Requisitos para testabilidade

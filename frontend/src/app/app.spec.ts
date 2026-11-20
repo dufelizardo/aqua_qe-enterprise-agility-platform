@@ -1,7 +1,9 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree, provideRouter } from '@angular/router';
+
+import { adminGuard } from './core/admin.guard';
 
 import { authGuard } from './core/auth.guard';
 import { LOGIN_URL, SessionService } from './core/session.service';
@@ -15,7 +17,7 @@ describe('SessionService e authGuard', () => {
     TestBed.runInInjectionContext(() => authGuard({} as ActivatedRouteSnapshot, {} as RouterStateSnapshot));
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])] });
     session = TestBed.inject(SessionService);
     http = TestBed.inject(HttpTestingController);
     redirect = vi.spyOn(session, 'redirect').mockImplementation(() => undefined);
@@ -76,6 +78,26 @@ describe('SessionService e authGuard', () => {
     await switching;
 
     expect(session.displayName()).toBe('Quezia Qualidade');
+  });
+
+  const runAdminGuard = () =>
+    TestBed.runInInjectionContext(() => adminGuard({} as ActivatedRouteSnapshot, {} as RouterStateSnapshot));
+
+  it('só o PLATFORM_ADMIN entra na Administração; os demais voltam para a home', () => {
+    session.user.set(pm);
+    expect(session.isPlatformAdmin()).toBe(false);
+    const denied = runAdminGuard() as UrlTree;
+    expect(denied.toString()).toBe('/home');
+
+    session.user.set({
+      ...pm,
+      username: 'robot.admin',
+      assignments: [
+        { id: 'a1', role: 'PLATFORM_ADMIN', orgUnit: { id: 'root', name: 'Empresa', level: 'ENTERPRISE' } },
+      ],
+    });
+    expect(session.isPlatformAdmin()).toBe(true);
+    expect(runAdminGuard()).toBe(true);
   });
 
   it('a guarda leva ao login quando não há sessão', () => {

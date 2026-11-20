@@ -63,6 +63,10 @@
     @for (item of menu; track item.path) {
       <a [routerLink]="item.path" routerLinkActive="active" [attr.data-testid]="item.testId">{{ item.label }}</a>
     }
+    @if (session.isPlatformAdmin()) {
+      <hr class="nav-separator" />
+      <a routerLink="/admin" routerLinkActive="active" data-testid="nav-admin">Admin</a>
+    }
   </nav>
   <main class="content">
     <router-outlet />

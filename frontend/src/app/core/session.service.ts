@@ -2,13 +2,20 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
+/** Papel do usuário em uma unidade organizacional (SSD, seção 3.1). */
+export interface RoleAssignment {
+  id: string;
+  role: string;
+  orgUnit: { id: string; name: string; level: string } | null;
+}
+
 /** Resposta de GET /api/v1/me (SSD, seção 3.1). */
 export interface CurrentUser {
   id: string;
   username: string;
   name: string | null;
   email: string | null;
-  assignments: unknown[];
+  assignments: RoleAssignment[];
 }
 
 /** Persona do modo sem senha do ambiente dev (ADR-17). */
@@ -35,6 +42,10 @@ export class SessionService {
   readonly devPersonas = signal<DevPersona[]>([]);
   readonly devMode = computed(() => this.devPersonas().length > 0);
   readonly authenticated = computed(() => this.user() !== null);
+  /** Administrador da plataforma em alguma unidade: vê a Administração (UX/UI, seção 4). */
+  readonly isPlatformAdmin = computed(() =>
+    (this.user()?.assignments ?? []).some((assignment) => assignment.role === 'PLATFORM_ADMIN'),
+  );
   readonly displayName = computed(() => this.user()?.name ?? this.user()?.username ?? '');
   readonly initials = computed(() =>
     this.displayName()
