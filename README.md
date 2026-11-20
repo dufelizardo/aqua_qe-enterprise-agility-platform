@@ -1,5 +1,18 @@
 # AQuA-QE Enterprise Agility Platform
 
+[![Status](https://img.shields.io/badge/status-especifica%C3%A7%C3%A3o-orange)](#roteiro)
+[![Licença](https://img.shields.io/github/license/dufelizardo/aqua_qe-enterprise-agility-platform)](LICENSE)
+[![Documentação](https://img.shields.io/badge/docs-PRD%20%C2%B7%20SAD%20%C2%B7%20SSD%20%C2%B7%20UX%2FUI%20%C2%B7%20QA-1351b4?logo=markdown&logoColor=white)](#documentação)
+
+![Java](https://img.shields.io/badge/Java-ED8B00?logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?logo=springboot&logoColor=white)
+![Angular](https://img.shields.io/badge/Angular-DD0031?logo=angular&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-proposto-4169E1?logo=postgresql&logoColor=white)
+![Keycloak](https://img.shields.io/badge/Keycloak-proposto-4D4D4D?logo=keycloak&logoColor=white)
+![Robot Framework](https://img.shields.io/badge/Robot_Framework-LKDF-000000?logo=robotframework&logoColor=white)
+![visitors](https://visitor-badge.laobi.icu/badge?page_id=dufelizardo.visitor-aqua_qe-enterprise-agility-platform)
+![GitHub followers](https://img.shields.io/github/followers/dufelizardo?style=social)
+
 Plataforma corporativa que reúne, em um único produto, gestão de trabalho, documentação e gestão de testes — o que hoje costuma exigir Jira, Confluence e Xray — sem plugins e sem serviços contratados à parte.
 
 > **Estado do projeto:** fase de especificação. Este repositório contém a documentação de produto, arquitetura e interface do MVP. Ainda não há código.
@@ -30,7 +43,9 @@ Leia nesta ordem:
 | [SAD](doc/SAD.md) | Arquitetura: containers, módulos, modelo de dados, mecanismos transversais, implantação e decisões (ADRs). |
 | [SSD](doc/SSD.md) | Especificação do MVP: contratos da API, regras de gate, formato dos documentos, eventos, configuração padrão e esquema físico. |
 | [UX/UI](doc/UX-UI.md) | Tokens de design, navegação, componentes, telas do MVP e mensagens de erro. |
+| [QA](doc/QA.md) | Plano de testes do MVP: níveis, Robot Framework no padrão LKDF para API e interface, rastreabilidade, ambiente e critérios de saída. |
 | [Revisão 01](doc/REVIEW-01.md) | Achados da revisão dos quatro documentos, com gravidade, evidência, recomendação e ordem de trabalho. Não altera os documentos revisados. |
+| [Proposta de evolução](doc/EVOLUTION-PROPOSAL.md) | Frentes F01 a F08c que tratam os achados da revisão, com divergências e decisões pendentes. Status: proposto, não aprovado para implementação. |
 
 Material de apoio:
 
@@ -66,7 +81,7 @@ O faseamento é uma proposta ainda a validar ([PRD, seção 13](doc/PRD.md)).
 
 ## Próximos passos
 
-- Plano de testes (QA) do MVP, o quinto documento do conjunto.
+- Decidir as frentes da [proposta de evolução](doc/EVOLUTION-PROPOSAL.md) (decisões D01 a D09) e incorporar as aprovadas aos documentos.
 - Corrigir as lacunas do SSD apontadas na [especificação de UX/UI, seção 13](doc/UX-UI.md).
 - Validar os itens "Proposto" e "a validar" dos quatro documentos.
 - Criar a estrutura de código do backend e do frontend.
@@ -82,6 +97,9 @@ O faseamento é uma proposta ainda a validar ([PRD, seção 13](doc/PRD.md)).
     ├── SAD.md          arquitetura
     ├── SSD.md          especificação do MVP
     ├── UX-UI.md        interface do MVP
+    ├── QA.md           plano de testes do MVP
+    ├── REVIEW-01.md    revisão dos documentos
+    ├── EVOLUTION-PROPOSAL.md  proposta de evolução (não aprovada)
     ├── pdr/            especificações por domínio e PRDs originais (.docx)
     └── prototype/      identidade visual e protótipos iniciais
 ```

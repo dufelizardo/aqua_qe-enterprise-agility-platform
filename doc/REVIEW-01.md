@@ -43,6 +43,8 @@ Ao conferir a análise externa contra os documentos, três pontos foram ajustado
 | REV-12 | Baixo | Campos customizados usados em gates | SSD 5.2 e 10 | Aberto |
 | REV-13 | Alto | Baseline de segurança por framework | Spec. Segurança V2.0 (RF-SC, RNF-SC), SAD 7 e 13 | Aberto |
 
+A frente de trabalho que trata cada achado está na [Proposta de evolução, seção 7](EVOLUTION-PROPOSAL.md#7-relação-entre-achados-e-frentes). REV-02, REV-12 e Q-01 ainda não têm frente, e REV-13 tem só cobertura parcial ([seção 8 da proposta](EVOLUTION-PROPOSAL.md#8-lacunas-desta-proposta)).
+
 ### REV-01 — Regras de autorização entre unidades
 
 **Evidência.** O [SAD, seção 7.2](SAD.md#72-autorização) e o [SSD, seção 2](SSD.md#2-papéis-e-permissões) definem três regras:
@@ -215,6 +217,6 @@ O entregável da atividade é a tabela de mapeamento. Ela só deve ser feita dep
 | 4 | Contrato do documento | REV-05, REV-11 | SSD, seção 6, fechado; critérios para escolher o editor. |
 | 5 | Lacunas SSD × UX/UI | REV-07 a REV-10 | Endpoints no SSD; UX/UI, seção 13, atualizada. |
 | 6 | Versionamento de configuração | REV-06, REV-12 | Regras de compatibilidade no SSD, seção 3.3. |
-| 7 | Estratégia de testes | todos | Plano de QA do MVP, incluindo testes de fronteira de módulo (ADR-04), de autorização e de verificação ASVS (REV-13). |
+| 7 | Estratégia de testes | todos | [Plano de QA do MVP](QA.md), incluindo testes de fronteira de módulo (ADR-04), de autorização e de verificação ASVS (REV-13). |
 
 Os passos 1 e 2 bloqueiam o início dos módulos `access`, `organization` e `workitem`. Os módulos `configuration` e `workflow` podem começar após o passo 6, e o frontend dos workspaces após os passos 4 e 5.
