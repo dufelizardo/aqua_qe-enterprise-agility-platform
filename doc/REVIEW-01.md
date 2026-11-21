@@ -33,7 +33,7 @@ Ao conferir a análise externa contra os documentos, três pontos foram ajustado
 | REV-02 | Crítico | Contexto herdado vazio entre ramos | PRD-RF-017, SSD 3.4, UX/UI 6.9 | Resolvido em 2026-11-20 ([SSD 2.1](SSD.md#21-escopo-entre-unidades-rev-01-rev-02-rev-04)) |
 | REV-03 | Alto | Garantias da auditoria assíncrona | SAD 7.4 e 7.5, ADR-06, ADR-07, PRD-RF-026 | Parcial em 2026-11-20: recomendações 2 a 5 implementadas; falta fixar o SLA (1) e restringir o usuário de banco |
 | REV-04 | Alto | Modelo organizacional (ADR-14) | SAD 5.1 e 13, SSD 3.2 | Resolvido em 2026-11-20 ([SSD 2.1](SSD.md#21-escopo-entre-unidades-rev-01-rev-02-rev-04)) |
-| REV-05 | Alto | Contrato do documento independente do editor | SSD 6, UX/UI 6.6, PRD-RF-018 e 020 | Aberto |
+| REV-05 | Alto | Contrato do documento independente do editor | SSD 6, UX/UI 6.6, PRD-RF-018 e 020 | Decidido (2026-11-20) |
 | REV-06 | Alto | Publicação de nova versão de workflow | SSD 3.3, PRD-RF-011 | Aberto |
 | REV-07 | Médio | Consulta de usuários para quem edita | SSD 3.1, UX/UI 13 | Aberto |
 | REV-08 | Médio | Listagem de anexos | SSD 3.7, UX/UI 13, PRD-RF-018 | Aberto |
@@ -124,6 +124,8 @@ Para cada cenário, registrar quem cria, liga, lê e aprova o quê, usando a mat
 **Problema.** Do jeito que está, a biblioteca escolhida define o formato persistido. O formato persistido condiciona a comparação entre versões, o versionamento imutável, a busca (`search_vector`), os anexos e uma futura colaboração.
 
 **Recomendação.** Fechar o [SSD, seção 6](SSD.md#6-formato-dos-documentos), como contrato da plataforma, e inverter a dependência: o editor escolhido converte para esse formato e a partir dele, e não o contrário. A seção 6.2 deixa de ser "(a validar)". Avaliar editores de código aberto pela capacidade de produzir esse formato.
+
+**Decisão (2026-11-20; [Proposta 07](KNOWLEDGE-PROPOSAL.md)).** Aceito. O formato de blocos do SSD 6 é o contrato. O editor é próprio e simples, com parágrafo e destaque em Markdown leve, título, lista, tabela, citação e código. Ele grava nesse formato, e a tela monta os elementos sem gerar HTML. Imagens, anexos e diagramas entram com o armazenamento de objetos. Um editor de terceiros, se vier, converte para o contrato. Implementado nas páginas de conhecimento (SSD 3.7.1); os documentos do artefato usam o mesmo motor na próxima entrega.
 
 ### REV-06 — Publicação de nova versão de workflow
 

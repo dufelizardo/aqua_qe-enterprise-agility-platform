@@ -49,6 +49,13 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/level-board/level-board').then((m) => m.LevelBoard),
         data: { screen: 'squad' },
       },
+      // Wiki da unidade ativa (Proposta 07, Fase A; UX/UI 7.12).
+      {
+        path: 'wiki',
+        title: 'Wiki · AQuA-QE',
+        canActivate: [workspaceGuard],
+        loadComponent: () => import('./pages/wiki/wiki').then((m) => m.Wiki),
+      },
       {
         path: 'admin',
         canActivate: [adminGuard],

@@ -33,6 +33,8 @@ export class Shell {
     { path: '/portfolio', label: this.levels.nameOf('FL3'), testId: 'nav-portfolio' },
     { path: '/tactical', label: this.levels.nameOf('FL2'), testId: 'nav-tactical' },
     { path: '/squad', label: this.levels.nameOf('FL1'), testId: 'nav-squad' },
+    // Conhecimento da unidade (Proposta 07, KNOW-013): vale para qualquer nível, inclusive os sem Flight Level.
+    { path: '/wiki', label: 'Wiki', testId: 'nav-wiki' },
   ]);
   /** Gaveta do menu no celular. */
   protected readonly drawer = signal(false);

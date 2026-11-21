@@ -5,7 +5,7 @@
 | **Versão** | 1.1 |
 | **Data** | 2026-11-20 |
 | **Status** | PROPOSTO. A Fase 1 mínima (nomes de nível da configuração, trilha, seletor em árvore) foi implementada; a **Revisão 2** ([seção 6](#6-revisão-2-proposal-07-estrutura-organizacional-como-navegação)) levou a árvore para o menu lateral e também foi implementada. O restante segue em avaliação. |
-| **Série** | 01: [Evolução](EVOLUTION-PROPOSAL.md) · 02: [Experiência](EXPERIENCE-PROPOSAL.md) · 03: [Administração](ADMIN-PROPOSAL.md) · 04: [Quadros](BOARDS-PROPOSAL.md) · 05: [Configuração](CONFIG-PROPOSAL.md) · 06: esta |
+| **Série** | 01: [Evolução](EVOLUTION-PROPOSAL.md) · 02: [Experiência](EXPERIENCE-PROPOSAL.md) · 03: [Administração](ADMIN-PROPOSAL.md) · 04: [Quadros](BOARDS-PROPOSAL.md) · 05: [Configuração](CONFIG-PROPOSAL.md) · 06: esta · 07: [Conhecimento](KNOWLEDGE-PROPOSAL.md) |
 | **Documentos-base** | [PRD v4.0](PRD.md), [SAD v1.0](SAD.md) (ADR-14), [SSD v1.0](SSD.md), [UX/UI v1.0](UX-UI.md) |
 
 A proposta substitui o menu fixo (Portfolio, Tactical, Squad) por uma navegação montada a partir da estrutura organizacional configurada. Também separa três dimensões: organização (a árvore), gestão (os Flight Levels) e capacidades (qualidade, governança, analytics). Por fim, apresenta um **workspace contextual** por unidade. O texto original foi recebido em 2026-11-20.

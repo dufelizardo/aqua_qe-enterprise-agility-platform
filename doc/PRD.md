@@ -333,7 +333,8 @@ Os documentos anteriores não definiam MVP. A proposta abaixo prioriza o que sus
 - Dependências: tipos, ciclo de vida, cálculo de caminho crítico.
 - Capacity Planning (UI-09).
 - Governance Center (UI-17).
-- Editor de documentação viva: formato, versionamento, edição concorrente.
+- Editor de documentação viva: formato, versionamento, edição concorrente. **Decidido em 2026-11-20** (REV-05): editor de blocos próprio sobre o contrato do SSD 6, com versões imutáveis e bloqueio otimista.
+- Conhecimento organizacional (Wiki por unidade, regimentos, Knowledge Center): proposto como evolução do D04 na [Proposta 07](KNOWLEDGE-PROPOSAL.md). A Fase A (espaços, páginas, versões, regimento governado) foi implementada sem alterar o MVP; as fases B a D estão em avaliação.
 - IA: nenhuma definição de casos de uso, dados usados ou provedores, apesar de citada em três documentos.
 
 **Base técnica**
