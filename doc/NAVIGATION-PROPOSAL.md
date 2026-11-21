@@ -2,9 +2,9 @@
 
 | | |
 |---|---|
-| **Versão** | 1.0 |
+| **Versão** | 1.1 |
 | **Data** | 2026-11-20 |
-| **Status** | PROPOSTO. A Fase 1 mínima (nomes de nível da configuração, trilha, seletor em árvore) foi decidida e implementada; o restante segue em avaliação. |
+| **Status** | PROPOSTO. A Fase 1 mínima (nomes de nível da configuração, trilha, seletor em árvore) foi implementada; a **Revisão 2** ([seção 6](#6-revisão-2-proposal-07-estrutura-organizacional-como-navegação)) levou a árvore para o menu lateral e também foi implementada. O restante segue em avaliação. |
 | **Série** | 01: [Evolução](EVOLUTION-PROPOSAL.md) · 02: [Experiência](EXPERIENCE-PROPOSAL.md) · 03: [Administração](ADMIN-PROPOSAL.md) · 04: [Quadros](BOARDS-PROPOSAL.md) · 05: [Configuração](CONFIG-PROPOSAL.md) · 06: esta |
 | **Documentos-base** | [PRD v4.0](PRD.md), [SAD v1.0](SAD.md) (ADR-14), [SSD v1.0](SSD.md), [UX/UI v1.0](UX-UI.md) |
 
@@ -25,7 +25,7 @@ A regra da seção 14.1 do original foi **adotada**: o frontend não usa nomes d
 | Tema | O que já existe | Situação |
 |---|---|---|
 | Nomes configuráveis (NAV-003) | `GET /org-levels` (SSD 3.2). | **Implementado**: menu, título das telas e rótulo da unidade vêm do nível ligado ao Flight Level. |
-| Menu por árvore organizacional (NAV-001, 002, 015) | Menu por Flight Level ([UX/UI 4](UX-UI.md#4-estrutura-da-aplicação); [EXP-09](EXPERIENCE-PROPOSAL.md#4-decisões-tomadas)). | **Meio-termo decidido (NAV-D1)**: o menu continua por Flight Level, com os nomes da configuração; a árvore vai para o seletor de workspace. |
+| Menu por árvore organizacional (NAV-001, 002, 015) | Menu por Flight Level ([UX/UI 4](UX-UI.md#4-estrutura-da-aplicação); [EXP-09](EXPERIENCE-PROPOSAL.md#4-decisões-tomadas)). | Primeiro o meio-termo (árvore só no seletor); **revisado na Revisão 2**: a árvore fica no menu lateral, e os Flight Levels viram as visões da unidade escolhida. |
 | Selecionar unidade, contexto ativo, persistência (NAV-004, 005, 017) | Seleção de workspace ([UX/UI 7.1](UX-UI.md#71-seleção-de-workspace)), lembrada no navegador. | **Ampliado**: o seletor mostra a árvore das unidades com papel e das ativas abaixo delas, com o nível de cada uma. |
 | Flight Level contextual (NAV-007) | — | **Implementado**: a trilha mostra o nível e o Flight Level da unidade ativa. |
 | Trilha (NAV-008) | Prevista na UX/UI 4; não implementada. | **Implementado** para a unidade ativa, pelo `path` de `GET /org-units/{id}`. A parte dos ancestrais do artefato entra com a tela de detalhe do item. |
@@ -45,7 +45,7 @@ A regra da seção 14.1 do original foi **adotada**: o frontend não usa nomes d
 
 | ID | Tema | Decisão |
 |---|---|---|
-| NAV-D1 | Organização no menu | **Meio-termo.** O menu continua por Flight Level (EXP-09), com o **nome de cada nível vindo da configuração**. A **árvore organizacional** fica no **seletor de workspace**, com trilha e "Atende a". |
+| NAV-D1 | Organização no menu | ~~Meio-termo: menu por Flight Level e árvore no seletor de workspace.~~ **Revisada em 2026-11-20 (Revisão 2, ORG-D01 e ORG-D02):** a **árvore organizacional fica no menu lateral**, e os itens por Flight Level, com o nome de cada nível vindo da configuração, passam a ser as **visões da unidade escolhida**. Um único serviço de contexto. |
 | NAV-D8 | Escopo agora | Fase 1 mínima: nomes da configuração, trilha da unidade ativa, seletor em árvore com o nível, "Atende a" separado e unidades inativas fora. |
 
 ## 4. Decisões abertas
@@ -75,3 +75,49 @@ A regra da seção 14.1 do original foi **adotada**: o frontend não usa nomes d
 | 10. Consistência em resoluções diferentes | Seletor e trilha quebram linha no celular; revisar com a auditoria de acessibilidade. |
 
 <!-- aqeap-navigati-824e5ad33f -->
+
+## 6. Revisão 2 (PROPOSAL-07): estrutura organizacional como navegação
+
+A PROPOSAL-07, recebida em 2026-11-20, pede a árvore organizacional **no menu lateral**, sincronizada com o seletor de workspace, preservando os Flight Levels e as permissões. Na prática, ela revisa a NAV-D1 depois de usar a tela; por isso entra aqui como revisão, e não como documento novo. Os IDs do original (ORG-NAV-001 a 018, ORG-D01 a D06) são mantidos.
+
+### 6.1 Decisões (2026-11-20)
+
+| ID | Tema | Decisão |
+|---|---|---|
+| ORG-D01 e ORG-D02 | Árvore no menu | **Aceitas.** O menu lateral tem, de cima para baixo: Home; **Organização** (a árvore); **Visões da unidade** (um item por Flight Level, com o nome do nível na configuração); Admin. A árvore e o resto da aplicação usam o mesmo serviço de contexto (`WorkspaceService`), então nunca divergem. O seletor do cabeçalho sai; o cabeçalho mostra só a unidade ativa. |
+| ORG-D03 | Ancestrais sem papel | **Aceita.** Quem só tem papel embaixo vê os ancestrais em cinza, só para se localizar: não são clicáveis e não dão acesso aos dados (regra 1 do [SSD 2.1](SSD.md#21-escopo-entre-unidades-rev-01-rev-02-rev-04)). |
+| ORG-D04 | Unidades que são workspace | Toda unidade ativa no escopo do usuário pode ser escolhida. Nada muda em relação ao seletor anterior. |
+| ORG-D05 | Visão organizacional consolidada | **Fase 2**, com o analytics (ORG-NAV-017 e 018). |
+| ORG-D06 | Escopo agora | Árvore no menu, ancestrais em cinza, busca, gaveta no celular e os testes da seção 11 do original. |
+
+**Seleção:** escolher uma unidade na árvore troca o workspace. Se a unidade tem Flight Level, a aplicação abre a tela desse nível (uma Squad abre `/squad`); se não tem (Empresa, Unidade de Negócio), a tela atual recarrega no novo contexto.
+
+### 6.2 Requisitos: situação
+
+| Requisito | Situação |
+|---|---|
+| ORG-NAV-001 árvore no menu | **Implementado** (`layout/org-tree.ts`). |
+| ORG-NAV-002 e 013 árvore dinâmica, níveis personalizados | **Implementado**: montada de `GET /org-units` e `GET /me/workspaces`, sem nome de nível no código. |
+| ORG-NAV-003 expandir e recolher | **Implementado**, com botão por ramo e setas direita e esquerda. |
+| ORG-NAV-004 seleção direta | **Implementado.** |
+| ORG-NAV-005 e 006 contexto único | **Implementado**: um só serviço; o cabeçalho e a trilha mostram a mesma unidade. |
+| ORG-NAV-007 Flight Level da unidade | **Implementado**: a unidade leva à tela do seu Flight Level; a trilha mostra o nível e o Flight Level. |
+| ORG-NAV-008 trilha | Já existia (Fase 1). |
+| ORG-NAV-009 permissões | **Implementado**: só unidades com papel e as abaixo delas; os ancestrais aparecem sem ação. A API valida tudo. |
+| ORG-NAV-010 várias unidades por nível | **Testado**: 2 Portfólios × 2 Cadeias × 2 Squads (JUnit). |
+| ORG-NAV-011 "atende a" sem duplicar | **Testado**: a Cadeia que atende a outro Portfólio continua filha só do seu (JUnit). |
+| ORG-NAV-012 unidade ativa destacada | **Implementado** (mesmo destaque do item ativo do menu). |
+| ORG-NAV-014 responsividade | **Implementado**: no celular o menu vira gaveta, aberta pelo botão ☰. |
+| ORG-NAV-015 estado de expansão | **Implementado**: lembrado no navegador; sem nada lembrado, abre o caminho até a unidade ativa. |
+| ORG-NAV-016 busca de unidades | **Implementado**: filtra por nome e mantém o caminho até cada resultado. |
+| ORG-NAV-017 e 018 visão organizacional com indicadores | Fase 2 (ORG-D05). |
+
+### 6.3 Testes
+
+| Camada | O que cobre |
+|---|---|
+| Vitest (`work.spec.ts`) | Montagem da árvore: administrador na raiz vê tudo escolhível; membro só de uma Squad vê Empresa, Portfólio e Cadeia como ancestrais não escolhíveis. |
+| JUnit (`OrganizationIntegrationTests`) | Cardinalidade 2 × 2 × 2: filhos de cada unidade, caminho de uma Squad e "atende a" sem duplicar a hierarquia. |
+| Robot UI (`ui/test/navigation/org_tree.robot`) | Escolher a Squad pela busca leva a `/squad` com a unidade no cabeçalho; recolher um ramo fica lembrado depois de recarregar; gaveta no celular. |
+
+O cenário de interface do membro só de uma Squad depende de atribuir papel por unidade, que ainda não tem tela nem API (Administração › Usuários, backlog). Até lá, os ancestrais em cinza são cobertos pelo Vitest.

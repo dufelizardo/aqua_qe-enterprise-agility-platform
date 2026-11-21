@@ -201,6 +201,44 @@ class OrganizationIntegrationTests {
 			.andExpect(jsonPath("$.errors[0].field").value("size"));
 	}
 
+	@Test
+	void cardinalidadeDoisPortfoliosDuasCadeiasDuasSquads() throws Exception {
+		// PROPOSAL-07, seção 11: várias unidades em cada nível, caminhos corretos e "atende a" sem duplicar hierarquia.
+		java.util.Map<String, String> ids = new java.util.LinkedHashMap<>();
+		for (int p = 1; p <= 2; p++) {
+			String portfolio = createUnit("Card P" + p, "PORTFOLIO", orgUnits.rootId());
+			ids.put("P" + p, portfolio);
+			for (int c = 1; c <= 2; c++) {
+				String cadeia = createUnit("Card C" + p + c, "CADEIA", UUID.fromString(portfolio));
+				ids.put("C" + p + c, cadeia);
+				for (int q = 1; q <= 2; q++) {
+					ids.put("S" + p + c + q, createUnit("Card S" + p + c + q, "SQUAD", UUID.fromString(cadeia)));
+				}
+			}
+		}
+		for (int p = 1; p <= 2; p++) {
+			mvc.perform(get("/api/v1/org-units").param("parentId", ids.get("P" + p)).with(user("leitor")))
+				.andExpect(jsonPath("$.totalItems").value(2));
+			for (int c = 1; c <= 2; c++) {
+				mvc.perform(get("/api/v1/org-units").param("parentId", ids.get("C" + p + c)).with(user("leitor")))
+					.andExpect(jsonPath("$.totalItems").value(2));
+			}
+		}
+		mvc.perform(get("/api/v1/org-units/{id}", ids.get("S212")).with(user("leitor")))
+			.andExpect(jsonPath("$.path[*].id").value(org.hamcrest.Matchers.contains(orgUnits.rootId().toString(),
+				ids.get("P2"), ids.get("C21"))));
+
+		// A Cadeia C11 passa a atender o Portfólio P2: continua filha só de P1.
+		mvc.perform(put("/api/v1/org-units/{id}/links/{target}", ids.get("C11"), ids.get("P2")).with(admin()).with(csrf()))
+			.andExpect(status().isNoContent());
+		mvc.perform(get("/api/v1/org-units").param("parentId", ids.get("P2")).with(user("leitor")))
+			.andExpect(jsonPath("$.totalItems").value(2))
+			.andExpect(jsonPath("$.items[*].id").value(org.hamcrest.Matchers.not(hasItem(ids.get("C11")))));
+		mvc.perform(get("/api/v1/org-units/{id}", ids.get("C11")).with(user("leitor")))
+			.andExpect(jsonPath("$.parentId").value(ids.get("P1")))
+			.andExpect(jsonPath("$.links.serves[*].id").value(hasItem(ids.get("P2"))));
+	}
+
 	private String createUnit(String name, String level, UUID parentId) throws Exception {
 		String body = mvc.perform(json(post("/api/v1/org-units"), admin(),
 				"{\"name\":\"" + name + "\",\"level\":\"" + level + "\",\"parentId\":\"" + parentId + "\"}"))

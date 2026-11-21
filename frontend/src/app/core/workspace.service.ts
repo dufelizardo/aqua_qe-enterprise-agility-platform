@@ -25,6 +25,21 @@ export interface Workspace {
   roles: string[];
 }
 
+/**
+ * Nó da árvore organizacional do menu (Proposta 06, Revisão 2; PROPOSAL-07): as unidades que o usuário pode escolher e,
+ * para ele se localizar, os ancestrais delas, que não são escolhíveis nem dão acesso aos dados (ORG-D03).
+ */
+export interface NavNode {
+  id: string;
+  name: string;
+  level: string;
+  flightLevel: string | null;
+  parentId: string | null;
+  depth: number;
+  selectable: boolean;
+  hasChildren: boolean;
+}
+
 const STORAGE_KEY = 'aquaqe.workspace';
 
 /**
@@ -47,6 +62,8 @@ export class WorkspaceService {
   readonly current = computed(() => this.workspaces().find((w) => w.id === this.currentId()) ?? null);
   /** O seletor do cabeçalho só aparece com mais de uma opção (UX/UI 4). */
   readonly selectable = computed(() => this.workspaces().length > 1);
+  /** Árvore do menu: unidades escolhíveis e os ancestrais delas (só para localização). */
+  readonly navigation = computed<NavNode[]>(() => navigationTree(this.units(), this.workspaces()));
 
   async load(): Promise<void> {
     const [response, units] = await Promise.all([
@@ -114,6 +131,33 @@ export function selectableTree(units: OrgUnit[], roleUnits: RoleUnit[]): Workspa
   return result.length > 0 || units.length > 0
     ? result
     : roleUnits.map((r) => ({ id: r.id, name: r.name, level: r.level, depth: 0, roles: r.roles }));
+}
+
+/**
+ * Árvore do menu (PROPOSAL-07): as unidades escolhíveis e os ancestrais delas, em ordem de árvore, sem as desativadas e
+ * sem duplicar unidades por vínculo "atende a" (só a hierarquia real entra aqui).
+ */
+export function navigationTree(units: OrgUnit[], workspaces: Workspace[]): NavNode[] {
+  const selectable = new Set(workspaces.map((w) => w.id));
+  const parentOf = new Map(units.map((u) => [u.id, u.parentId]));
+  const included = new Set(selectable);
+  for (const id of selectable) {
+    for (let current = parentOf.get(id); current; current = parentOf.get(current)) {
+      included.add(current);
+    }
+  }
+  const rows = buildTree(units).filter((r) => r.unit.active && included.has(r.unit.id));
+  const withChildren = new Set(rows.map((r) => r.unit.parentId).filter((id): id is string => !!id));
+  return rows.map((r) => ({
+    id: r.unit.id,
+    name: r.unit.name,
+    level: r.unit.level.key,
+    flightLevel: r.unit.level.flightLevel,
+    parentId: r.unit.parentId,
+    depth: r.depth,
+    selectable: selectable.has(r.unit.id),
+    hasChildren: withChildren.has(r.unit.id),
+  }));
 }
 
 /** Telas que listam itens exigem workspace; sem ele, o usuário vai à seleção (UX/UI 7.1). */

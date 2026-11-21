@@ -1,4 +1,15 @@
 <header class="header" data-testid="app-header">
+  <button
+    type="button"
+    class="menu-toggle"
+    (click)="drawer.set(!drawer())"
+    [attr.aria-expanded]="drawer()"
+    aria-controls="main-nav"
+    aria-label="Abrir o menu"
+    data-testid="menu-toggle"
+  >
+    ☰
+  </button>
   <a class="brand" routerLink="/home" data-testid="brand">
     <img class="logo" src="logo-mark.png" alt="" width="32" height="32" />
     <span class="name">AQuA-QE</span>
@@ -16,23 +27,10 @@
     <kbd aria-hidden="true">/</kbd>
   </form>
 
-  @if (workspace.selectable()) {
-    <button mat-button class="workspace" [matMenuTriggerFor]="workspaceMenu" data-testid="workspace-selector">
-      {{ workspace.current()?.name ?? 'Escolha o workspace' }} <span aria-hidden="true">▾</span>
-    </button>
-    <mat-menu #workspaceMenu="matMenu">
-      @for (item of workspace.workspaces(); track item.id) {
-        <button
-          mat-menu-item
-          (click)="chooseWorkspace(item.id)"
-          [class.current]="item.id === workspace.current()?.id"
-          [style.padding-left.px]="16 + item.depth * 16"
-          [attr.data-testid]="'workspace-' + item.id"
-        >
-          {{ item.name }} <span class="role">{{ levels.nameOfKey(item.level) }}</span>
-        </button>
-      }
-    </mat-menu>
+  @if (workspace.current(); as current) {
+    <span class="workspace" [title]="levels.nameOfKey(current.level)" data-testid="workspace-current">
+      {{ current.name }}
+    </span>
   }
 
   @if (session.devMode()) {
@@ -78,13 +76,19 @@
 </header>
 
 <div class="body">
-  <nav class="sidebar" aria-label="Navegação principal" data-testid="sidebar">
-    @for (item of menu(); track item.path) {
-      <a [routerLink]="item.path" routerLinkActive="active" [attr.data-testid]="item.testId">{{ item.label }}</a>
+  <nav id="main-nav" class="sidebar" [class.open]="drawer()" aria-label="Navegação principal" data-testid="sidebar">
+    <a routerLink="/home" routerLinkActive="active" (click)="drawer.set(false)" data-testid="nav-home">Home</a>
+    <div class="nav-label">Organização</div>
+    <app-org-tree (picked)="drawer.set(false)" />
+    <div class="nav-label">Visões da unidade</div>
+    @for (item of views(); track item.path) {
+      <a [routerLink]="item.path" routerLinkActive="active" (click)="drawer.set(false)" [attr.data-testid]="item.testId">
+        {{ item.label }}
+      </a>
     }
     @if (session.isPlatformAdmin()) {
       <hr class="nav-separator" />
-      <a routerLink="/admin" routerLinkActive="active" data-testid="nav-admin">Admin</a>
+      <a routerLink="/admin" routerLinkActive="active" (click)="drawer.set(false)" data-testid="nav-admin">Admin</a>
     }
   </nav>
   <main class="content">
