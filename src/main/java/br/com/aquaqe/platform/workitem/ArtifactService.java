@@ -34,6 +34,8 @@ import br.com.aquaqe.platform.workitem.ArtifactRepository.Filter;
 import br.com.aquaqe.platform.workitem.ArtifactRepository.Row;
 import br.com.aquaqe.platform.workitem.ArtifactViews.ArtifactView;
 import br.com.aquaqe.platform.workitem.ArtifactViews.ContextView;
+import br.com.aquaqe.platform.events.DomainEvents;
+import br.com.aquaqe.platform.events.EventEnvelope.Aggregate;
 import tools.jackson.databind.ObjectMapper;
 
 /**
@@ -58,9 +60,11 @@ class ArtifactService {
 	private final CurrentUser currentUser;
 	private final UserDirectory users;
 	private final ObjectMapper json;
+	private final DomainEvents events;
 
 	ArtifactService(ArtifactRepository repository, ArtifactConfiguration configuration, OrgUnits orgUnits,
-			Authorization authorization, CurrentUser currentUser, UserDirectory users, ObjectMapper json) {
+			Authorization authorization, CurrentUser currentUser, UserDirectory users, ObjectMapper json,
+			DomainEvents events) {
 		this.repository = repository;
 		this.configuration = configuration;
 		this.orgUnits = orgUnits;
@@ -68,6 +72,7 @@ class ArtifactService {
 		this.currentUser = currentUser;
 		this.users = users;
 		this.json = json;
+		this.events = events;
 	}
 
 	// ---------------------------------------------------------------------------------------------- leitura
@@ -166,6 +171,12 @@ class ArtifactService {
 			people.get("technicalLeadId"), people.get("qaOwnerId"), people.get("assigneeId"),
 			size(body.get("size")), customFields(body.get("customFields")), false, 0, null, null, 0, false, null);
 		repository.insert(row, caller.userId());
+		Map<String, Object> payload = new LinkedHashMap<>();
+		payload.put("key", key);
+		payload.put("artifactType", type.key());
+		payload.put("parentId", row.parentId());
+		events.publish("artifact.created", caller.userId(), unitId, new Aggregate("ARTIFACT", id, key), payload, null,
+			auditable(row));
 		return views(List.of(repository.find(id).orElseThrow())).getFirst();
 	}
 
@@ -212,6 +223,12 @@ class ArtifactService {
 		if (!path.equals(current.path())) {
 			repository.movePaths(current.path(), path);
 		}
+		Map<String, Object> before = auditable(current);
+		Map<String, Object> after = auditable(updated);
+		before.keySet().removeIf(k -> Objects.equals(before.get(k), after.get(k)));
+		after.keySet().retainAll(before.keySet());
+		events.publish("artifact.updated", caller.userId(), current.orgUnitId(),
+			new Aggregate("ARTIFACT", current.id(), current.key()), Map.of("key", current.key()), before, after);
 		return views(List.of(repository.find(current.id()).orElseThrow())).getFirst();
 	}
 
@@ -257,6 +274,26 @@ class ArtifactService {
 			throw new ApiException(HttpStatus.CONFLICT, "HAS_CHILDREN", "Arquive ou mova os itens filhos antes.");
 		}
 		repository.archive(row.id());
+		events.publish("artifact.archived", caller.userId(), row.orgUnitId(), new Aggregate("ARTIFACT", row.id(), row.key()),
+			Map.of("key", row.key()), Map.of("archived", false), Map.of("archived", true));
+	}
+
+	/** Campos do artefato que vão para a trilha de auditoria (antes e depois). */
+	private Map<String, Object> auditable(Row r) {
+		Map<String, Object> values = new LinkedHashMap<>();
+		values.put("title", r.title());
+		values.put("description", r.description());
+		values.put("parentId", r.parentId() == null ? null : r.parentId().toString());
+		values.put("orgUnitId", r.orgUnitId().toString());
+		values.put("ownerId", r.ownerId() == null ? null : r.ownerId().toString());
+		values.put("technicalLeadId", r.technicalLeadId() == null ? null : r.technicalLeadId().toString());
+		values.put("qaOwnerId", r.qaOwnerId() == null ? null : r.qaOwnerId().toString());
+		values.put("assigneeId", r.assigneeId() == null ? null : r.assigneeId().toString());
+		values.put("size", r.size());
+		values.put("customFields", parseCustomFields(r.customFields()));
+		values.put("blocked", r.blocked());
+		values.put("blockedReason", r.blockedReason());
+		return values;
 	}
 
 	// ---------------------------------------------------------------------------------------------- regras

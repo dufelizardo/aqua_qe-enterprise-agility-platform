@@ -41,6 +41,7 @@ class ApiExceptionHandler {
 		body.setTitle(status.getReasonPhrase());
 		body.setProperty("code", code);
 		body.setProperty("errors", errors);
+		Correlation.current().ifPresent(id -> body.setProperty("correlationId", id));
 		return ResponseEntity.status(status).body(body);
 	}
 }

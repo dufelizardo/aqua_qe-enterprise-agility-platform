@@ -8,6 +8,9 @@ public enum Permission {
 	/** "Gerir configuração e papéis". */
 	MANAGE_CONFIGURATION(Set.of("PLATFORM_ADMIN")),
 
+	/** "Consultar auditoria" (matriz do SSD 2): só o administrador. */
+	VIEW_AUDIT(Set.of("PLATFORM_ADMIN")),
+
 	/** "Gerir quadros e sprints". */
 	MANAGE_BOARDS(Set.of("PLATFORM_ADMIN", "PRODUCT_MANAGER", "TECH_LEAD")),
 

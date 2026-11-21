@@ -8,3 +8,5 @@ Resource            ../../data_driven/organization/organization_driven.resource
 Resource            ../../data_driven/workitem/workitem_driven.resource
 # WORKFLOW
 Resource            ../../data_driven/workflow/workflow_driven.resource
+# AUDIT
+Resource            ../../data_driven/audit/audit_driven.resource

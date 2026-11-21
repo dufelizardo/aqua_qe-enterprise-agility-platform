@@ -146,6 +146,18 @@ Pedidos de memória (requests) por componente, para conferir com a folga do serv
 
 Antes de aplicar, confira a folga atual com `free -h` e `kubectl top pods -A`. Se faltar memória, a primeira alavanca é desligar o dev quando não estiver em uso (`kubectl -n aqua-qe-agility-platform-dev scale deploy --all --replicas=0`), porque o ArgoCD com `selfHeal` religa; nesse caso, pause a sincronização da aplicação `aqua-qe-agility-platform-dev` antes.
 
+### 6.1 Eventos e auditoria
+
+A API entrega os eventos de domínio à trilha de auditoria em segundo plano (SAD 7.4 e 7.5). Parâmetros, com os valores padrão, que são **provisórios** até o REV-03 fixar o SLA:
+
+| Variável | Padrão | O que controla |
+|---|---|---|
+| `AQUAQE_EVENTS_RELAY_DELAY` | `PT1S` | Intervalo entre as rodadas do repassador. |
+| `AQUAQE_EVENTS_LAG_ALERT` | `PT1M` | Atraso a partir do qual a API registra aviso no log. |
+| `AQUAQE_EVENTS_RETENTION_DAYS` | `7` | Dias que os eventos já entregues ficam na outbox antes da limpeza diária. |
+
+Para acompanhar: a métrica `aquaqe.outbox.lag` e, no log da API, os avisos "Outbox com atraso" e os erros "Falha ao entregar evento da outbox". Este último indica que o repassador parou num evento e está tentando de novo; a trilha não avança até o problema ser resolvido.
+
 ## 7. Desenvolvimento local
 
 ```bash
