@@ -119,16 +119,21 @@ Regras que decorrem da tabela:
 
 ```text
 +--------------------------------------------------------------------------------+
-| [logo] AQuA-QE   [ Buscar artefatos e documentos ]   (3) Aprovações  [WS v] (A) |
-+-----------+--------------------------------------------------------------------+
-| Home      |  Portfólio Canais Digitais > INIT-12 > FEAT-1024                   |
-| Portfolio |  ----------------------------------------------------------------  |
-| Tactical  |                                                                    |
-| Squad     |                     área de conteúdo                               |
-|           |                                                                    |
-| --------- |                                                                    |
-| Admin     |                                                                    |
-+-----------+--------------------------------------------------------------------+
+| [logo] AQuA-QE   [ Buscar artefatos e documentos ]   (3) Aprovações  Canais  (A) |
++----------------+---------------------------------------------------------------+
+| Home           |  Empresa > Tecnologia > Canais  Cadeia · FL2  Atende a: ...   |
+| ORGANIZAÇÃO    |  -----------------------------------------------------------  |
+| [Buscar unid.] |                                                               |
+| ▾ Empresa      |                     área de conteúdo                          |
+|   ▾ Tecnologia |                                                               |
+|     ▸ Canais   |                                                               |
+| VISÕES         |                                                               |
+| Portfólio      |                                                               |
+| Cadeia         |                                                               |
+| Squad          |                                                               |
+| -------------- |                                                               |
+| Admin          |                                                               |
++----------------+---------------------------------------------------------------+
 ```
 
 **Cabeçalho** (fundo `navy-900`, texto branco; logo da marca à esquerda):
@@ -138,7 +143,8 @@ Regras que decorrem da tabela:
 | Logo e nome | Leva à home. | — |
 | Busca | Ao confirmar, abre a tela de resultados. Atalho de teclado `/`. | `GET /search` |
 | Aprovações | Contador das aprovações que aguardam o usuário; abre a lista. Sem contador quando é zero. | `GET /me/pending-approvals` |
-| Seletor de workspace | Mostra a unidade ativa; permite trocar. Oculto se o usuário tem só uma. | `GET /me/workspaces` |
+| Unidade ativa | Nome da unidade escolhida na árvore do menu; o nível aparece ao passar o mouse. A troca é feita na árvore ([Proposta 06, Revisão 2](NAVIGATION-PROPOSAL.md#6-revisão-2-proposal-07-estrutura-organizacional-como-navegação)). | `GET /me/workspaces` |
+| Menu (☰) | Só no celular: abre o menu lateral como gaveta. | — |
 | Perfil | Avatar com iniciais. Menu: nome e papéis na unidade ativa, Preferências, Ajuda, Sair. | `GET /me` |
 
 O ponto verde de "operacional" sobre o avatar, presente no protótipo, não é usado: não há estado de presença no MVP.
@@ -148,12 +154,17 @@ O ponto verde de "operacional" sobre o avatar, presente no protótipo, não é u
 | Item | Tela | Visível para |
 |---|---|---|
 | Home | Meu trabalho | todos |
+| **Organização** | Árvore das unidades: escolher uma troca o workspace | todos |
 | *nome do nível ligado a FL3* | Portfolio Management (FL3) | todos |
 | *nome do nível ligado a FL2* | Tactical Board (FL2) | todos |
 | *nome do nível ligado a FL1* | Squad Workspace (FL1) | todos |
 | Admin | Administração | `PLATFORM_ADMIN` |
 
-Os itens de Flight Level levam o **nome do nível organizacional** ligado a cada Flight Level na configuração (`GET /org-levels`); na instalação padrão, "Portfólio", "Cadeia" e "Squad". O mesmo nome é o título da tela e o rótulo da unidade no formulário de criação. A interface nunca usa nomes de nível fixos no código ([Proposta 06](NAVIGATION-PROPOSAL.md#3-decisões-tomadas-2026-11-20), NAV-D1).
+**Organização** (Proposta 06, Revisão 2; PROPOSAL-07): árvore recolhível das unidades em que o usuário tem papel e das ativas abaixo delas. Quem só tem papel embaixo vê os ancestrais em cinza, sem ação, só para se localizar. Tem busca por nome (mantém o caminho até cada resultado), destaque da unidade ativa e expansão lembrada no navegador; sem nada lembrado, abre o caminho até a unidade ativa. Escolher uma unidade com Flight Level abre a tela desse nível; uma unidade sem Flight Level recarrega a tela atual. Teclado: Tab entre unidades, Enter escolhe, setas direita e esquerda abrem e fecham o ramo.
+
+Os itens de Flight Level, sob **Visões da unidade**, levam o **nome do nível organizacional** ligado a cada Flight Level na configuração (`GET /org-levels`); na instalação padrão, "Portfólio", "Cadeia" e "Squad". O mesmo nome é o título da tela e o rótulo da unidade no formulário de criação. A interface nunca usa nomes de nível fixos no código ([Proposta 06](NAVIGATION-PROPOSAL.md#3-decisões-tomadas-2026-11-20), NAV-D1).
+
+**Celular:** abaixo de 720 px o menu lateral fica escondido; o botão ☰ do cabeçalho o abre como gaveta sobre o conteúdo, e escolher uma unidade ou um item fecha a gaveta.
 
 Os módulos Living Documentation, Quality, Governance e Analytics do [PRD, seção 9](PRD.md) entram no menu nas fases em que forem entregues; no MVP não aparecem, nem desabilitados.
 
@@ -332,7 +343,7 @@ Ancestral que o usuário não pode abrir aparece só com o resumo (título, stat
 - **Dados:** `GET /me`, `GET /me/workspaces`.
 - **Comportamento:** com uma única unidade, a tela é pulada. A escolha é lembrada no navegador e enviada em `X-Workspace-Id`.
 - **Estado vazio:** "Você ainda não tem acesso a nenhuma unidade. Peça ao administrador da plataforma." Sem menu lateral.
-- **Situação (2026-11-20):** implementada em `/workspace`. As telas que listam itens levam a ela quando não há workspace escolhido. As opções são a **árvore** das unidades em que o usuário tem papel e das unidades ativas abaixo delas, indentada, com o nome do nível de cada uma e os papéis que valem nela (os da unidade acima, pela regra 1 do SSD 2.1). Unidades desativadas não aparecem. Sem escolha lembrada e com uma única unidade com papel, ela é escolhida sozinha. O seletor do cabeçalho mostra a mesma árvore (Proposta 06). Por ora o menu lateral continua visível nesta tela.
+- **Situação (2026-11-20):** implementada em `/workspace`. As telas que listam itens levam a ela quando não há workspace escolhido. As opções são a **árvore** das unidades em que o usuário tem papel e das unidades ativas abaixo delas, indentada, com o nome do nível de cada uma e os papéis que valem nela (os da unidade acima, pela regra 1 do SSD 2.1). Unidades desativadas não aparecem. Sem escolha lembrada e com uma única unidade com papel, ela é escolhida sozinha. A árvore do menu lateral usa o mesmo contexto e substitui o seletor do cabeçalho ([Proposta 06, Revisão 2](NAVIGATION-PROPOSAL.md#6-revisão-2-proposal-07-estrutura-organizacional-como-navegação)). Por ora o menu lateral continua visível nesta tela.
 
 ### 7.2 Home — Meu trabalho
 
@@ -645,7 +656,7 @@ A tela pertence ao IdP (Keycloak) e recebe o tema `aquaqe`, em [k8s/auth/theme/a
 | 1280 px ou mais | Layout completo. |
 | 1024 a 1279 px | Menu lateral recolhido a ícones; painel de contexto vira aba. |
 | 768 a 1023 px | Leitura e aprovações utilizáveis; quadros com rolagem horizontal; edição de documentos permitida, sem garantia de conforto. |
-| Abaixo de 768 px | Fora do MVP; a tela avisa que a experiência não é suportada. |
+| Abaixo de 768 px | Fora do MVP; a tela avisa que a experiência não é suportada. Já implementado: abaixo de 720 px o menu lateral, com a árvore organizacional, vira gaveta aberta pelo botão ☰ (ORG-NAV-014). |
 
 ## 12. Divergências com os protótipos
 

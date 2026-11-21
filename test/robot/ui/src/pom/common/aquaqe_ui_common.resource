@@ -17,6 +17,14 @@ Open AQuA-QE Browser
     New Context    locale=pt-BR
     New Page    ${AQUA_UI_URL}${path}
 
+Open AQuA-QE Mobile Browser
+    [Documentation]    Como Open AQuA-QE Browser, com a tela de um celular (UX/UI 9; PROPOSAL-07, ORG-NAV-014).
+    [Arguments]    ${path}=/
+    New Browser    chromium    headless=${AQUA_HEADLESS}
+    Set Browser Timeout    30s
+    New Context    locale=pt-BR    viewport={'width': 390, 'height': 844}    isMobile=True    hasTouch=True
+    New Page    ${AQUA_UI_URL}${path}
+
 Go To AQuA-QE Path
     [Arguments]    ${path}
     Go To    ${AQUA_UI_URL}${path}

@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 
 import { LevelsService } from '../core/levels.service';
-import { WorkspaceService } from '../core/workspace.service';
+import { WorkspaceService, navigationTree, selectableTree } from '../core/workspace.service';
 import { BoardColumn, ColumnConfig, TransitionOption, configProblems, executable, transitionInto } from './work.service';
 
 const status = (key: string) => ({ key, name: key, phase: 'UPSTREAM' as const, category: 'TODO' as const });
@@ -132,5 +132,48 @@ describe('configProblems', () => {
       col('D', 'DOWNSTREAM', ['DONE'], 0),
     ]);
     expect(problems).toHaveLength(4);
+  });
+});
+
+describe('navigationTree (PROPOSAL-07)', () => {
+  const level = (key: string, position: number, flightLevel: string | null) => ({ key, name: key, position, flightLevel });
+  const u = (id: string, parentId: string | null, lvl: ReturnType<typeof level>) => ({
+    id,
+    name: id,
+    level: lvl as never,
+    parentId,
+    active: true,
+    version: 0,
+  });
+  const empresa = level('ENTERPRISE', 1, null);
+  const portfolio = level('PORTFOLIO', 3, 'FL3');
+  const cadeia = level('CADEIA', 4, 'FL2');
+  const squad = level('SQUAD', 5, 'FL1');
+  // Dois portfólios, duas cadeias em cada um, duas squads em cada cadeia (cardinalidade da seção 11).
+  const units = [
+    u('emp', null, empresa),
+    u('p1', 'emp', portfolio), u('p2', 'emp', portfolio),
+    u('c11', 'p1', cadeia), u('c12', 'p1', cadeia), u('c21', 'p2', cadeia), u('c22', 'p2', cadeia),
+    u('s111', 'c11', squad), u('s112', 'c11', squad), u('s121', 'c12', squad), u('s122', 'c12', squad),
+    u('s211', 'c21', squad), u('s212', 'c21', squad), u('s221', 'c22', squad), u('s222', 'c22', squad),
+  ];
+
+  it('com papel na raiz, mostra a organização inteira, toda escolhível', () => {
+    const tree = navigationTree(units, selectableTree(units, [{ id: 'emp', name: 'emp', level: 'ENTERPRISE', roles: ['VIEWER'] }]));
+    expect(tree).toHaveLength(15);
+    expect(tree.every((n) => n.selectable)).toBe(true);
+    expect(tree.filter((n) => n.level === 'SQUAD')).toHaveLength(8);
+  });
+
+  it('com papel só numa squad, mostra os ancestrais só para localização e nada dos outros ramos (ORG-D03)', () => {
+    const tree = navigationTree(units, selectableTree(units, [{ id: 's121', name: 's121', level: 'SQUAD', roles: ['SQUAD_MEMBER'] }]));
+    expect(tree.map((n) => `${n.depth}:${n.id}:${n.selectable}`)).toEqual([
+      '0:emp:false',
+      '1:p1:false',
+      '2:c12:false',
+      '3:s121:true',
+    ]);
+    expect(tree.find((n) => n.id === 'c12')?.hasChildren).toBe(true);
+    expect(tree.find((n) => n.id === 's121')?.flightLevel).toBe('FL1');
   });
 });

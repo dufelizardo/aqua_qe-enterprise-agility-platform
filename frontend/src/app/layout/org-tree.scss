@@ -1,0 +1,94 @@
+.org-tree {
+  display: grid;
+  gap: 6px;
+}
+
+.search {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.55);
+  }
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.node {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.twisty {
+  flex: 0 0 22px;
+  min-height: 26px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+span.twisty {
+  cursor: default;
+}
+
+.unit {
+  flex: 1;
+  overflow: hidden;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  /* Unidade ativa: mesmo destaque do item ativo do menu (UX/UI 4). */
+  &.current {
+    background: var(--amber-500);
+    color: var(--navy-900);
+    font-weight: 700;
+  }
+
+  /* Ancestral só para localização (ORG-D03): sem ação. */
+  &.ancestor {
+    color: rgba(255, 255, 255, 0.55);
+    cursor: default;
+
+    &:hover {
+      background: none;
+    }
+  }
+}
+
+.empty {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 13px;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--blue-500);
+  outline-offset: 1px;
+}
