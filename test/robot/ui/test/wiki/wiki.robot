@@ -14,16 +14,19 @@ Metadata            Project    Layered Keyword Driven Framework (LKDF)
 CT-001 - KNOW-006: Validate Wiki - criar página, editar em blocos e ver o histórico
     [Documentation]    A página nova abre na árvore; salvar um parágrafo cria a versão 2; o histórico tem duas versões.
     [Tags]    UI    Wiki    KNOW-006    KNOW-007    KNOW-020    smoke
-    WIKI UI - CRIAR E EDITAR PAGINA    ${wiki_pm_username}    ${wiki_pm_display_name}    ${wiki_page_base}
-    ...    ${wiki_text}    ${wiki_summary}    ${wiki_screenshot_page}
+    WIKI UI - CRIAR E EDITAR PAGINA    ${wiki_pm_username}    ${wiki_pm_display_name}    ${wiki_root_name}
+    ...    ${wiki_page_base}    ${wiki_text}    ${wiki_summary}    ${wiki_screenshot_page}
 
-CT-002 - KNOW-009: Validate Wiki - regimento não é aprovado sem as seções obrigatórias
-    [Documentation]    O aprovador (BUSINESS_OWNER) recebe o aviso das seções que faltam; o regimento volta a rascunho.
-    [Tags]    UI    Wiki    KNOW-009    KNOW-028
-    WIKI UI - REGIMENTO EXIGE SECOES    ${wiki_bo_username}    ${wiki_bo_display_name}    ${wiki_regimento_base}
-    ...    ${wiki_screenshot_reg}
+CT-002 - KNOW-009: Validate Regimento - não é aprovado sem as seções obrigatórias
+    [Documentation]    Regimento independente do Wiki (bug #66): quem aprova recebe o aviso das seções que faltam; o
+    ...    regimento volta a rascunho.
+    [Tags]    UI    Regimento    KNOW-009    KNOW-028    BUG-66
+    WIKI UI - REGIMENTO EXIGE SECOES    ${wiki_admin_username}    ${wiki_admin_display_name}    ${wiki_root_name}
+    ...    ${wiki_unit_base}    ${wiki_unit_label}    ${wiki_regimento_base}    ${wiki_screenshot_reg}
 
-CT-003 - KNOW-028: Validate Wiki - quem não é aprovador não vê Aprovar
-    [Documentation]    O PM envia o regimento para revisão, mas a aprovação é do BUSINESS_OWNER.
-    [Tags]    UI    Wiki    KNOW-028    security
-    WIKI UI - SEM APROVACAO PARA O PM    ${wiki_pm_username}    ${wiki_pm_display_name}    ${wiki_regimento_base}
+CT-003 - KNOW-028: Validate Regimento - quem não é aprovador não vê Aprovar
+    [Documentation]    Com o regimento em revisão, o PM vê o status, mas a aprovação é do BUSINESS_OWNER.
+    [Tags]    UI    Regimento    KNOW-028    security    BUG-66
+    WIKI UI - SEM APROVACAO PARA O PM    ${wiki_admin_username}    ${wiki_admin_display_name}    ${wiki_root_name}
+    ...    ${wiki_unit_base}    ${wiki_unit_label}    ${wiki_regimento_base}    ${wiki_pm_username}
+    ...    ${wiki_pm_display_name}

@@ -111,11 +111,22 @@ class KnowledgeIntegrationTests {
 
 	@Test
 	void regimentoPassaPorRevisaoAprovacaoEPublicacaoSeparadas() throws Exception {
-		String reg = id(create("pedro", portfolio, "{\"title\":\"Regimento do Portfólio\",\"type\":\"REGIMENTO\"}")
+		// O regimento é independente do Wiki: um por unidade, por endpoint próprio.
+		mvc.perform(get("/api/v1/org-units/{u}/regimento", portfolio).with(user("pedro")))
+			.andExpect(jsonPath("$.regimento").doesNotExist())
+			.andExpect(jsonPath("$.canEdit").value(true));
+		String reg = id(mvc.perform(json(post("/api/v1/org-units/{u}/regimento", portfolio), user("pedro"),
+				"{\"title\":\"Regimento do Portfólio\"}"))
 			.andExpect(jsonPath("$.status").value("DRAFT"))
 			.andExpect(jsonPath("$.governed").value(true))
 			.andExpect(jsonPath("$.sections", hasSize(16))));
 		mvc.perform(get("/api/v1/pages/{id}", reg).with(user("sara"))).andExpect(status().isNotFound());
+		mvc.perform(json(post("/api/v1/org-units/{u}/regimento", portfolio), user("pedro"), "{}"))
+			.andExpect(status().isConflict())
+			.andExpect(jsonPath("$.code").value("REGIMENTO_EXISTS"));
+		mvc.perform(get("/api/v1/org-units/{u}/pages", portfolio).with(user("pedro")))
+			.andExpect(jsonPath("$.items[*].id").value(not(hasItem(reg))));
+		create("pedro", portfolio, "{\"title\":\"X\",\"type\":\"REGIMENTO\"}").andExpect(status().isBadRequest());
 
 		changeStatus("pedro", reg, "APPROVED").andExpect(status().is(422))
 			.andExpect(jsonPath("$.code").value("TRANSITION_NOT_ALLOWED"));
@@ -139,6 +150,9 @@ class KnowledgeIntegrationTests {
 			.andExpect(jsonPath("$.publishedVersion").value(2));
 		mvc.perform(get("/api/v1/pages/{id}", reg).with(user("sara"))).andExpect(status().isOk())
 			.andExpect(jsonPath("$.versionNumber").value(2));
+		mvc.perform(get("/api/v1/org-units/{u}/regimento", portfolio).with(user("sara")))
+			.andExpect(jsonPath("$.access").value("PUBLISHED"))
+			.andExpect(jsonPath("$.regimento.id").value(reg));
 
 		// Nova edição volta a rascunho; quem está embaixo continua vendo a versão publicada.
 		save("pedro", reg, 2, regimento(reg, "Texto revisto")).andExpect(status().isOk())

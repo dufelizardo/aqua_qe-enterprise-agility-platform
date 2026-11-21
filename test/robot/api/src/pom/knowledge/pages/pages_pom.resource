@@ -11,6 +11,14 @@ POST Page As Persona
     Log    ${response.status_code} ${response.text}
     RETURN    ${response}
 
+POST Regimento As Persona
+    [Arguments]    ${persona}    ${org_unit}    ${payload}
+    ${session}=    Get AQuA-QE Session For Persona    ${persona}
+    ${response}=    POST On Session    ${session}    ${API_BASE_PATH}/org-units/${org_unit}/regimento    json=${payload}
+    ...    expected_status=ANY
+    Log    ${response.status_code} ${response.text}
+    RETURN    ${response}
+
 GET Pages As Persona
     [Arguments]    ${persona}    ${org_unit}
     ${session}=    Get AQuA-QE Session For Persona    ${persona}

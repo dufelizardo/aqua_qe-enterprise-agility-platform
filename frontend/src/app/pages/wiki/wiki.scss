@@ -366,6 +366,10 @@ input:focus-visible {
   outline-offset: 1px;
 }
 
+.layout.single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 @media (max-width: 900px) {
   .layout {
     grid-template-columns: minmax(0, 1fr);

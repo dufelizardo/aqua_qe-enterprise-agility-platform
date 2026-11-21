@@ -13,6 +13,8 @@ import { WorkspaceService } from '../../core/workspace.service';
 import { BoardConfig } from '../../work/board-config';
 import { SquadBacklog } from '../../work/squad-backlog';
 import { SquadSprints } from '../../work/squad-sprints';
+import { plural } from '../../core/context-nav';
+import { UnitHeader } from '../../layout/unit-header';
 import { LEVEL_SETUPS, LevelSetup, MANAGE_ROLES_NOTE } from './level-setup';
 import {
   Artifact,
@@ -36,7 +38,17 @@ import {
  */
 @Component({
   selector: 'app-level-board',
-  imports: [CdkDropListGroup, CdkDropList, CdkDrag, MatMenuModule, MatSnackBarModule, BoardConfig, SquadBacklog, SquadSprints],
+  imports: [
+    CdkDropListGroup,
+    CdkDropList,
+    CdkDrag,
+    MatMenuModule,
+    MatSnackBarModule,
+    BoardConfig,
+    SquadBacklog,
+    SquadSprints,
+    UnitHeader,
+  ],
   templateUrl: './level-board.html',
   styleUrl: './level-board.scss',
 })
@@ -54,9 +66,22 @@ export class LevelBoard {
 
   /** Chave do nível, vinda dos dados da rota. */
   readonly screen = input<keyof typeof LEVEL_SETUPS>('portfolio');
-  protected readonly setup = computed<LevelSetup>(() => LEVEL_SETUPS[this.screen()]);
-  /** Título da tela e rótulo da unidade: o nome do nível ligado ao Flight Level, vindo da configuração. */
-  protected readonly levelName = computed(() => this.levels.nameOf(this.setup().level));
+  /** Tela da rota: decide o título e as abas. */
+  protected readonly routeSetup = computed<LevelSetup>(() => LEVEL_SETUPS[this.screen()]);
+  /**
+   * Nível do quadro. Na Squad nasce todo o trabalho (bug #66, 2026-11-21): o Quadro tem o seletor Iniciativas, Features
+   * e Histórias, e o quadro e a lista passam a ser do nível escolhido, sempre na Squad.
+   */
+  protected readonly boardScreen = signal<keyof typeof LEVEL_SETUPS>('portfolio');
+  protected readonly setup = computed<LevelSetup>(() => LEVEL_SETUPS[this.boardScreen()]);
+  protected readonly boardLevels = (['portfolio', 'tactical', 'squad'] as const).map((key) => ({
+    key,
+    principal: LEVEL_SETUPS[key].creatableTypes[0]!,
+  }));
+  /** Título da tela: o nome do nível ligado ao Flight Level da rota, vindo da configuração. */
+  protected readonly levelName = computed(() => this.levels.nameOf(this.routeSetup().level));
+  /** Nome do nível do quadro, para as mensagens de quadro vazio. */
+  protected readonly boardLevelName = computed(() => this.levels.nameOf(this.setup().level));
   /** Unidade ativa com o caminho até a raiz e os vínculos, para a trilha (Proposta 06, NAV-008 e NAV-010). */
   protected readonly context = signal<OrgUnitDetail | null>(null);
   protected readonly newLabel = computed(() => {
@@ -134,8 +159,9 @@ export class LevelBoard {
   constructor() {
     // Recarrega quando a rota troca de nível (Portfolio, Tactical, Squad reutilizam o componente).
     effect(() => {
-      this.screen();
+      const screen = this.screen();
       untracked(() => {
+        this.boardScreen.set(screen);
         this.creating.set(false);
         this.configuring.set(false);
         this.board.set(null);
@@ -146,7 +172,7 @@ export class LevelBoard {
     });
     effect(() => {
       const param = this.tabParam();
-      const fl1 = this.setup().level === 'FL1';
+      const fl1 = this.routeSetup().level === 'FL1';
       const tab = fl1 && (param === 'backlog' || param === 'sprints') ? param : 'quadro';
       untracked(() => {
         if (tab !== this.tab()) {
@@ -154,6 +180,23 @@ export class LevelBoard {
         }
       });
     });
+  }
+
+  /** Troca o nível do quadro da Squad (Iniciativas, Features ou Histórias). */
+  protected chooseBoardLevel(key: keyof typeof LEVEL_SETUPS): void {
+    if (key === this.boardScreen()) {
+      return;
+    }
+    this.boardScreen.set(key);
+    this.creating.set(false);
+    this.configuring.set(false);
+    this.board.set(null);
+    this.sprintFilter.set('');
+    void this.load();
+  }
+
+  protected pluralName(key: string): string {
+    return plural(this.typeName(key));
   }
 
   protected typeName(key: string): string {
@@ -216,7 +259,8 @@ export class LevelBoard {
     this.newType.set(initial);
     const units = await this.organization.allUnits();
     const options = unitsInWorkspace(units, this.workspace.currentWorkspaceId()).filter(
-      (unit) => unit.active && unit.level.flightLevel === this.setup().level,
+      // Na Squad, todo item nasce em uma Squad, de qualquer nível (bug #66).
+      (unit) => unit.active && unit.level.flightLevel === this.routeSetup().level,
     );
     this.levelUnits.set(options);
     this.newUnit.set(options[0]?.id ?? '');
@@ -337,11 +381,6 @@ export class LevelBoard {
   protected async filterBySprint(id: string): Promise<void> {
     this.sprintFilter.set(id);
     await this.refresh();
-  }
-
-  /** As abas mudam o endereço, para o menu e o botão voltar acompanharem. */
-  protected showTab(tab: 'quadro' | 'backlog' | 'sprints'): void {
-    void this.router.navigate([], { queryParams: { tab: tab === 'quadro' ? null : tab }, queryParamsHandling: 'merge' });
   }
 
   private async openTab(tab: 'quadro' | 'backlog' | 'sprints'): Promise<void> {

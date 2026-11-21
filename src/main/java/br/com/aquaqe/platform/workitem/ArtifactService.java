@@ -156,9 +156,11 @@ class ArtifactService {
 		if (!authorization.can(caller.userId(), Permission.editAt(type.level()), unitId)) {
 			throw ApiException.forbidden();
 		}
-		if (!type.level().equals(unit.flightLevel())) {
+		// Tudo nasce na Squad (bug #66, 2026-11-21): a unidade de FL1 aceita artefatos de qualquer Flight Level; nas demais,
+		// o nível do artefato continua tendo de ser o da unidade.
+		if (!type.level().equals(unit.flightLevel()) && !"FL1".equals(unit.flightLevel())) {
 			throw unprocessable("INVALID_ORG_UNIT_TYPE",
-				"Um artefato de " + type.level() + " fica em uma unidade de nível " + type.level() + ".");
+				"Um artefato de " + type.level() + " fica em uma Squad (FL1) ou em uma unidade de nível " + type.level() + ".");
 		}
 		Row parent = parentFor(type, uuidField(body, "parentId"), unitId, caller, null);
 		Map<String, UUID> people = people(body, null);

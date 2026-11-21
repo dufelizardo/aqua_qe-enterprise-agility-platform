@@ -1,3 +1,7 @@
+@if (routeSetup().level === 'FL1') {
+  <!-- Página da Squad: trilha, nome e abas da unidade (Wiki, Regimento, Quadro, Backlog, Sprints; bug #66). -->
+  <app-unit-header />
+} @else {
 <header class="page-header">
   @if (context(); as unit) {
     <nav class="trail" aria-label="Unidade ativa" data-testid="unit-trail">
@@ -15,15 +19,8 @@
     </nav>
   }
   <h1 data-testid="page-title">{{ levelName() }}</h1>
-  <p class="lead">{{ setup().lead }}</p>
+  <p class="lead">{{ routeSetup().lead }}</p>
 </header>
-
-@if (setup().level === 'FL1') {
-  <nav class="tabs" role="tablist" aria-label="Seções" data-testid="squad-tabs">
-    <button type="button" role="tab" [class.on]="tab() === 'quadro'" [attr.aria-selected]="tab() === 'quadro'" (click)="showTab('quadro')" data-testid="tab-board">Quadro</button>
-    <button type="button" role="tab" [class.on]="tab() === 'backlog'" [attr.aria-selected]="tab() === 'backlog'" (click)="showTab('backlog')" data-testid="tab-backlog">Backlog</button>
-    <button type="button" role="tab" [class.on]="tab() === 'sprints'" [attr.aria-selected]="tab() === 'sprints'" (click)="showTab('sprints')" data-testid="tab-sprints">Sprints</button>
-  </nav>
 }
 
 @if (tab() === 'backlog') {
@@ -31,6 +28,22 @@
 } @else if (tab() === 'sprints') {
   <app-squad-sprints />
 } @else {
+@if (routeSetup().level === 'FL1') {
+  <!-- Na Squad nasce todo o trabalho (bug #66): o quadro de Iniciativas, de Features ou de Histórias. -->
+  <div class="toggle level-switch" role="group" aria-label="Nível do quadro" data-testid="board-level">
+    @for (option of boardLevels; track option.key) {
+      <button
+        type="button"
+        [class.on]="boardScreen() === option.key"
+        [attr.aria-pressed]="boardScreen() === option.key"
+        (click)="chooseBoardLevel(option.key)"
+        [attr.data-testid]="'board-level-' + option.key"
+      >
+        {{ pluralName(option.principal) }}
+      </button>
+    }
+  </div>
+}
 <div class="toolbar">
   <div class="toggle" role="group" aria-label="Modo de exibição">
     <button type="button" [class.on]="mode() === 'quadro'" (click)="mode.set('quadro')" data-testid="mode-board">Quadro</button>
@@ -134,7 +147,7 @@
       }
     </select>
     @if (levelUnits().length === 0) {
-      <p class="hint">Não há unidade de {{ levelName() }} ({{ setup().level }}) neste workspace. Peça ao administrador.</p>
+      <p class="hint">Não há unidade de {{ levelName() }} ({{ routeSetup().level }}) neste workspace. Peça ao administrador.</p>
     }
     @if (createError(); as error) {
       <p class="field-error" data-testid="new-item-error">{{ messageOf(error) }}</p>
@@ -185,12 +198,12 @@
 } @else if (!board()) {
   <div class="card empty" data-testid="board-empty">
     @if (canManageBoards()) {
-      <p>Este workspace ainda não tem quadro de {{ levelName() }} ({{ setup().level }}).</p>
+      <p>Este workspace ainda não tem quadro de {{ boardLevelName() }} ({{ setup().level }}).</p>
       <button type="button" class="btn primary" [disabled]="busy()" (click)="createBoard()" data-testid="create-board">
         Criar quadro
       </button>
     } @else {
-      <p>Este workspace ainda não tem quadro de {{ levelName() }} ({{ setup().level }}). {{ manageNote }}</p>
+      <p>Este workspace ainda não tem quadro de {{ boardLevelName() }} ({{ setup().level }}). {{ manageNote }}</p>
     }
   </div>
 } @else {

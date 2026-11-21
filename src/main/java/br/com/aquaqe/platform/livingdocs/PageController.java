@@ -35,6 +35,18 @@ class PageController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(service.create(unit, body));
 	}
 
+	/** Regimento da unidade, independente do Wiki: um por unidade. */
+	@GetMapping("/api/v1/org-units/{unit}/regimento")
+	Map<String, Object> regimento(@PathVariable UUID unit) {
+		return service.regimento(unit);
+	}
+
+	@PostMapping("/api/v1/org-units/{unit}/regimento")
+	ResponseEntity<Map<String, Object>> createRegimento(@PathVariable UUID unit,
+			@RequestBody(required = false) Map<String, Object> body) {
+		return ResponseEntity.status(HttpStatus.CREATED).body(service.createRegimento(unit, body));
+	}
+
 	@GetMapping("/api/v1/pages/{id}")
 	Map<String, Object> get(@PathVariable UUID id) {
 		return service.get(id);

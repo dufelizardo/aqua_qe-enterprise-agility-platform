@@ -1,21 +1,20 @@
 import { Component, computed, effect, inject, output, signal } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router } from '@angular/router';
 
-import { NavigationContext, landingFor } from '../core/context-nav';
+import { ContextView, NavigationContext, landingFor } from '../core/context-nav';
 import { LevelsService } from '../core/levels.service';
 import { NavNode, WorkspaceService } from '../core/workspace.service';
 
 const EXPANDED_KEY = 'aquaqe.org-tree.expanded';
 
 /**
- * Árvore organizacional do menu (Proposta 06, Revisões 2 e 3; PROPOSAL-07; bug #66). Usa o mesmo serviço de contexto
- * do resto da aplicação ({@link WorkspaceService}): escolher uma unidade aqui é escolher o workspace, e as funções dela
- * aparecem dentro da árvore, logo abaixo dela. Ancestrais sem papel aparecem só para localização (ORG-D03); a expansão
- * fica lembrada no navegador; a busca filtra por nome.
+ * Árvore organizacional do menu (Proposta 06, Revisões 2 e 3; PROPOSAL-07; bug #66): só unidades. Usa o mesmo serviço
+ * de contexto do resto da aplicação ({@link WorkspaceService}): escolher uma unidade aqui é escolher o workspace e abrir a
+ * página dela, com as abas no cabeçalho (`UnitHeader`). Ancestrais sem papel aparecem só para localização (ORG-D03); a
+ * expansão fica lembrada no navegador; a busca filtra por nome.
  */
 @Component({
   selector: 'app-org-tree',
-  imports: [RouterLink, RouterLinkActive],
   template: `
     <div class="org-tree" data-testid="org-tree-nav">
       <input
@@ -32,11 +31,11 @@ const EXPANDED_KEY = 'aquaqe.org-tree.expanded';
           <li
             role="treeitem"
             [attr.aria-level]="node.depth + 1"
-            [attr.aria-expanded]="node.hasChildren && !searching() ? isOpen(node.id) : null"
+            [attr.aria-expanded]="expandable(node) && !searching() ? isOpen(node.id) : null"
             [attr.aria-selected]="node.id === workspace.current()?.id"
           >
             <div class="node" [style.padding-left.px]="4 + node.depth * 12">
-              @if (node.hasChildren && !searching()) {
+              @if (expandable(node) && !searching()) {
                 <button
                   type="button"
                   class="twisty"
@@ -70,26 +69,6 @@ const EXPANDED_KEY = 'aquaqe.org-tree.expanded';
                 >
               }
             </div>
-            @if (node.id === workspace.current()?.id) {
-              <!-- Funções da unidade escolhida, dentro da árvore, antes das unidades filhas (bug #66). -->
-              <ul role="group" class="views" [attr.aria-label]="'Funções de ' + node.name" data-testid="org-node-views">
-                @for (view of nav.views(); track view.testId) {
-                  <li>
-                    <a
-                      class="view"
-                      [style.padding-left.px]="30 + (node.depth + 1) * 12"
-                      [routerLink]="view.path"
-                      [queryParams]="view.queryParams"
-                      routerLinkActive="active"
-                      [routerLinkActiveOptions]="exact"
-                      (click)="picked.emit()"
-                      [attr.data-testid]="view.testId"
-                      >{{ view.label }}</a
-                    >
-                  </li>
-                }
-              </ul>
-            }
           </li>
         } @empty {
           <li class="empty">Nenhuma unidade.</li>
@@ -103,13 +82,7 @@ export class OrgTree {
   protected readonly workspace = inject(WorkspaceService);
   protected readonly levels = inject(LevelsService);
   private readonly router = inject(Router);
-  protected readonly nav = inject(NavigationContext);
-  protected readonly exact = {
-    paths: 'exact',
-    queryParams: 'exact',
-    matrixParams: 'ignored',
-    fragment: 'ignored',
-  } as const;
+  private readonly nav = inject(NavigationContext);
 
   /** Avisa o menu que uma unidade foi escolhida (no celular, a gaveta fecha). */
   readonly picked = output<void>();
@@ -163,6 +136,10 @@ export class OrgTree {
     });
   }
 
+  protected expandable(node: NavNode): boolean {
+    return node.hasChildren;
+  }
+
   protected isOpen(id: string): boolean {
     return this.expanded().has(id);
   }
@@ -177,24 +154,42 @@ export class OrgTree {
   }
 
   /**
-   * Escolher a unidade é escolher o workspace, e o menu passa a mostrar as visões dela (bug #66). Unidade com Flight
-   * Level abre a primeira visão dela; no Wiki, continua no Wiki; sem Flight Level, a tela atual, se existir no novo
-   * contexto ({@link landingFor}).
+   * Escolher a unidade é escolher o workspace e abrir a página dela (bug #66). A aba atual continua se existir na nova
+   * unidade (com a aba da Squad, ?tab=); senão, abre a primeira ({@link landingFor}). A página aberta do Wiki é da
+   * unidade anterior, então não acompanha.
    */
   protected pick(node: NavNode): void {
+    const segments = this.router.parseUrl(this.router.url).root.children['primary']?.segments.map((s) => s.path) ?? [];
+    const currentPath = '/' + segments.join('/');
+    const landing = landingFor(this.nav.viewsFor(node.level), currentPath);
+    const same = currentPath === '/wiki' ? '/wiki' : this.router.url;
+    this.go(node, landing ? this.urlOf(landing) : same);
+  }
+
+  private go(node: NavNode, target: string): void {
     this.workspace.choose(node.id);
+    // Abre o caminho até a unidade e a própria unidade: escolhida pela busca, ela continua visível ao limpar a busca.
+    const parentOf = new Map(this.workspace.navigation().map((n) => [n.id, n.parentId]));
+    const open = new Set(this.expanded());
+    for (let id: string | null | undefined = node.id; id; id = parentOf.get(id)) {
+      open.add(id);
+    }
+    this.expanded.set(open);
+    writeExpanded(open);
     this.picked.emit();
-    const currentPath = this.router.parseUrl(this.router.url).root.children['primary']?.segments.map((s) => s.path) ?? [];
-    const landing = landingFor(this.nav.viewsFor(node.level), '/' + currentPath.join('/'), node.flightLevel);
-    const target = landing
-      ? this.router.serializeUrl(this.router.createUrlTree([landing.path], { queryParams: landing.queryParams ?? {} }))
-      : this.router.url.split('?')[0]!;
-    void this.router.navigateByUrl('/workspace', { skipLocationChange: true }).then(() => this.router.navigateByUrl(target));
+    // Se outra navegação (um clique numa função) cancelar esta, não volta para o destino antigo por cima dela.
+    void this.router
+      .navigateByUrl('/workspace', { skipLocationChange: true })
+      .then((done) => (done ? this.router.navigateByUrl(target) : false));
+  }
+
+  private urlOf(view: ContextView): string {
+    return this.router.serializeUrl(this.router.createUrlTree([view.path], { queryParams: view.queryParams ?? {} }));
   }
 
   /** Setas direita e esquerda abrem e fecham o ramo (acessibilidade de árvore). */
   protected keys(event: KeyboardEvent, node: NavNode): void {
-    if (!node.hasChildren || this.searching()) {
+    if (!this.expandable(node) || this.searching()) {
       return;
     }
     if ((event.key === 'ArrowRight' && !this.isOpen(node.id)) || (event.key === 'ArrowLeft' && this.isOpen(node.id))) {

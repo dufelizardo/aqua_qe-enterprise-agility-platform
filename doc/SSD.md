@@ -101,7 +101,8 @@ Formato Problem Details, com campos adicionais:
 | `HAS_CHILDREN` | 409 | Arquivamento de artefato com filhos ativos. |
 | `ATTACHMENT_TOO_LARGE` | 413 | Anexo acima do limite configurado. |
 | `INVALID_PARENT_TYPE` | 422 | Tipo do pai não permitido para o tipo do artefato. |
-| `INVALID_ORG_UNIT_TYPE` | 422 | O nível da unidade organizacional não corresponde ao Flight Level do artefato. |
+| `INVALID_ORG_UNIT_TYPE` | 422 | O nível da unidade organizacional não corresponde ao Flight Level do artefato. Desde 2026-11-21, a unidade de FL1 (Squad) aceita artefatos de qualquer Flight Level (bug #66). |
+| `REGIMENTO_EXISTS` | 409 | A unidade já tem regimento ativo (seção 3.7.1). |
 | `ORG_UNITS_NOT_LINKED` | 422 | O pai está em outro ramo e não há vínculo de atendimento entre as unidades. |
 | `TRANSITION_NOT_ALLOWED` | 422 | A transição não existe no workflow a partir do status atual. |
 | `GATE_BLOCKED` | 422 | Regras do gate não atendidas. Traz `failedRules` (seção 5.3). |
@@ -615,7 +616,9 @@ O mesmo motor de documentos tem **dono genérico**: um artefato (os cinco docume
 | Método | Caminho | Descrição | Permissão |
 |---|---|---|---|
 | GET | `/org-units/{id}/pages` | Páginas da unidade (metadados), com `access` (`FULL` ou `PUBLISHED`) e `canEdit`. `?archived=true` lista as arquivadas. Para quem lê pela regra 9, só as publicadas. | ler (regras 1 a 7 ou 9) |
-| POST | `/org-units/{id}/pages` | Cria página: `title`, `type` (`PAGE` ou `REGIMENTO`), `parentId` opcional (página da mesma unidade). | `EDIT_KNOWLEDGE` |
+| POST | `/org-units/{id}/pages` | Cria página do Wiki: `title` e `parentId` opcional (página da mesma unidade). O Wiki não tem regimento. | `EDIT_KNOWLEDGE` |
+| GET | `/org-units/{id}/regimento` | Regimento da unidade, independente do Wiki: `{access, canEdit, regimento}`, com `regimento` nulo se não houver (ou, para quem lê pela regra 9, se ainda não tem versão publicada). | ler |
+| POST | `/org-units/{id}/regimento` | Cria o regimento (`title` opcional; padrão "Regimento — unidade"). Um ativo por unidade: `REGIMENTO_EXISTS`. | `EDIT_KNOWLEDGE` |
 | GET | `/pages/{id}` | Conteúdo da versão atual; para quem lê pela regra 9, da versão publicada. Traz `canEdit`, `canApprove` e `missingSections`. | ler |
 | PUT | `/pages/{id}` | Salva nova versão: `baseVersion`, `sections` (seção 6), `summary` opcional. `VERSION_CONFLICT` se `baseVersion` não for a atual. | `EDIT_KNOWLEDGE` |
 | PATCH | `/pages/{id}` | Renomeia (`title`) e move (`parentId`, `null` para a raiz). Recusa pai de outra unidade, arquivado ou descendente da própria página. | `EDIT_KNOWLEDGE` |

@@ -119,3 +119,12 @@ Também acertou ao separar **proprietário, visibilidade, aplicabilidade, ediç�
 | Robot UI `test/robot/ui/test/wiki` | Criar e editar em blocos, histórico; regimento recusado sem as seções obrigatórias; PM sem "Aprovar". |
 
 O cenário de interface de quem só tem papel embaixo depende da atribuição de papel por unidade (Administração › Usuários); até lá, a regra 9 é coberta no JUnit.
+
+## 8. Revisão (bug #66): regimento independente do Wiki
+
+Em 2026-11-21 o usuário definiu que **Wiki e Regimento são independentes**: cada unidade tem o próprio Wiki, com as páginas livres, e o próprio Regimento, outra aba da página da unidade ([Proposta 06, seção 7](NAVIGATION-PROPOSAL.md#7-revisão-3-bug-66-menu-contextual-por-unidade)).
+
+- O regimento é **um por unidade**, criado por `POST /org-units/{id}/regimento` (`REGIMENTO_EXISTS` se já houver um ativo) e lido por `GET /org-units/{id}/regimento` (SSD 3.7.1).
+- O Wiki (`/org-units/{id}/pages`) não lista nem cria regimentos; o regimento não pode ser pai de página nem ser movido para o Wiki.
+- O motor continua o mesmo: versões, ciclo governado, regra 9 e auditoria valem para os dois.
+- Tela própria: UX/UI 7.13.

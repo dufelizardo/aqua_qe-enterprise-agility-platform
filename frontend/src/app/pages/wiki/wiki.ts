@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
@@ -7,6 +7,7 @@ import { map } from 'rxjs';
 import { ApiError, messageOf, toApiError } from '../../core/api-error';
 import { LevelsService } from '../../core/levels.service';
 import { WorkspaceService } from '../../core/workspace.service';
+import { UnitHeader } from '../../layout/unit-header';
 import { BlockEditor } from '../../knowledge/block-editor';
 import { BlockView } from '../../knowledge/block-view';
 import {
@@ -29,13 +30,13 @@ interface AncestorSpace {
 }
 
 /**
- * Wiki da unidade ativa (Proposta 07, Fase A; UX/UI 7.12). O espaço é a própria unidade. À esquerda, as páginas e o
- * conhecimento publicado das unidades acima; à direita, a página, com edição em blocos, histórico e, no regimento, o
- * ciclo de revisão, aprovação e publicação.
+ * Wiki e Regimento da unidade ativa (Proposta 07, Fase A; UX/UI 7.12; bug #66). São independentes: no modo `wiki`, as
+ * páginas da unidade e o conhecimento publicado das unidades acima, com a página à direita; no modo `regimento`, o
+ * regimento da unidade (um por unidade), com o ciclo de revisão, aprovação e publicação.
  */
 @Component({
   selector: 'app-wiki',
-  imports: [BlockView, BlockEditor, DatePipe],
+  imports: [BlockView, BlockEditor, DatePipe, UnitHeader],
   templateUrl: './wiki.html',
   styleUrl: './wiki.scss',
 })
@@ -44,6 +45,13 @@ export class Wiki {
   private readonly router = inject(Router);
   protected readonly workspace = inject(WorkspaceService);
   protected readonly levels = inject(LevelsService);
+
+  /** Vem dos dados da rota: `/wiki` ou `/regimento`. */
+  readonly kind = input<'wiki' | 'regimento'>('wiki', { alias: 'mode' });
+  protected readonly isRegimento = computed(() => this.kind() === 'regimento');
+  /** No modo regimento: se o usuário pode criar o regimento que falta. */
+  protected readonly canCreateRegimento = signal(false);
+  protected readonly regimentoLoaded = signal(false);
 
   private readonly pageParam = toSignal(inject(ActivatedRoute).queryParamMap.pipe(map((q) => q.get('page'))), {
     initialValue: null,
@@ -80,12 +88,16 @@ export class Wiki {
   constructor() {
     effect(() => {
       const unit = this.workspace.current();
+      const regimento = this.isRegimento();
       if (unit) {
-        untracked(() => void this.load(unit.id));
+        untracked(() => void (regimento ? this.loadRegimento(unit.id) : this.load(unit.id)));
       }
     });
     effect(() => {
       const id = this.pageParam();
+      if (this.isRegimento()) {
+        return;
+      }
       untracked(() => (id ? void this.open(id) : this.page.set(null)));
     });
   }
@@ -99,6 +111,23 @@ export class Wiki {
       this.loadError.set(messageOf(toApiError(error)));
     }
     await this.loadAncestors(unitId);
+  }
+
+  private async loadRegimento(unitId: string): Promise<void> {
+    this.regimentoLoaded.set(false);
+    this.mode.set('read');
+    this.oldVersion.set(null);
+    this.error.set(null);
+    try {
+      const result = await this.knowledge.regimento(unitId);
+      this.page.set(result.regimento);
+      this.canCreateRegimento.set(result.canEdit && !result.regimento);
+    } catch (error) {
+      this.page.set(null);
+      this.loadError.set(messageOf(toApiError(error)));
+    } finally {
+      this.regimentoLoaded.set(true);
+    }
   }
 
   private async loadAncestors(unitId: string): Promise<void> {
@@ -163,7 +192,13 @@ export class Wiki {
       return;
     }
     await this.run(async () => {
-      const page = await this.knowledge.create(unit.id, this.newTitle().trim(), form.type, form.parentId);
+      if (form.type === 'REGIMENTO') {
+        await this.knowledge.createRegimento(unit.id, this.newTitle().trim());
+        this.creating.set(null);
+        await this.loadRegimento(unit.id);
+        return;
+      }
+      const page = await this.knowledge.create(unit.id, this.newTitle().trim(), form.parentId);
       this.creating.set(null);
       await this.load(unit.id);
       this.select(page.id);
@@ -312,7 +347,7 @@ export class Wiki {
 
   private async reloadList(): Promise<void> {
     const unit = this.workspace.current();
-    if (unit) {
+    if (unit && !this.isRegimento()) {
       this.list.set(await this.knowledge.pages(unit.id, this.showArchived()));
     }
   }

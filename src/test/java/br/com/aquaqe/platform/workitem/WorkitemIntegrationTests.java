@@ -174,6 +174,20 @@ class WorkitemIntegrationTests {
 	}
 
 	@Test
+	void tudoNasceNaSquad() throws Exception {
+		// Bug #66 (2026-11-21): a Squad aceita Iniciativa, Feature e História, com a hierarquia dentro dela.
+		String init = JsonPath.read(create("wi.admin",
+				"{\"type\":\"INITIATIVE\",\"title\":\"Iniciativa da Squad\",\"orgUnitId\":\"" + squadPix + "\"}")
+			.andExpect(status().isCreated()).andReturn().getResponse().getContentAsString(), "$.id");
+		String feat = JsonPath.read(create("wi.admin", "{\"type\":\"FEATURE\",\"title\":\"Feature da Squad\",\"parentId\":\""
+				+ init + "\",\"orgUnitId\":\"" + squadPix + "\"}")
+			.andExpect(status().isCreated()).andReturn().getResponse().getContentAsString(), "$.id");
+		create("wi.admin", "{\"type\":\"STORY\",\"title\":\"História da Squad\",\"parentId\":\"" + feat
+				+ "\",\"orgUnitId\":\"" + squadPix + "\"}")
+			.andExpect(status().isCreated());
+	}
+
+	@Test
 	void tipoDoPaiENecessidadeDePai() throws Exception {
 		String init = initiative("wi.admin", portfolioA);
 		create("wi.admin", "{\"type\":\"STORY\",\"title\":\"X\",\"parentId\":\"" + init + "\",\"orgUnitId\":\"" + squadPix + "\"}")

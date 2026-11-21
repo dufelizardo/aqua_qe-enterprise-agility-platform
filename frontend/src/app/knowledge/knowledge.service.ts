@@ -92,8 +92,21 @@ export class KnowledgeService {
     );
   }
 
-  create(orgUnitId: string, title: string, type: 'PAGE' | 'REGIMENTO', parentId: string | null): Promise<Page> {
-    return firstValueFrom(this.http.post<Page>(`${API}/org-units/${orgUnitId}/pages`, { title, type, parentId }));
+  create(orgUnitId: string, title: string, parentId: string | null): Promise<Page> {
+    return firstValueFrom(this.http.post<Page>(`${API}/org-units/${orgUnitId}/pages`, { title, parentId }));
+  }
+
+  /** Regimento da unidade (independente do Wiki): o ativo, ou nulo, e se o usuário pode criá-lo. */
+  regimento(orgUnitId: string): Promise<{ access: 'FULL' | 'PUBLISHED'; canEdit: boolean; regimento: Page | null }> {
+    return firstValueFrom(
+      this.http.get<{ access: 'FULL' | 'PUBLISHED'; canEdit: boolean; regimento: Page | null }>(
+        `${API}/org-units/${orgUnitId}/regimento`,
+      ),
+    );
+  }
+
+  createRegimento(orgUnitId: string, title: string): Promise<Page> {
+    return firstValueFrom(this.http.post<Page>(`${API}/org-units/${orgUnitId}/regimento`, { title }));
   }
 
   page(id: string): Promise<Page> {

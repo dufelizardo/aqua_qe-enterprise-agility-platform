@@ -1,57 +1,30 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable, computed, inject, signal } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { Injectable, computed, inject } from '@angular/core';
 
 import { OrgLevel } from '../admin/organization.service';
-import { LEVEL_SETUPS } from '../pages/level-board/level-setup';
-import { FlightLevel, LevelsService } from './levels.service';
+import { LevelsService } from './levels.service';
 import { WorkspaceService } from './workspace.service';
 
-/** Visões da unidade ativa e de qualquer unidade da árvore, para o menu e para a escolha na árvore. */
+/** Abas da página da unidade ativa e de qualquer unidade, para o cabeçalho da unidade e para a escolha na árvore. */
 @Injectable({ providedIn: 'root' })
 export class NavigationContext {
-  private readonly http = inject(HttpClient);
   private readonly levels = inject(LevelsService);
   private readonly workspace = inject(WorkspaceService);
-  private readonly typeNames = signal<Map<string, string>>(new Map());
-  private loading: Promise<void> | null = null;
 
+  /** Abas da unidade ativa. */
   readonly views = computed(() => this.viewsFor(this.workspace.current()?.level ?? null));
 
-  load(): Promise<void> {
-    this.loading ??= firstValueFrom(this.http.get<{ items: { key: string; name: string }[] }>('/api/v1/artifact-types'))
-      .then((r) => this.typeNames.set(new Map(r.items.map((t) => [t.key, t.name]))))
-      .catch(() => {
-        this.loading = null;
-      });
-    return this.loading;
-  }
-
   viewsFor(levelKey: string | null): ContextView[] {
-    const levels = this.levels.levels();
-    const names = this.typeNames();
-    return contextViews(
-      levels.find((l) => l.key === levelKey),
-      levels,
-      (key) => names.get(key) ?? null,
-    );
+    return contextViews(this.levels.levels().find((l) => l.key === levelKey));
   }
 }
 
-/** Item do menu contextual: rota, parâmetros (aba do Squad) e rótulo. */
+/** Aba da página da unidade: rota, parâmetros (aba da Squad) e rótulo. */
 export interface ContextView {
   path: string;
   queryParams: Record<string, string> | null;
   label: string;
   testId: string;
 }
-
-const ORDER: FlightLevel[] = ['FL3', 'FL2', 'FL1'];
-const ROUTE: Record<FlightLevel, { path: string; testId: string; screen: keyof typeof LEVEL_SETUPS }> = {
-  FL3: { path: '/portfolio', testId: 'nav-portfolio', screen: 'portfolio' },
-  FL2: { path: '/tactical', testId: 'nav-tactical', screen: 'tactical' },
-  FL1: { path: '/squad', testId: 'nav-squad', screen: 'squad' },
-};
 
 /** Plural simples do português para rótulos de configuração ("Iniciativa" → "Iniciativas", "Ação" → "Ações"). */
 export function plural(word: string): string {
@@ -73,53 +46,32 @@ export function plural(word: string): string {
 }
 
 /**
- * Visões da unidade escolhida (bug #66; Proposta 06, Revisão 3): o trabalho do próprio nível e o consolidado dos níveis
- * abaixo dela, nunca os de cima, e o Wiki. Nada de nome fixo: o rótulo do próprio nível é o tipo principal do Flight
- * Level no plural (da configuração); os de baixo, o nome do nível na configuração com "abaixo". Funcionalidades que
- * ainda não existem não aparecem (UX/UI 4).
- *
- * @param unitLevel nível da unidade escolhida
- * @param levels níveis da instalação (GET /org-levels)
- * @param typeName nome do tipo de artefato pela chave (GET /artifact-types), ou nulo se ainda não carregou
+ * Abas da página de uma unidade (bug #66, desenho do usuário em 2026-11-21): toda unidade tem o próprio **Wiki** e o
+ * próprio **Regimento**, independentes; a unidade de FL1 (Squad) tem também **Quadro**, **Backlog** e **Sprints**, onde
+ * nasce todo o trabalho (Iniciativas, Features e Histórias). A árvore do menu tem só unidades. Nenhum nome de nível fica
+ * no código: o que decide é o Flight Level da configuração.
  */
-export function contextViews(
-  unitLevel: OrgLevel | undefined,
-  levels: OrgLevel[],
-  typeName: (key: string) => string | null,
-): ContextView[] {
-  const own = unitLevel?.flightLevel ?? null;
-  const levelName = (fl: FlightLevel) => levels.find((l) => l.flightLevel === fl)?.name ?? fl;
-  const views: ContextView[] = [];
-  if (own === 'FL1') {
-    const squad = ROUTE.FL1;
+export function contextViews(unitLevel: OrgLevel | undefined): ContextView[] {
+  const views: ContextView[] = [
+    { path: '/wiki', queryParams: null, label: 'Wiki', testId: 'nav-wiki' },
+    { path: '/regimento', queryParams: null, label: 'Regimento', testId: 'nav-regimento' },
+  ];
+  if (unitLevel?.flightLevel === 'FL1') {
     views.push(
-      { path: squad.path, queryParams: null, label: 'Quadro', testId: squad.testId },
-      { path: squad.path, queryParams: { tab: 'backlog' }, label: 'Backlog', testId: 'nav-squad-backlog' },
-      { path: squad.path, queryParams: { tab: 'sprints' }, label: 'Sprints', testId: 'nav-squad-sprints' },
+      { path: '/squad', queryParams: null, label: 'Quadro', testId: 'nav-squad' },
+      { path: '/squad', queryParams: { tab: 'backlog' }, label: 'Backlog', testId: 'nav-squad-backlog' },
+      { path: '/squad', queryParams: { tab: 'sprints' }, label: 'Sprints', testId: 'nav-squad-sprints' },
     );
-  } else if (own) {
-    const route = ROUTE[own];
-    const principal = LEVEL_SETUPS[route.screen].creatableTypes[0];
-    const name = (principal && typeName(principal)) || levelName(own);
-    views.push({ path: route.path, queryParams: null, label: plural(name), testId: route.testId });
   }
-  const below = own ? ORDER.slice(ORDER.indexOf(own) + 1) : ORDER;
-  for (const fl of below) {
-    const route = ROUTE[fl];
-    views.push({ path: route.path, queryParams: null, label: `${plural(levelName(fl))} abaixo`, testId: route.testId });
-  }
-  // Conhecimento da unidade (Proposta 07, KNOW-013): vale para qualquer nível.
-  views.push({ path: '/wiki', queryParams: null, label: 'Wiki', testId: 'nav-wiki' });
   return views;
 }
 
 /**
- * Para onde ir ao escolher uma unidade ({@code null} = recarregar a tela atual no novo contexto): no Wiki, continua no
- * Wiki; numa unidade com Flight Level, a primeira visão dela; sem Flight Level, a tela atual, porque o consolidado de
- * todos os níveis está no contexto dela.
+ * Para onde ir ao escolher uma unidade na árvore ({@code null} = recarregar a aba atual na nova unidade): clicar numa
+ * unidade abre a página dela; continua na mesma aba se ela existir na nova unidade, senão abre a primeira (o Wiki).
  */
-export function landingFor(views: ContextView[], currentPath: string, ownFlightLevel: string | null): ContextView | null {
-  if (currentPath === '/wiki' || !ownFlightLevel) {
+export function landingFor(views: ContextView[], currentPath: string): ContextView | null {
+  if (views.some((v) => v.path === currentPath)) {
     return null;
   }
   return views[0] ?? null;

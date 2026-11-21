@@ -174,3 +174,12 @@ Get Close Confirmation Text
 
 Confirm Sprint Close
     Click    ${SPRINT_CLOSE_YES}
+
+Click Board Level
+    [Documentation]    Seletor do Quadro da Squad: portfolio (Iniciativas), tactical (Features) ou squad (Histórias).
+    [Arguments]    ${level}
+    Click    css=[data-testid="board-level-${level}"]
+    Wait For Elements State    css=[data-testid="board-level-${level}"][aria-pressed="true"]    visible    timeout=30s
+
+Wait For Board Or Empty
+    Wait For Elements State    css=[data-testid="board"], [data-testid="board-empty"]    visible    timeout=30s

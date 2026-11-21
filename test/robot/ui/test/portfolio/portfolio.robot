@@ -15,23 +15,26 @@ CT-001 - PRD-RF-001: Validate Portfolio - criar Iniciativa e mover de Ideia para
     [Documentation]    Quadro do workspace, "Nova Iniciativa" e "Mover para…"; a lista mostra a Iniciativa.
     [Tags]    UI    Portfolio    PRD-RF-001    PRD-RF-011    smoke
     PORTFOLIO - CRIAR E MOVER INICIATIVA    ${portfolio_admin_username}    ${portfolio_admin_display_name}
-    ...    ${portfolio_root_name}    ${portfolio_unit_base}    ${portfolio_unit_label}    ${portfolio_initiative_base}
-    ...    ${portfolio_initiative_description}
+    ...    ${portfolio_root_name}    ${portfolio_unit_base}    ${portfolio_unit_label}    ${tactical_cadeia_base}
+    ...    ${tactical_cadeia_label}    ${squad_unit_base}    ${squad_unit_label}    ${squad_level_name}
+    ...    ${portfolio_initiative_base}    ${portfolio_initiative_description}
 
 CT-002 - KAN-006: Validate Portfolio - configurar limite de WIP e marcar Iniciativa como bloqueada
     [Documentation]    "Configurar quadro" define o limite (contador n / limite); o cartão bloqueado mostra a etiqueta.
     [Tags]    UI    Portfolio    PRD-RF-011    KAN-002    KAN-006    KAN-009
     PORTFOLIO - CONFIGURAR WIP E BLOQUEAR    ${portfolio_admin_username}    ${portfolio_admin_display_name}
-    ...    ${portfolio_root_name}    ${portfolio_unit_base}    ${portfolio_unit_label}    ${portfolio_initiative_base}
-    ...    ${portfolio_initiative_description}    ${portfolio_wip_limit}    ${portfolio_block_reason}
+    ...    ${portfolio_root_name}    ${portfolio_unit_base}    ${portfolio_unit_label}    ${tactical_cadeia_base}
+    ...    ${tactical_cadeia_label}    ${squad_unit_base}    ${squad_unit_label}    ${squad_level_name}
+    ...    ${portfolio_initiative_base}    ${portfolio_initiative_description}    ${portfolio_wip_limit}
+    ...    ${portfolio_block_reason}
 
 CT-003 - PRD-RF-012: Validate Tactical - criar Feature sob a Iniciativa e mover de Backlog para Em Refinamento
     [Documentation]    O quadro de FL2 usa o mesmo componente; a Feature nasce em Backlog com a Iniciativa como pai.
     [Tags]    UI    Tactical    PRD-RF-010    PRD-RF-011    PRD-RF-012
     TACTICAL - CRIAR E MOVER FEATURE    ${portfolio_admin_username}    ${portfolio_admin_display_name}
     ...    ${portfolio_root_name}    ${portfolio_unit_base}    ${portfolio_unit_label}    ${tactical_cadeia_base}
-    ...    ${tactical_cadeia_label}    ${portfolio_initiative_base}    ${tactical_feature_base}
-    ...    ${portfolio_initiative_description}
+    ...    ${tactical_cadeia_label}    ${squad_unit_base}    ${squad_unit_label}    ${squad_level_name}
+    ...    ${portfolio_initiative_base}    ${tactical_feature_base}    ${portfolio_initiative_description}
 
 CT-004 - PRD-RF-015: Validate Squad - sprint criada, com item, iniciada e encerrada
     [Documentation]    Abas Backlog e Sprints da tela de FL1; o encerramento avisa quantos itens voltam ao backlog.

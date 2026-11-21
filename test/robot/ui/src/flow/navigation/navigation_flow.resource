@@ -25,14 +25,16 @@ Navegacao - Montar Ramo
     RETURN    ${portfolio}    ${cadeia}    ${squad}
 
 Navegacao - Escolher Unidade Pela Busca
-    [Documentation]    A busca deixa a unidade e o caminho até ela; escolher a Squad troca o workspace e leva à
-    ...    tela do Flight Level dela (FL1, /squad).
+    [Documentation]    A busca deixa a unidade e o caminho até ela; escolher a Squad troca o workspace e abre a
+    ...    página dela; a aba Quadro abre /squad (bug #66).
     [Arguments]    ${portfolio}    ${cadeia}    ${squad}    ${screenshot}
     Search Nav Org Tree    ${squad}
     Wait For Org Node    ${squad}
     Wait For Org Node    ${cadeia}
     Wait For Org Node    ${portfolio}
     Click Org Node    ${squad}
+    Wait For Current Workspace    ${squad}
+    Click Current Unit View    nav-squad
     Wait For Url To End With    /squad
     Wait For Current Workspace    ${squad}
     ${current}=    Get Current Workspace Text
@@ -73,18 +75,16 @@ Navegacao - Gaveta No Celular
     Wait For Sidebar Hidden
 
 Navegacao - Menu Da Squad
-    [Documentation]    Bug #66: com a Squad escolhida, as funções dela aparecem dentro da árvore, sob a própria Squad
-    ...    (Quadro, Backlog, Sprints e Wiki), sem as de cima; o item Backlog abre a aba Backlog.
+    [Documentation]    Bug #66: a página da Squad tem as abas Wiki, Regimento, Quadro, Backlog e Sprints, como no
+    ...    desenho, e nada de níveis "abaixo" nem de cima; a aba Backlog abre o backlog.
     [Arguments]    ${squad}
-    ${labels}=    Get Unit View Labels    ${squad}
-    ${expected}=    Create List    Quadro    Backlog    Sprints    Wiki
+    ${labels}=    Get Unit Tab Labels
+    ${expected}=    Create List    Wiki    Regimento    Quadro    Backlog    Sprints
     Should Be Equal    ${labels}    ${expected}
     ${count}=    Get View Count    ${NAV_VIEW_PORTFOLIO}
     Should Be Equal As Integers    ${count}    0
     ${count}=    Get View Count    ${NAV_VIEW_TACTICAL}
     Should Be Equal As Integers    ${count}    0
-    ${count}=    Get View Count    ${NAV_VIEW_SQUAD_SPRINTS}
-    Should Be Equal As Integers    ${count}    1
-    Click Squad Backlog View
+    Click Current Unit View    nav-squad-backlog
     Wait For Squad Backlog Tab
     Wait For Url To End With    /squad?tab=backlog

@@ -92,37 +92,3 @@ input:focus-visible {
   outline: 2px solid var(--blue-500);
   outline-offset: 1px;
 }
-
-/* Funções da unidade escolhida, dentro da árvore (bug #66): item ativo com o mesmo destaque do menu (UX/UI 4). */
-.views {
-  margin: 2px 0 4px;
-}
-
-.view {
-  display: block;
-  margin-right: 4px;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  padding-right: 8px;
-  border-radius: 8px;
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 13px;
-  text-decoration: none;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #fff;
-  }
-
-  &.active {
-    background: rgba(249, 174, 27, 0.18);
-    box-shadow: inset 3px 0 0 var(--amber-500);
-    color: #fff;
-    font-weight: 700;
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--blue-500);
-    outline-offset: 1px;
-  }
-}

@@ -8,13 +8,13 @@ ${NAV_MENU_TOGGLE}              css=[data-testid="menu-toggle"]
 ${NAV_ORG_TREE}                 css=[data-testid="org-tree-nav"]
 ${NAV_ORG_TREE_SEARCH}          css=[data-testid="org-tree-search"]
 ${NAV_WORKSPACE_CURRENT}        css=[data-testid="workspace-current"]
-# Funções da unidade com esse nome, dentro do item dela na árvore (bug #66): format com o nome.
-${NAV_UNIT_VIEWS_BY_NAME}       css=[role="treeitem"]:has([data-testid="org-node"]:text-is("{}")) [data-testid="org-node-views"] a
+# Abas da página da unidade ativa (bug #66): Wiki, Regimento e, na Squad, Quadro, Backlog e Sprints.
+${NAV_UNIT_TABS}                css=[data-testid="unit-tabs"] a
 ${NAV_VIEW_PORTFOLIO}           css=[data-testid="nav-portfolio"]
 ${NAV_VIEW_TACTICAL}            css=[data-testid="nav-tactical"]
 ${NAV_VIEW_SQUAD_BACKLOG}       css=[data-testid="nav-squad-backlog"]
 ${NAV_VIEW_SQUAD_SPRINTS}       css=[data-testid="nav-squad-sprints"]
-${NAV_SQUAD_BACKLOG_TAB}        css=[data-testid="tab-backlog"][aria-selected="true"]
+${NAV_SQUAD_BACKLOG_TAB}        css=[data-testid="unit-tabs"] a[data-testid="nav-squad-backlog"][aria-current="page"]
 # Unidade escolhível pelo nome exato: format com o nome.
 ${NAV_ORG_NODE_BY_NAME}         css=[data-testid="org-node"]:text-is("{}")
 # Botão de expandir ou recolher da unidade com esse nome.

@@ -4,9 +4,6 @@ Library             Browser
 Resource            ../../resource/locators/wiki/wiki_locator.resource
 
 *** Keywords ***
-Click Wiki Nav Link
-    Click    ${WIKI_NAV_LINK}
-
 Wait For Wiki Tree
     Wait For Elements State    ${WIKI_TREE}    visible    timeout=30s
 
@@ -16,9 +13,13 @@ Create Wiki Page
     Fill Text    ${WIKI_NEW_TITLE}    ${title}
     Click    ${WIKI_CREATE_SUBMIT}
 
-Create Wiki Regimento
+Wait For Regimento Empty
+    Wait For Elements State    ${REGIMENTO_EMPTY}    visible    timeout=30s
+
+Create Regimento
+    [Documentation]    Na tela Regimento da unidade sem regimento: "Criar regimento" com o título informado.
     [Arguments]    ${title}
-    Click    ${WIKI_NEW_REGIMENTO}
+    Click    ${REGIMENTO_CREATE}
     Fill Text    ${WIKI_NEW_TITLE}    ${title}
     Click    ${WIKI_CREATE_SUBMIT}
 

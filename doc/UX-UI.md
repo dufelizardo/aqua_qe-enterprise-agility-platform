@@ -154,32 +154,32 @@ O ponto verde de "operacional" sobre o avatar, presente no protótipo, não é u
 | Item | Tela | Visível para |
 |---|---|---|
 | Home | Meu trabalho | todos |
-| **Organização** | Árvore das unidades: escolher uma troca o workspace; as funções da unidade escolhida aparecem dentro da árvore, logo abaixo dela | todos |
+| **Organização** | Árvore das unidades (só unidades): escolher uma troca o workspace e abre a página dela, com as abas | todos |
 | Admin | Administração | `PLATFORM_ADMIN` |
 
-**Funções da unidade** (bug #66; [Proposta 06, Revisão 3](NAVIGATION-PROPOSAL.md#7-revisão-3-bug-66-menu-contextual-por-unidade)): ficam **dentro da árvore**, logo abaixo da unidade escolhida e antes das unidades filhas, um nível mais para dentro. Só a unidade escolhida mostra funções; ao escolher outra, elas passam para ela. Mostram o trabalho do próprio nível e o consolidado dos níveis abaixo, nunca os de cima, e o Wiki.
+**Página da unidade** (bug #66; [Proposta 06, Revisão 3](NAVIGATION-PROPOSAL.md#7-revisão-3-bug-66-menu-contextual-por-unidade), desenho do usuário de 2026-11-21): a árvore do menu tem **só unidades**. Clicar numa unidade abre a página dela, com trilha, nome, nível e **abas**.
 
 ```text
-ORGANIZAÇÃO
-▾ Empresa
-  ▾ Portfólio Tecnologia      ← unidade escolhida
-      Iniciativas
-      Cadeias abaixo
-      Squads abaixo
-      Wiki
-    ▸ Cadeia Canais
+ORGANIZAÇÃO                              PÁGINA DA UNIDADE ESCOLHIDA
+▾ Empresa                                Empresa › Varejo › Tecnologia › Canais › Squad Mobile   Squad · FL1
+  ▾ Unidade de Negócio Varejo            Squad Mobile
+    ▾ Portfólio Tecnologia               [ Wiki | Regimento | Quadro | Backlog | Sprints ]
+      ▾ Cadeia Canais
+          Squad Mobile   ← escolhida
+          Squad Internet Banking
+      ▸ Cadeia Plataforma
+    ▸ Portfólio Operações
+  ▸ Unidade de Negócio Atacado
 ```
 
-| Unidade escolhida | Itens (instalação padrão) | Telas |
-|---|---|---|
-| Sem Flight Level (Empresa, Unidade de Negócio) | Portfólios abaixo · Cadeias abaixo · Squads abaixo · Wiki | FL3, FL2 e FL1 consolidados (7.3, 7.5, 7.7); Wiki (7.12) |
-| FL3 (Portfólio) | Iniciativas · Cadeias abaixo · Squads abaixo · Wiki | quadro FL3; FL2 e FL1 consolidados; Wiki |
-| FL2 (Cadeia) | Features · Squads abaixo · Wiki | quadro FL2; FL1 consolidado; Wiki |
-| FL1 (Squad) | Quadro · Backlog · Sprints · Wiki | as abas da 7.7, cada uma com endereço (`/squad?tab=backlog`); Wiki |
+A árvore mostra todos os níveis da configuração que tiverem unidades (Empresa, Unidade de Negócio, Portfólio, Cadeia, Squad); uma organização sem Unidade de Negócio simplesmente não a tem na árvore.
 
-Nenhum rótulo é fixo:
-- o item do próprio nível é o tipo principal do Flight Level no plural ("Iniciativas", "Features"), vindo de `GET /artifact-types`;
-- os itens de baixo usam o nome do nível em `GET /org-levels`, com "abaixo".
+| Unidade | Abas da página |
+|---|---|
+| Empresa, Unidade de Negócio, Portfólio, Cadeia | Wiki · Regimento |
+| Squad (FL1) | Wiki · Regimento · Quadro · Backlog · Sprints |
+
+A aba Quadro da Squad tem o seletor Iniciativas | Features | Histórias, porque todo o trabalho nasce na Squad. Ao trocar de unidade, a aba atual continua se existir na nova; senão, abre o Wiki.
 
 Funcionalidades que ainda não existem (estratégia, investimentos, dependências, qualidade, indicadores) não aparecem, nem desabilitadas. A API continua decidindo o acesso; o menu só decide o que mostrar.
 
@@ -578,6 +578,16 @@ Princípio adotado da [Proposta 03](ADMIN-PROPOSAL.md#1-princípio-adotado-três
 - **Quem lê pela regra 9** (SSD 2.1) vê só a versão publicada, com "Somente leitura (publicado)" e sem histórico.
 - **Dados:** `GET /org-units/{id}/pages`, `POST /org-units/{id}/pages`, `GET/PUT/PATCH /pages/{id}`, `GET /pages/{id}/versions[/{n}]`, `POST /pages/{id}/status`, `POST /pages/{id}/archive`, `POST /pages/{id}/restore` (SSD 3.7.1).
 - **Celular:** abaixo de 900 px, a lista de páginas fica acima da página.
+- **Regimento:** não aparece no Wiki; é outra aba da página da unidade (7.13).
+
+### 7.13 Regimento da unidade
+
+- **Objetivo:** o documento que diz como a unidade funciona (responsabilidades, governança). É independente do Wiki e é um por unidade (bug #66).
+- **Rota:** `/regimento`, para a unidade ativa.
+- **Sem regimento:** "Esta unidade ainda não tem regimento." e, para quem edita, "Criar regimento" (título sugerido: "Regimento — unidade").
+- **Com regimento:** a mesma leitura, edição em blocos, histórico e ciclo da 7.12: Rascunho, Em revisão, Aprovado, Publicado. Seções obrigatórias e aprovador vêm do template (SSD 8.4).
+- **Quem está nas unidades abaixo** lê só a versão publicada (SSD 2.1, regra 9).
+- **Dados:** `GET /org-units/{id}/regimento`, `POST /org-units/{id}/regimento` e as operações de `/pages/{id}` (SSD 3.7.1).
 
 ## 8. Fluxos de interação
 

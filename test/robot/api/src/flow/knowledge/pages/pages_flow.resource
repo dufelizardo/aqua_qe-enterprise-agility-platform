@@ -16,8 +16,8 @@ Create Knowledge Unit
 
 Create Page
     [Documentation]    Cria a página e exige 201; devolve o corpo.
-    [Arguments]    ${persona}    ${unit}    ${title}    ${type}=PAGE    ${parent}=${None}
-    ${payload}=    Create Dictionary    title=${title}    type=${type}    parentId=${parent}
+    [Arguments]    ${persona}    ${unit}    ${title}    ${parent}=${None}
+    ${payload}=    Create Dictionary    title=${title}    parentId=${parent}
     ${response}=    POST Page As Persona    ${persona}    ${unit}    ${payload}
     Should Be Equal As Integers    ${response.status_code}    201
     RETURN    ${response.json()}
@@ -68,8 +68,13 @@ Pages - Regimento Lifecycle
     ...    exigidas, e publicação separada da aprovação.
     [Arguments]    ${unit_name}    ${title}    ${text}
     ${unit}=    Create Knowledge Unit    ${unit_name}
-    ${reg}=    Create Page    pm    ${unit}    ${title}    type=REGIMENTO
+    ${payload}=    Create Dictionary    title=${title}
+    ${created}=    POST Regimento As Persona    pm    ${unit}    ${payload}
+    Should Be Equal As Integers    ${created.status_code}    201
+    ${reg}=    Set Variable    ${created.json()}
     Should Be Equal    ${reg}[status]    DRAFT
+    ${again}=    POST Regimento As Persona    pm    ${unit}    ${payload}
+    Validate Error Body    ${again}    409    REGIMENTO_EXISTS
     ${response}=    POST Page Status As Persona    pm    ${reg}[id]    IN_REVIEW
     Should Be Equal As Integers    ${response.status_code}    200
     ${response}=    POST Page Status As Persona    pm    ${reg}[id]    APPROVED

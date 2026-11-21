@@ -3,7 +3,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
-import { NavigationContext } from '../core/context-nav';
 import { SessionService } from '../core/session.service';
 import { LevelsService } from '../core/levels.service';
 import { WorkspaceService } from '../core/workspace.service';
@@ -27,14 +26,11 @@ export class Shell {
   private readonly router = inject(Router);
   private readonly searchInput = viewChild.required<ElementRef<HTMLInputElement>>('searchInput');
 
-  /** As funções de cada unidade aparecem dentro da árvore, sob a unidade escolhida (bug #66; {@link OrgTree}). */
-  private readonly nav = inject(NavigationContext);
   /** Gaveta do menu no celular. */
   protected readonly drawer = signal(false);
 
   constructor() {
     void this.levels.load();
-    void this.nav.load();
     if (!this.workspace.loaded()) {
       void this.workspace.load();
     }
