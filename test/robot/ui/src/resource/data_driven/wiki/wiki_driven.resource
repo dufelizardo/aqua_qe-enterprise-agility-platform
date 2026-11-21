@@ -9,6 +9,11 @@ ${wiki_bo_username}         robot.bo
 ${wiki_bo_display_name}     Bruno Owner
 ${wiki_page_base}           Robot Wiki Página
 ${wiki_regimento_base}      Robot Wiki Regimento
+${wiki_admin_username}      robot.admin
+${wiki_admin_display_name}  Alice Admin
+${wiki_root_name}           Empresa
+${wiki_unit_base}           Robot Regimento Portfólio
+${wiki_unit_label}          Portfólio
 ${wiki_text}                Política de priorização: valor de negócio primeiro.
 ${wiki_summary}             Primeira redação
 ${wiki_screenshot_page}     wiki-page

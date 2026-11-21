@@ -10,60 +10,59 @@ TEARDOWN: CLOSE PORTFOLIO BROWSER
     Close AQuA-QE Browser
 
 PORTFOLIO - CRIAR E MOVER INICIATIVA
-    [Documentation]    Cria um Portfólio, abre o quadro, cria a Iniciativa e a move de Ideia para Backlog.
+    [Documentation]    Tudo nasce na Squad (bug #66): monta Portfólio, Cadeia e Squad, abre o Quadro da Squad em
+    ...    Iniciativas, cria a Iniciativa e a move de Ideia para Backlog.
     [Arguments]    ${username}    ${display_name}    ${root_name}    ${portfolio_base}    ${portfolio_label}
+    ...    ${cadeia_base}    ${cadeia_label}    ${squad_base}    ${squad_label}    ${squad_level_name}
     ...    ${initiative_base}    ${initiative_description}
-    ${portfolio}=    Portfolio - Preparar Portfólio    ${username}    ${display_name}    ${root_name}
-    ...    ${portfolio_base}    ${portfolio_label}
+    ${squad}=    Squad - Preparar Squad    ${username}    ${display_name}    ${root_name}    ${portfolio_base}
+    ...    ${portfolio_label}    ${cadeia_base}    ${cadeia_label}    ${squad_base}    ${squad_label}
     ${title}=    Unique Name    ${initiative_base}
-    Portfolio - Abrir Quadro
-    Portfolio - Criar Iniciativa    ${title}    ${initiative_description}    ${portfolio}
+    Squad - Abrir Quadro Do Nivel    ${squad}    ${squad_level_name}    portfolio
+    Portfolio - Criar Iniciativa    ${title}    ${initiative_description}    ${squad}
     Portfolio - Mover Iniciativa    ${title}    IDEA    BACKLOG
     Portfolio - Lista Mostra A Iniciativa    ${title}
 
 PORTFOLIO - CONFIGURAR WIP E BLOQUEAR
-    [Documentation]    Configura o limite de WIP da coluna Ideia e marca e desmarca uma Iniciativa como bloqueada.
+    [Documentation]    Configura o limite de WIP da coluna Ideia e marca e desmarca uma Iniciativa como bloqueada, no
+    ...    Quadro da Squad em Iniciativas.
     [Arguments]    ${username}    ${display_name}    ${root_name}    ${portfolio_base}    ${portfolio_label}
+    ...    ${cadeia_base}    ${cadeia_label}    ${squad_base}    ${squad_label}    ${squad_level_name}
     ...    ${initiative_base}    ${initiative_description}    ${wip_limit}    ${block_reason}
-    ${portfolio}=    Portfolio - Preparar Portfólio    ${username}    ${display_name}    ${root_name}
-    ...    ${portfolio_base}    ${portfolio_label}
+    ${squad}=    Squad - Preparar Squad    ${username}    ${display_name}    ${root_name}    ${portfolio_base}
+    ...    ${portfolio_label}    ${cadeia_base}    ${cadeia_label}    ${squad_base}    ${squad_label}
     ${title}=    Unique Name    ${initiative_base}
-    Portfolio - Abrir Quadro
-    Portfolio - Criar Iniciativa    ${title}    ${initiative_description}    ${portfolio}
+    Squad - Abrir Quadro Do Nivel    ${squad}    ${squad_level_name}    portfolio
+    Portfolio - Criar Iniciativa    ${title}    ${initiative_description}    ${squad}
     Portfolio - Configurar Limite De WIP    ${wip_limit}
     Portfolio - Bloquear E Desbloquear Iniciativa    ${title}    ${block_reason}
 
 TACTICAL - CRIAR E MOVER FEATURE
-    [Documentation]    Portfólio e Cadeia novos; Iniciativa no Portfolio; Feature sob ela no Tactical, movida de Backlog
-    ...    para Em Refinamento.
+    [Documentation]    Na mesma Squad: Iniciativa em Iniciativas; Feature sob ela em Features, movida de Backlog para
+    ...    Em Refinamento.
     [Arguments]    ${username}    ${display_name}    ${root_name}    ${portfolio_base}    ${portfolio_label}
-    ...    ${cadeia_base}    ${cadeia_label}    ${initiative_base}    ${feature_base}    ${description}
-    ${portfolio}=    Portfolio - Preparar Portfólio    ${username}    ${display_name}    ${root_name}
-    ...    ${portfolio_base}    ${portfolio_label}
-    ${cadeia}=    Unique Name    ${cadeia_base}
-    Admin - Criar Unidade Sob    ${portfolio}    ${cadeia}    ${cadeia_label}
+    ...    ${cadeia_base}    ${cadeia_label}    ${squad_base}    ${squad_label}    ${squad_level_name}
+    ...    ${initiative_base}    ${feature_base}    ${description}
+    ${squad}=    Squad - Preparar Squad    ${username}    ${display_name}    ${root_name}    ${portfolio_base}
+    ...    ${portfolio_label}    ${cadeia_base}    ${cadeia_label}    ${squad_base}    ${squad_label}
     ${initiative}=    Unique Name    ${initiative_base}
-    Portfolio - Abrir Quadro
-    Portfolio - Criar Iniciativa    ${initiative}    ${description}    ${portfolio}
+    Squad - Abrir Quadro Do Nivel    ${squad}    ${squad_level_name}    portfolio
+    Portfolio - Criar Iniciativa    ${initiative}    ${description}    ${squad}
     ${key}=    Get Card Key    IDEA    ${initiative}
     ${feature}=    Unique Name    ${feature_base}
-    Tactical - Abrir Quadro
-    Tactical - Criar Feature Sob Iniciativa    ${feature}    ${description}    ${key} · ${initiative}    ${cadeia}
+    Squad - Trocar Nivel Do Quadro    tactical
+    Tactical - Criar Feature Sob Iniciativa    ${feature}    ${description}    ${key} · ${initiative}    ${squad}
     Portfolio - Mover Iniciativa    ${feature}    BACKLOG    REFINEMENT
 
 SQUAD - SPRINT COMPLETA
-    [Documentation]    Portfólio, Cadeia e Squad novos; Task na Squad; sprint criada, com a Task, iniciada e encerrada.
+    [Documentation]    Task na Squad (Quadro em Histórias); sprint criada, com a Task, iniciada e encerrada.
     [Arguments]    ${username}    ${display_name}    ${root_name}    ${portfolio_base}    ${portfolio_label}
     ...    ${cadeia_base}    ${cadeia_label}    ${squad_base}    ${squad_label}    ${squad_level_name}    ${task_base}
     ...    ${sprint_base}
-    ${portfolio}=    Portfolio - Preparar Portfólio    ${username}    ${display_name}    ${root_name}
-    ...    ${portfolio_base}    ${portfolio_label}
-    ${cadeia}=    Unique Name    ${cadeia_base}
-    Admin - Criar Unidade Sob    ${portfolio}    ${cadeia}    ${cadeia_label}
-    ${squad}=    Unique Name    ${squad_base}
-    Admin - Criar Unidade Sob    ${cadeia}    ${squad}    ${squad_label}
+    ${squad}=    Squad - Preparar Squad    ${username}    ${display_name}    ${root_name}    ${portfolio_base}
+    ...    ${portfolio_label}    ${cadeia_base}    ${cadeia_label}    ${squad_base}    ${squad_label}
     ${task}=    Unique Name    ${task_base}
     ${sprint}=    Unique Name    ${sprint_base}
-    Squad - Abrir Quadro    ${squad_level_name}
+    Squad - Abrir Quadro Do Nivel    ${squad}    ${squad_level_name}    squad
     Squad - Criar Task    ${task}    ${squad}
     Squad - Ciclo Da Sprint    ${squad}    ${sprint}    ${task}

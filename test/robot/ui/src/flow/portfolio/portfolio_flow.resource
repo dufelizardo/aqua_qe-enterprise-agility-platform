@@ -3,6 +3,7 @@ Documentation       Portfolio (UX/UI 7.3 e 6.2): escolhe o caminho e faz as asse
 ...                 criar o Portfólio onde a Iniciativa vai morar.
 Resource            ../../pom/portfolio/portfolio_pom.resource
 Resource            ../admin/admin_flow.resource
+Resource            ../../pom/navigation/navigation_pom.resource
 
 *** Keywords ***
 Portfolio - Preparar Portfólio
@@ -13,12 +14,38 @@ Portfolio - Preparar Portfólio
     Admin - Criar Unidade Sob    ${root_name}    ${name}    ${portfolio_label}
     RETURN    ${name}
 
-Portfolio - Abrir Quadro
-    [Documentation]    Abre o Portfolio pelo menu e garante o quadro do workspace (cria se ainda não existe). A trilha
-    ...    mostra a unidade ativa (Proposta 06, NAV-008).
-    Click Portfolio Nav Link
-    Wait For Level Board Page    ${portfolio_level_name}
+Squad - Preparar Squad
+    [Documentation]    Tudo nasce na Squad (bug #66): o administrador cria Portfólio, Cadeia e Squad; devolve a Squad.
+    [Arguments]    ${username}    ${display_name}    ${root_name}    ${portfolio_base}    ${portfolio_label}
+    ...    ${cadeia_base}    ${cadeia_label}    ${squad_base}    ${squad_label}
+    ${portfolio}=    Portfolio - Preparar Portfólio    ${username}    ${display_name}    ${root_name}
+    ...    ${portfolio_base}    ${portfolio_label}
+    ${cadeia}=    Unique Name    ${cadeia_base}
+    Admin - Criar Unidade Sob    ${portfolio}    ${cadeia}    ${cadeia_label}
+    ${squad}=    Unique Name    ${squad_base}
+    Admin - Criar Unidade Sob    ${cadeia}    ${squad}    ${squad_label}
+    RETURN    ${squad}
+
+Squad - Abrir Quadro Do Nivel
+    [Documentation]    Escolhe a Squad na árvore (aplicação recarregada, para a árvore ler as unidades novas), abre o
+    ...    Quadro dela e escolhe o nível: portfolio (Iniciativas), tactical (Features) ou squad (Histórias). Garante o
+    ...    quadro (cria se ainda não existe). O título da página é o nome da Squad, e a trilha mostra o caminho.
+    [Arguments]    ${squad}    ${squad_level_name}    ${board_level}
+    Go To AQuA-QE Path    /home
+    Wait For Nav Org Tree
+    Search Nav Org Tree    ${squad}
+    Click Org Node    ${squad}
+    Wait For Current Workspace    ${squad}
+    Click Current Unit View    nav-squad
+    Wait For Level Board Page    ${squad}
     Wait For Elements State    ${LEVEL_UNIT_TRAIL}    visible    timeout=30s
+    Squad - Trocar Nivel Do Quadro    ${board_level}
+
+Squad - Trocar Nivel Do Quadro
+    [Documentation]    O seletor do Quadro da Squad troca o nível do quadro; garante o quadro desse nível.
+    [Arguments]    ${board_level}
+    Click Board Level    ${board_level}
+    Wait For Board Or Empty
     ${missing}=    Get Create Board Button Count
     IF    ${missing} > 0
         Click Create Board
@@ -71,33 +98,12 @@ Portfolio - Bloquear E Desbloquear Iniciativa
     Unblock Card Using Menu    IDEA    ${title}
     Wait For Card Blocked State    IDEA    ${title}    detached
 
-Tactical - Abrir Quadro
-    [Documentation]    Abre o Tactical pelo menu e garante o quadro de FL2 do workspace.
-    Click Tactical Nav Link
-    Wait For Level Board Page    ${tactical_level_name}
-    ${missing}=    Get Create Board Button Count
-    IF    ${missing} > 0
-        Click Create Board
-    END
-    Wait For Portfolio Board
-
 Tactical - Criar Feature Sob Iniciativa
     [Documentation]    "Nova Feature" com a Iniciativa como pai e a Cadeia como unidade; a Feature nasce em Backlog.
     [Arguments]    ${title}    ${description}    ${parent_label}    ${cadeia_name}
     Fill New Child Item    ${title}    ${description}    ${parent_label}    ${cadeia_name}
     Submit New Initiative
     Wait For Card In Column    BACKLOG    ${title}
-
-Squad - Abrir Quadro
-    [Documentation]    Abre a tela de FL1 pelo menu e garante o quadro do workspace.
-    [Arguments]    ${level_name}
-    Click Squad Nav Link
-    Wait For Level Board Page    ${level_name}
-    ${missing}=    Get Create Board Button Count
-    IF    ${missing} > 0
-        Click Create Board
-    END
-    Wait For Portfolio Board
 
 Squad - Criar Task
     [Documentation]    "Novo item" do tipo Task, sem pai, na Squad; nasce em A Fazer.

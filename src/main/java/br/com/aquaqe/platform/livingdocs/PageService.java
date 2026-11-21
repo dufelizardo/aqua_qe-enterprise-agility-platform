@@ -42,7 +42,8 @@ class PageService {
 	static final int TITLE_MAX = 200;
 	static final int SUMMARY_MAX = 300;
 	static final int REASON_MAX = 500;
-	static final Set<String> PAGE_TYPES = Set.of("PAGE", "REGIMENTO");
+	/** O Regimento é independente do Wiki (2026-11-21): um por unidade, pelos endpoints próprios. */
+	static final String REGIMENTO = "REGIMENTO";
 
 	private final DocumentRepository repository;
 	private final DocumentTemplates templates;
@@ -75,6 +76,7 @@ class PageService {
 			throw ApiException.notFound();
 		}
 		List<PageRow> rows = repository.pagesOf(orgUnitId).stream()
+			.filter(p -> !REGIMENTO.equals(p.type()))
 			.filter(p -> access == Access.FULL ? p.archived() == archived : !p.archived() && p.publishedVersion() != null)
 			.toList();
 		Map<UUID, Template> byTemplate = new HashMap<>();
@@ -143,12 +145,59 @@ class PageService {
 		}
 		requireEdit(user, orgUnitId, access);
 		String title = title(body.get("title"));
-		String type = body.get("type") == null ? "PAGE" : String.valueOf(body.get("type"));
-		if (!PAGE_TYPES.contains(type)) {
-			throw ApiException.validation("type", "use PAGE ou REGIMENTO");
+		if (body.get("type") != null && !"PAGE".equals(String.valueOf(body.get("type")))) {
+			throw ApiException.validation("type", "o Wiki só tem páginas; o regimento fica em /org-units/{id}/regimento");
 		}
+		return insert(user, orgUnitId, "PAGE", title, parent(body.get("parentId"), orgUnitId, null));
+	}
+
+	/**
+	 * Regimento da unidade (2026-11-21): um documento governado por unidade, independente do Wiki. Devolve o regimento
+	 * ativo ({@code null} se não houver ou se quem lê só pela regra 9 ainda não tem versão publicada), o acesso e se o
+	 * usuário pode criá-lo.
+	 */
+	Map<String, Object> regimento(UUID orgUnitId) {
+		UUID user = user();
+		Access access = access(user, orgUnitId);
+		if (access == Access.NONE || orgUnits.find(orgUnitId).isEmpty()) {
+			throw ApiException.notFound();
+		}
+		PageRow row = activeRegimento(orgUnitId)
+			.filter(p -> access == Access.FULL || p.publishedVersion() != null)
+			.orElse(null);
+		Map<String, Object> result = new LinkedHashMap<>();
+		result.put("orgUnitId", orgUnitId);
+		result.put("access", access.name());
+		result.put("canEdit", access == Access.FULL && authorization.can(user, Permission.EDIT_KNOWLEDGE, orgUnitId));
+		result.put("regimento", row == null ? null : get(row.id()));
+		return result;
+	}
+
+	@Transactional
+	Map<String, Object> createRegimento(UUID orgUnitId, Map<String, Object> body) {
+		UUID user = user();
+		Access access = access(user, orgUnitId);
+		var unit = orgUnits.find(orgUnitId);
+		if (access == Access.NONE || unit.isEmpty()) {
+			throw ApiException.notFound();
+		}
+		requireEdit(user, orgUnitId, access);
+		if (activeRegimento(orgUnitId).isPresent()) {
+			throw new ApiException(HttpStatus.CONFLICT, "REGIMENTO_EXISTS", "Esta unidade já tem regimento.");
+		}
+		Object given = body == null ? null : body.get("title");
+		String title = given == null || String.valueOf(given).isBlank() ? "Regimento — " + unit.get().name() : title(given);
+		return insert(user, orgUnitId, REGIMENTO, title, null);
+	}
+
+	private java.util.Optional<PageRow> activeRegimento(UUID orgUnitId) {
+		return repository.pagesOf(orgUnitId).stream()
+			.filter(p -> REGIMENTO.equals(p.type()) && !p.archived())
+			.findFirst();
+	}
+
+	private Map<String, Object> insert(UUID user, UUID orgUnitId, String type, String title, UUID parentId) {
 		Template template = templates.latest(type).orElseThrow(() -> ApiException.validation("type", "sem template"));
-		UUID parentId = parent(body.get("parentId"), orgUnitId, null);
 		boolean governed = template.governed();
 		UUID id = repository.insertPage(orgUnitId, parentId, type, title, governed ? "DRAFT" : "PUBLISHED",
 			template.id(), governed ? null : 1, user);
@@ -254,6 +303,9 @@ class PageService {
 		PageRow page = editable(id, user);
 		String title = body.containsKey("title") ? title(body.get("title")) : page.title();
 		boolean moving = body.containsKey("parentId");
+		if (moving && REGIMENTO.equals(page.type())) {
+			throw ApiException.validation("parentId", "o regimento não fica dentro do Wiki");
+		}
 		UUID parentId = moving ? parent(body.get("parentId"), page.orgUnitId(), page.id()) : page.parentId();
 		moving = moving && !Objects.equals(parentId, page.parentId());
 		repository.changeMeta(page.id(), title, parentId, moving);
@@ -292,6 +344,9 @@ class PageService {
 		UUID user = user();
 		PageRow page = fullyReadable(id, user);
 		requireEdit(user, page.orgUnitId(), Access.FULL);
+		if (REGIMENTO.equals(page.type()) && activeRegimento(page.orgUnitId()).isPresent()) {
+			throw new ApiException(HttpStatus.CONFLICT, "REGIMENTO_EXISTS", "Esta unidade já tem outro regimento ativo.");
+		}
 		// Se o pai continua arquivado, a página volta para a raiz do espaço.
 		UUID parentId = page.parentId() == null ? null
 				: repository.page(page.parentId()).filter(p -> !p.archived()).map(PageRow::id).orElse(null);
@@ -485,7 +540,7 @@ class PageService {
 			throw ApiException.validation("parentId", "valor inválido");
 		}
 		PageRow parent = repository.page(parentId)
-			.filter(p -> p.orgUnitId().equals(orgUnitId) && !p.archived())
+			.filter(p -> p.orgUnitId().equals(orgUnitId) && !p.archived() && !REGIMENTO.equals(p.type()))
 			.orElseThrow(() -> ApiException.validation("parentId", "página pai inexistente nesta unidade"));
 		for (UUID cursor = parent.id(); cursor != null;
 				cursor = repository.page(cursor).map(PageRow::parentId).orElse(null)) {

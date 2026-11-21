@@ -1,16 +1,13 @@
-<header class="page-header">
-  <p class="eyebrow">Conhecimento</p>
-  <h1 data-testid="page-title">Wiki · {{ workspace.current()?.name }}</h1>
-  <p class="lead">Regimentos, políticas, processos e acordos da unidade, com histórico de versões.</p>
-</header>
+<!-- Página da unidade: trilha, nome e abas (Wiki, Regimento e, na Squad, Quadro, Backlog, Sprints; bug #66). -->
+<app-unit-header />
 
-<div class="layout">
+<div class="layout" [class.single]="isRegimento()">
+  @if (!isRegimento()) {
   <aside class="pages" aria-label="Páginas">
     @if (list(); as l) {
       @if (l.canEdit) {
         <div class="actions">
           <button type="button" class="btn primary" (click)="startCreate('PAGE', null)" data-testid="wiki-new-page">Nova página</button>
-          <button type="button" class="btn" (click)="startCreate('REGIMENTO', null)" data-testid="wiki-new-regimento">Novo regimento</button>
         </div>
       }
       <ul class="page-tree" role="tree" aria-label="Páginas da unidade" data-testid="wiki-tree">
@@ -62,6 +59,7 @@
       </section>
     }
   </aside>
+  }
 
   <section class="content" aria-live="polite">
     @if (creating(); as form) {
@@ -126,7 +124,9 @@
                 @if (!current.governed || current.status === 'DRAFT' || current.status === 'PUBLISHED') {
                   <button type="button" class="btn primary" (click)="startEdit()" data-testid="wiki-edit">Editar</button>
                 }
-                <button type="button" class="btn" (click)="startCreate('PAGE', current.id)" data-testid="wiki-new-subpage">Nova subpágina</button>
+                @if (!isRegimento()) {
+                  <button type="button" class="btn" (click)="startCreate('PAGE', current.id)" data-testid="wiki-new-subpage">Nova subpágina</button>
+                }
               }
               @if (current.governed && !current.archived) {
                 @if (current.status === 'DRAFT' && current.canEdit) {
@@ -229,7 +229,14 @@
           }
         </article>
       }
-    } @else if (!creating() && !error()) {
+    } @else if (isRegimento() && regimentoLoaded() && !creating() && !error()) {
+      <div class="card placeholder" data-testid="regimento-empty">
+        <p>Esta unidade ainda não tem regimento.</p>
+        @if (canCreateRegimento()) {
+          <button type="button" class="btn primary" (click)="startCreate('REGIMENTO', null)" data-testid="regimento-create">Criar regimento</button>
+        }
+      </div>
+    } @else if (!isRegimento() && !creating() && !error()) {
       <div class="card placeholder">
         <p>Escolha uma página à esquerda{{ list()?.canEdit ? ' ou crie a primeira' : '' }}.</p>
       </div>

@@ -8,88 +8,62 @@ const LEVELS: OrgLevel[] = [
   { key: 'CADEIA', name: 'Cadeia', position: 4, flightLevel: 'FL2' },
   { key: 'SQUAD', name: 'Squad', position: 5, flightLevel: 'FL1' },
 ];
-const TYPES = new Map([
-  ['INITIATIVE', 'Iniciativa'],
-  ['FEATURE', 'Feature'],
-]);
 const views = (key: string) =>
-  contextViews(
-    LEVELS.find((l) => l.key === key),
-    LEVELS,
-    (k) => TYPES.get(k) ?? null,
-  ).map((v) => `${v.label}|${v.path}${v.queryParams ? '?tab=' + v.queryParams['tab'] : ''}`);
+  contextViews(LEVELS.find((l) => l.key === key)).map(
+    (v) => `${v.label}|${v.path}${v.queryParams ? '?tab=' + v.queryParams['tab'] : ''}`,
+  );
 
-describe('contextViews (bug #66: o menu acompanha a unidade)', () => {
-  it('Portfólio: Iniciativas e o consolidado dos níveis abaixo, nunca os de cima', () => {
-    expect(views('PORTFOLIO')).toEqual([
-      'Iniciativas|/portfolio',
-      'Cadeias abaixo|/tactical',
-      'Squads abaixo|/squad',
-      'Wiki|/wiki',
-    ]);
+describe('contextViews (bug #66: as abas da página de cada unidade, como no desenho)', () => {
+  it('Empresa, Unidade de Negócio, Portfólio e Cadeia: Wiki e Regimento, independentes', () => {
+    for (const key of ['ENTERPRISE', 'BUSINESS_UNIT', 'PORTFOLIO', 'CADEIA']) {
+      expect(views(key)).toEqual(['Wiki|/wiki', 'Regimento|/regimento']);
+    }
   });
 
-  it('Cadeia: Features e as Squads abaixo', () => {
-    expect(views('CADEIA')).toEqual(['Features|/tactical', 'Squads abaixo|/squad', 'Wiki|/wiki']);
-  });
-
-  it('Squad: Quadro, Backlog e Sprints, sem visões de cima', () => {
+  it('Squad: Wiki, Regimento, Quadro, Backlog e Sprints', () => {
     expect(views('SQUAD')).toEqual([
+      'Wiki|/wiki',
+      'Regimento|/regimento',
       'Quadro|/squad',
       'Backlog|/squad?tab=backlog',
       'Sprints|/squad?tab=sprints',
-      'Wiki|/wiki',
     ]);
   });
 
-  it('Empresa e Unidade de Negócio: o consolidado de todos os Flight Levels', () => {
-    const expected = ['Portfólios abaixo|/portfolio', 'Cadeias abaixo|/tactical', 'Squads abaixo|/squad', 'Wiki|/wiki'];
-    expect(views('ENTERPRISE')).toEqual(expected);
-    expect(views('BUSINESS_UNIT')).toEqual(expected);
-  });
-
-  it('usa os nomes da configuração: uma instalação com "Produto", "Value Stream" e "Team" vê esses nomes', () => {
-    const custom: OrgLevel[] = [
-      { key: 'P', name: 'Produto', position: 1, flightLevel: 'FL3' },
-      { key: 'V', name: 'Value Stream', position: 2, flightLevel: 'FL2' },
-      { key: 'T', name: 'Team', position: 3, flightLevel: 'FL1' },
-    ];
-    const labels = contextViews(custom[0], custom, () => 'Épico').map((v) => v.label);
-    expect(labels).toEqual(['Épicos', 'Value Streams abaixo', 'Teams abaixo', 'Wiki']);
-  });
-
-  it('sem os tipos carregados, usa o nome do nível', () => {
-    expect(contextViews(LEVELS[2], LEVELS, () => null)[0]?.label).toBe('Portfólios');
+  it('decide pelo Flight Level, não pelo nome: um nível "Team" ligado a FL1 tem quadro', () => {
+    const team: OrgLevel = { key: 'T', name: 'Team', position: 3, flightLevel: 'FL1' };
+    expect(contextViews(team).map((v) => v.label)).toEqual(['Wiki', 'Regimento', 'Quadro', 'Backlog', 'Sprints']);
   });
 });
 
 describe('plural', () => {
   it('regras simples do português', () => {
-    expect(['Iniciativa', 'Feature', 'Ação', 'Setor', 'Item', 'Squads'].map(plural)).toEqual([
+    expect(['Iniciativa', 'Feature', 'Ação', 'Setor', 'Item', 'Squads', 'Stream'].map(plural)).toEqual([
       'Iniciativas',
       'Features',
       'Ações',
       'Setores',
       'Itens',
       'Squads',
+      'Streams',
     ]);
   });
 });
 
 describe('landingFor', () => {
-  const squadViews = contextViews(LEVELS[4], LEVELS, () => null);
-  const enterpriseViews = contextViews(LEVELS[0], LEVELS, () => null);
+  const squad = contextViews(LEVELS[4]);
+  const cadeia = contextViews(LEVELS[3]);
 
-  it('unidade com Flight Level abre a primeira visão dela', () => {
-    expect(landingFor(squadViews, '/portfolio', 'FL1')?.label).toBe('Quadro');
+  it('continua na mesma aba quando ela existe na nova unidade', () => {
+    expect(landingFor(cadeia, '/wiki')).toBeNull();
+    expect(landingFor(squad, '/squad')).toBeNull();
   });
 
-  it('no Wiki, continua no Wiki', () => {
-    expect(landingFor(squadViews, '/wiki', 'FL1')).toBeNull();
+  it('abre a primeira aba (Wiki) quando a aba atual não existe na nova unidade', () => {
+    expect(landingFor(cadeia, '/squad')?.path).toBe('/wiki');
   });
 
-  it('sem Flight Level, mantém a tela atual (o consolidado de todos os níveis está no contexto)', () => {
-    expect(landingFor(enterpriseViews, '/tactical', null)).toBeNull();
-    expect(landingFor(enterpriseViews, '/home', null)).toBeNull();
+  it('clicar numa unidade estando na Home abre a página dela', () => {
+    expect(landingFor(cadeia, '/home')?.path).toBe('/wiki');
   });
 });

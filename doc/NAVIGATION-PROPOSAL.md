@@ -84,7 +84,7 @@ A PROPOSAL-07, recebida em 2026-11-20, pede a árvore organizacional **no menu l
 
 | ID | Tema | Decisão |
 |---|---|---|
-| ORG-D01 e ORG-D02 | Árvore no menu | **Aceitas.** O menu lateral tem, de cima para baixo: Home; **Organização** (a árvore); **Visões da unidade** (um item por Flight Level, com o nome do nível na configuração); Admin. A árvore e o resto da aplicação usam o mesmo serviço de contexto (`WorkspaceService`), então nunca divergem. O seletor do cabeçalho sai; o cabeçalho mostra só a unidade ativa. *Revisto na [Revisão 3](#7-revisão-3-bug-66-menu-contextual-por-unidade): as funções ficam dentro da árvore, sob a unidade escolhida.* |
+| ORG-D01 e ORG-D02 | Árvore no menu | **Aceitas.** O menu lateral tem, de cima para baixo: Home; **Organização** (a árvore); **Visões da unidade** (um item por Flight Level, com o nome do nível na configuração); Admin. A árvore e o resto da aplicação usam o mesmo serviço de contexto (`WorkspaceService`), então nunca divergem. O seletor do cabeçalho sai; o cabeçalho mostra só a unidade ativa. *Revisto na [Revisão 3](#7-revisão-3-bug-66-menu-contextual-por-unidade): a árvore tem só unidades, e as funções são abas da página da unidade.* |
 | ORG-D03 | Ancestrais sem papel | **Aceita.** Quem só tem papel embaixo vê os ancestrais em cinza, só para se localizar: não são clicáveis e não dão acesso aos dados (regra 1 do [SSD 2.1](SSD.md#21-escopo-entre-unidades-rev-01-rev-02-rev-04)). |
 | ORG-D04 | Unidades que são workspace | Toda unidade ativa no escopo do usuário pode ser escolhida. Nada muda em relação ao seletor anterior. |
 | ORG-D05 | Visão organizacional consolidada | **Fase 2**, com o analytics (ORG-NAV-017 e 018). |
@@ -126,26 +126,67 @@ O cenário de interface do membro só de uma Squad depende de atribuir papel por
 
 O bug #66 (2026-11-20) apontou que, depois da Revisão 2, a árvore trocava a unidade, mas o menu continuava com os mesmos três itens de Flight Level. Na prática, a árvore era só um seletor de workspace. O princípio do bug é aceito: **a organização determina o contexto, o contexto orienta a navegação e as permissões determinam o que está disponível.**
 
-### 7.1 Decisões (2026-11-20)
+### 7.1 Desenho decidido pelo usuário (2026-11-21)
+
+Três versões anteriores foram recusadas no teste do usuário:
+- itens de visão numa seção separada, abaixo da árvore;
+- itens "Portfólios, Cadeias e Squads abaixo" dentro da árvore;
+- Wiki e Regimento como itens da árvore.
+
+O desenho final é o do usuário: **a árvore tem só as unidades; as funções de cada unidade são abas dentro da página dela**.
+
+```text
+ORGANIZAÇÃO                              PÁGINA DA UNIDADE ESCOLHIDA
+▾ Empresa                                Empresa › Varejo › Tecnologia › Canais › Squad Mobile   Squad · FL1
+  ▾ Unidade de Negócio Varejo            Squad Mobile
+    ▾ Portfólio Tecnologia               [ Wiki | Regimento | Quadro | Backlog | Sprints ]
+      ▾ Cadeia Canais
+          Squad Mobile   ← escolhida
+          Squad Internet Banking
+      ▸ Cadeia Plataforma
+    ▸ Portfólio Operações
+  ▸ Unidade de Negócio Atacado
+```
+
+A árvore mostra todos os níveis da configuração que tiverem unidades (Empresa, Unidade de Negócio, Portfólio, Cadeia, Squad); uma organização sem Unidade de Negócio simplesmente não a tem na árvore.
+
+| Unidade | Abas da página |
+|---|---|
+| Empresa, Unidade de Negócio, Portfólio, Cadeia | Wiki · Regimento |
+| Squad (FL1) | Wiki · Regimento · Quadro · Backlog · Sprints |
 
 | Tema | Decisão |
 |---|---|
-| Visões por unidade | O **próprio nível** e o **consolidado dos níveis abaixo**, nunca os de cima, e o Wiki. Squad: Quadro, Backlog e Sprints. Empresa e Unidade de Negócio, sem Flight Level: o consolidado de todos os níveis. |
-| Rótulos | **Pelo trabalho**, sem nome fixo: o próprio nível leva o tipo principal do Flight Level no plural ("Iniciativas", "Features"); os de baixo, o nome do nível com "abaixo" ("Cadeias abaixo"). O título da seção mostra a unidade e o nível. |
-| O que não existe | Estratégia, investimentos, dependências, qualidade e indicadores (citados no bug) não aparecem até existirem (UX/UI 4). |
-| Troca de unidade | Unidade com Flight Level abre a primeira visão dela; no Wiki, continua no Wiki; sem Flight Level, recarrega a tela atual. Nada exige recarregar a aplicação. |
+| Abas por unidade | Toda unidade: **Wiki** e **Regimento**. Unidade de FL1 (Squad): também **Quadro**, **Backlog** e **Sprints**. São abas no cabeçalho da página da unidade, não itens da árvore. Decide o Flight Level da configuração, não o nome do nível. Nada de itens "abaixo" nem de níveis acima. |
+| Wiki × Regimento | **Independentes.** O Wiki tem as páginas livres da unidade; o Regimento é um documento governado por unidade, com tela e endpoints próprios ([Proposta 07](KNOWLEDGE-PROPOSAL.md#8-revisão-bug-66-regimento-independente-do-wiki)). |
+| Onde nasce o trabalho | **Tudo nasce na Squad.** Iniciativas, Features e Histórias são criadas na Squad. O Quadro da Squad tem o seletor **Iniciativas \| Features \| Histórias**. Portfólio e Cadeia não têm mais quadro no menu. |
+| Árvore | Só unidades. Clicar numa unidade escolhe o workspace e abre a página dela. |
+| Troca de unidade | A aba atual continua se existir na nova unidade (inclusive a aba da Squad); senão, abre a primeira (Wiki). Da Home, abre o Wiki da unidade. |
+| O que não existe | Estratégia, investimentos, dependências, qualidade e indicadores não aparecem até existirem (UX/UI 4). |
 
-**Correção (2026-11-20, depois do teste do usuário):** a primeira versão pôs as funções numa seção separada, abaixo da árvore. Isso não atendia ao bug. As funções passaram para **dentro da árvore**, logo abaixo da unidade escolhida e antes das unidades filhas, num grupo do item da unidade (`role="group"`). A seção separada e o título "unidade · nível" saíram do menu.
+### 7.2 Regra de domínio alterada
 
-### 7.2 Implementação
+O SSD 3.4 exigia que o artefato ficasse numa unidade do mesmo Flight Level (`INVALID_ORG_UNIT_TYPE`). Agora a **unidade de FL1 aceita artefatos de qualquer Flight Level**. Nas demais unidades, a regra antiga continua. A hierarquia de pais e as regras de acesso não mudam; quem cria uma Iniciativa na Squad continua precisando do papel de FL3 (matriz do SSD 2).
 
-- `core/context-nav.ts`:
-  - `contextViews`: as visões a partir do nível da unidade, dos níveis e dos tipos da configuração;
-  - `landingFor`: para onde ir ao escolher uma unidade;
-  - `NavigationContext`: o mesmo cálculo para a árvore e para a escolha da unidade.
-- `layout/org-tree.ts`: as funções da unidade escolhida são renderizadas dentro do item dela na árvore.
-- As abas do Squad ganharam endereço (`?tab=backlog`, `?tab=sprints`); o menu leva direto a elas.
-- As rotas e os identificadores de teste (`nav-portfolio`, `nav-tactical`, `nav-squad`) foram mantidos.
+### 7.3 Implementação
+
+- `core/context-nav.ts`: `contextViews` (as funções pelo Flight Level da unidade), `landingFor` (para onde ir ao escolher uma unidade) e `NavigationContext`.
+- `layout/unit-header.ts` (novo): cabeçalho da página da unidade, com trilha, nome, nível e as abas (links com endereço, `aria-current` na ativa). Usado pelo Wiki, pelo Regimento e pela página da Squad.
+- `layout/org-tree.ts`:
+  - só unidades;
+  - escolher uma unidade abre o caminho até ela e a página dela;
+  - correção de corrida: uma escolha de unidade não sobrepõe um clique feito logo em seguida.
+- `pages/wiki`: o mesmo componente atende `/wiki` e `/regimento` (modo pela rota); o Wiki não lista nem cria regimentos.
+- `pages/level-board`: o título e as abas seguem a rota; o seletor do Quadro da Squad escolhe o nível do quadro e da criação, sempre na Squad.
+- As abas da Squad têm endereço (`?tab=backlog`, `?tab=sprints`).
+- Backend:
+  - `ArtifactService` aceita qualquer Flight Level na Squad;
+  - `PageService` ganhou `GET`/`POST /org-units/{id}/regimento`, com um regimento ativo por unidade (`REGIMENTO_EXISTS`).
 - **Testes:**
-  - Vitest `context-nav.spec.ts`: as quatro situações, nomes personalizados, plural e escolha da tela;
-  - Robot UI `navigation`: com a Squad escolhida, as funções dentro do item dela na árvore são Quadro, Backlog, Sprints e Wiki, nessa ordem; não há visões de cima; Backlog abre a aba.
+  - JUnit: `tudoNasceNaSquad` e regimento independente;
+  - Vitest `context-nav.spec.ts`;
+  - Robot API (`REGIMENTO_EXISTS`);
+  - Robot UI:
+    - abas da página da Squad na ordem do desenho;
+    - Iniciativa, Feature e Task nascendo na Squad;
+    - Regimento por unidade.

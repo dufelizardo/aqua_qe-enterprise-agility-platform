@@ -55,6 +55,15 @@ export const routes: Routes = [
         title: 'Wiki · AQuA-QE',
         canActivate: [workspaceGuard],
         loadComponent: () => import('./pages/wiki/wiki').then((m) => m.Wiki),
+        data: { mode: 'wiki' },
+      },
+      // Regimento da unidade, independente do Wiki (bug #66, 2026-11-21).
+      {
+        path: 'regimento',
+        title: 'Regimento · AQuA-QE',
+        canActivate: [workspaceGuard],
+        loadComponent: () => import('./pages/wiki/wiki').then((m) => m.Wiki),
+        data: { mode: 'regimento' },
       },
       {
         path: 'admin',

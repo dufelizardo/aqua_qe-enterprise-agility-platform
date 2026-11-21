@@ -73,10 +73,8 @@ Take Navigation Screenshot
     [Arguments]    ${name}
     Take Screenshot    filename=${name}
 
-Get Unit View Labels
-    [Arguments]    ${name}
-    ${locator}=    Evaluate    $NAV_UNIT_VIEWS_BY_NAME.replace('{}', $name)
-    ${elements}=    Get Elements    ${locator}
+Get Unit Tab Labels
+    ${elements}=    Get Elements    ${NAV_UNIT_TABS}
     ${labels}=    Create List
     FOR    ${element}    IN    @{elements}
         ${text}=    Get Text    ${element}
@@ -89,8 +87,12 @@ Get View Count
     ${count}=    Get Element Count    ${locator}
     RETURN    ${count}
 
-Click Squad Backlog View
-    Click    ${NAV_VIEW_SQUAD_BACKLOG}
 
 Wait For Squad Backlog Tab
     Wait For Elements State    ${NAV_SQUAD_BACKLOG_TAB}    visible    timeout=30s
+
+Click Current Unit View
+    [Documentation]    Aba da página da unidade ativa (bug #66), pelo data-testid: nav-wiki, nav-regimento, nav-squad,
+    ...    nav-squad-backlog ou nav-squad-sprints.
+    [Arguments]    ${test_id}
+    Click    css=[data-testid="unit-tabs"] a[data-testid="${test_id}"]

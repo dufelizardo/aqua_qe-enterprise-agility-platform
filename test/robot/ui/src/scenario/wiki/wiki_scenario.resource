@@ -10,16 +10,25 @@ TEARDOWN: CLOSE WIKI BROWSER
     Close AQuA-QE Browser
 
 WIKI UI - CRIAR E EDITAR PAGINA
-    [Arguments]    ${username}    ${display_name}    ${title_base}    ${text}    ${summary}    ${screenshot}
-    Wiki - Abrir    ${username}    ${display_name}
+    [Arguments]    ${username}    ${display_name}    ${root_name}    ${title_base}    ${text}    ${summary}
+    ...    ${screenshot}
+    Wiki - Abrir    ${username}    ${display_name}    ${root_name}
     Wiki - Criar E Editar Pagina    ${title_base}    ${text}    ${summary}    ${screenshot}
 
 WIKI UI - REGIMENTO EXIGE SECOES
-    [Arguments]    ${username}    ${display_name}    ${title_base}    ${screenshot}
-    Wiki - Abrir    ${username}    ${display_name}
-    Wiki - Regimento Exige Secoes Obrigatorias    ${title_base}    ${screenshot}
+    [Documentation]    Regimento independente do Wiki, um por unidade: numa unidade nova, o administrador (que também
+    ...    aprova) cria o regimento e não consegue aprová-lo sem as seções obrigatórias.
+    [Arguments]    ${username}    ${display_name}    ${root_name}    ${unit_base}    ${unit_label}    ${title_base}
+    ...    ${screenshot}
+    ${unit}=    Regimento - Preparar Unidade    ${username}    ${display_name}    ${root_name}    ${unit_base}
+    ...    ${unit_label}
+    ${title}=    Unique Name    ${title_base}
+    Regimento - Exige Secoes Obrigatorias    ${title}    ${screenshot}
 
 WIKI UI - SEM APROVACAO PARA O PM
-    [Arguments]    ${username}    ${display_name}    ${title_base}
-    Wiki - Abrir    ${username}    ${display_name}
-    Wiki - Sem Aprovacao Para Quem Nao Aprova    ${title_base}
+    [Arguments]    ${username}    ${display_name}    ${root_name}    ${unit_base}    ${unit_label}    ${title_base}
+    ...    ${pm_username}    ${pm_display_name}
+    ${unit}=    Regimento - Preparar Unidade    ${username}    ${display_name}    ${root_name}    ${unit_base}
+    ...    ${unit_label}
+    ${title}=    Unique Name    ${title_base}
+    Regimento - Sem Aprovacao Para Quem Nao Aprova    ${title}    ${unit}    ${pm_username}    ${pm_display_name}

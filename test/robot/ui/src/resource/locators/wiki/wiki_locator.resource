@@ -2,10 +2,10 @@
     Locators da tela Wiki (UX/UI 7.12; Proposta 07). Usam data-testid (doc/QA.md, seção 8).
 
 *** Variables ***
-${WIKI_NAV_LINK}            css=[data-testid="nav-wiki"]
 ${WIKI_TREE}                css=[data-testid="wiki-tree"]
 ${WIKI_NEW_PAGE}            css=[data-testid="wiki-new-page"]
-${WIKI_NEW_REGIMENTO}       css=[data-testid="wiki-new-regimento"]
+${REGIMENTO_CREATE}         css=[data-testid="regimento-create"]
+${REGIMENTO_EMPTY}          css=[data-testid="regimento-empty"]
 ${WIKI_NEW_TITLE}           css=[data-testid="wiki-new-title"]
 ${WIKI_CREATE_SUBMIT}       css=[data-testid="wiki-create-submit"]
 ${WIKI_PAGE}                css=[data-testid="wiki-page"]
