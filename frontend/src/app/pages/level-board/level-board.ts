@@ -2,6 +2,9 @@ import { CdkDrag, CdkDragDrop, CdkDragStart, CdkDropList, CdkDropListGroup } fro
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router } from '@angular/router';
+import { map } from 'rxjs';
 
 import { OrgUnit, OrgUnitDetail, OrganizationService } from '../../admin/organization.service';
 import { LevelsService } from '../../core/levels.service';
@@ -43,6 +46,11 @@ export class LevelBoard {
   private readonly snackBar = inject(MatSnackBar);
   protected readonly workspace = inject(WorkspaceService);
   protected readonly levels = inject(LevelsService);
+  private readonly router = inject(Router);
+  /** Aba pedida no endereço (?tab=backlog|sprints): o menu da Squad leva direto a ela (bug #66). */
+  private readonly tabParam = toSignal(inject(ActivatedRoute).queryParamMap.pipe(map((q) => q.get('tab'))), {
+    initialValue: null,
+  });
 
   /** Chave do nível, vinda dos dados da rota. */
   readonly screen = input<keyof typeof LEVEL_SETUPS>('portfolio');
@@ -134,6 +142,16 @@ export class LevelBoard {
         this.tab.set('quadro');
         this.sprintFilter.set('');
         void this.load();
+      });
+    });
+    effect(() => {
+      const param = this.tabParam();
+      const fl1 = this.setup().level === 'FL1';
+      const tab = fl1 && (param === 'backlog' || param === 'sprints') ? param : 'quadro';
+      untracked(() => {
+        if (tab !== this.tab()) {
+          void this.openTab(tab);
+        }
       });
     });
   }
@@ -321,7 +339,12 @@ export class LevelBoard {
     await this.refresh();
   }
 
-  protected async showTab(tab: 'quadro' | 'backlog' | 'sprints'): Promise<void> {
+  /** As abas mudam o endereço, para o menu e o botão voltar acompanharem. */
+  protected showTab(tab: 'quadro' | 'backlog' | 'sprints'): void {
+    void this.router.navigate([], { queryParams: { tab: tab === 'quadro' ? null : tab }, queryParamsHandling: 'merge' });
+  }
+
+  private async openTab(tab: 'quadro' | 'backlog' | 'sprints'): Promise<void> {
     this.tab.set(tab);
     if (tab === 'quadro') {
       const workspaceId = this.workspace.currentWorkspaceId();

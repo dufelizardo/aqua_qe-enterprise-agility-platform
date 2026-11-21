@@ -12,7 +12,7 @@ Metadata            Project    Layered Keyword Driven Framework (LKDF)
 *** Test Cases ***
 CT-001 - ORG-NAV-001: Validate Menu - escolher a Squad pela árvore leva à tela do Flight Level
     [Documentation]    A busca acha a Squad com o caminho até ela; escolher troca o workspace e abre /squad.
-    [Tags]    UI    Navigation    ORG-NAV-001    ORG-NAV-004    ORG-NAV-005    ORG-NAV-016    smoke
+    [Tags]    UI    Navigation    ORG-NAV-001    ORG-NAV-004    ORG-NAV-005    ORG-NAV-016    BUG-66    smoke
     [Setup]    PREREQUISITE: OPEN BROWSER ON NAVIGATION
     NAV ORG - ESCOLHER UNIDADE NA ARVORE    ${nav_username}    ${nav_display_name}    ${nav_root_name}
     ...    ${nav_portfolio_base}    ${nav_portfolio_label}    ${nav_cadeia_base}    ${nav_cadeia_label}

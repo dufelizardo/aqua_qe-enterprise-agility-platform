@@ -71,3 +71,18 @@ Wait For Url To End With
 Take Navigation Screenshot
     [Arguments]    ${name}
     Take Screenshot    filename=${name}
+
+Get Context Title Text
+    ${text}=    Get Text    ${NAV_CONTEXT_TITLE}
+    RETURN    ${text}
+
+Get View Count
+    [Arguments]    ${locator}
+    ${count}=    Get Element Count    ${locator}
+    RETURN    ${count}
+
+Click Squad Backlog View
+    Click    ${NAV_VIEW_SQUAD_BACKLOG}
+
+Wait For Squad Backlog Tab
+    Wait For Elements State    ${NAV_SQUAD_BACKLOG_TAB}    visible    timeout=30s

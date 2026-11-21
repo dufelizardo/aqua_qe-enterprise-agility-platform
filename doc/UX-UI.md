@@ -155,16 +155,29 @@ O ponto verde de "operacional" sobre o avatar, presente no protótipo, não é u
 |---|---|---|
 | Home | Meu trabalho | todos |
 | **Organização** | Árvore das unidades: escolher uma troca o workspace | todos |
-| *nome do nível ligado a FL3* | Portfolio Management (FL3) | todos |
-| *nome do nível ligado a FL2* | Tactical Board (FL2) | todos |
-| *nome do nível ligado a FL1* | Squad Workspace (FL1) | todos |
+| *unidade · nível* (título) | Visões da unidade escolhida, conforme o nível dela (tabela abaixo) | todos |
 | Admin | Administração | `PLATFORM_ADMIN` |
 
-**Organização** (Proposta 06, Revisão 2; PROPOSAL-07): árvore recolhível das unidades em que o usuário tem papel e das ativas abaixo delas. Quem só tem papel embaixo vê os ancestrais em cinza, sem ação, só para se localizar. Tem busca por nome (mantém o caminho até cada resultado), destaque da unidade ativa e expansão lembrada no navegador; sem nada lembrado, abre o caminho até a unidade ativa. Escolher uma unidade com Flight Level abre a tela desse nível; uma unidade sem Flight Level recarrega a tela atual. Teclado: Tab entre unidades, Enter escolhe, setas direita e esquerda abrem e fecham o ramo.
+**Visões da unidade** (bug #66; [Proposta 06, Revisão 3](NAVIGATION-PROPOSAL.md#7-revisão-3-bug-66-menu-contextual-por-unidade)): o menu acompanha a unidade escolhida. Mostra o trabalho do próprio nível e o consolidado dos níveis abaixo, nunca os de cima, e o Wiki. O título da seção diz onde o usuário está ("Canais · Cadeia").
 
-Sob **Visões da unidade** fica também o item **Wiki** ([Proposta 07](KNOWLEDGE-PROPOSAL.md), KNOW-013), para qualquer nível, inclusive os sem Flight Level ([7.12](#712-wiki-da-unidade)).
+| Unidade escolhida | Itens (instalação padrão) | Telas |
+|---|---|---|
+| Sem Flight Level (Empresa, Unidade de Negócio) | Portfólios abaixo · Cadeias abaixo · Squads abaixo · Wiki | FL3, FL2 e FL1 consolidados (7.3, 7.5, 7.7); Wiki (7.12) |
+| FL3 (Portfólio) | Iniciativas · Cadeias abaixo · Squads abaixo · Wiki | quadro FL3; FL2 e FL1 consolidados; Wiki |
+| FL2 (Cadeia) | Features · Squads abaixo · Wiki | quadro FL2; FL1 consolidado; Wiki |
+| FL1 (Squad) | Quadro · Backlog · Sprints · Wiki | as abas da 7.7, cada uma com endereço (`/squad?tab=backlog`); Wiki |
 
-Os itens de Flight Level, sob **Visões da unidade**, levam o **nome do nível organizacional** ligado a cada Flight Level na configuração (`GET /org-levels`); na instalação padrão, "Portfólio", "Cadeia" e "Squad". O mesmo nome é o título da tela e o rótulo da unidade no formulário de criação. A interface nunca usa nomes de nível fixos no código ([Proposta 06](NAVIGATION-PROPOSAL.md#3-decisões-tomadas-2026-11-20), NAV-D1).
+Nenhum rótulo é fixo:
+- o item do próprio nível é o tipo principal do Flight Level no plural ("Iniciativas", "Features"), vindo de `GET /artifact-types`;
+- os itens de baixo usam o nome do nível em `GET /org-levels`, com "abaixo".
+
+Funcionalidades que ainda não existem (estratégia, investimentos, dependências, qualidade, indicadores) não aparecem, nem desabilitadas. A API continua decidindo o acesso; o menu só decide o que mostrar.
+
+**Organização** (Proposta 06, Revisão 2; PROPOSAL-07): árvore recolhível das unidades em que o usuário tem papel e das ativas abaixo delas. Quem só tem papel embaixo vê os ancestrais em cinza, sem ação, só para se localizar. Tem busca por nome (mantém o caminho até cada resultado), destaque da unidade ativa e expansão lembrada no navegador; sem nada lembrado, abre o caminho até a unidade ativa. Escolher uma unidade com Flight Level abre a primeira visão dela; no Wiki, continua no Wiki da nova unidade; uma unidade sem Flight Level recarrega a tela atual, sem recarga manual da aplicação. Teclado: Tab entre unidades, Enter escolhe, setas direita e esquerda abrem e fecham o ramo.
+
+Entre as visões da unidade fica também o item **Wiki** ([Proposta 07](KNOWLEDGE-PROPOSAL.md), KNOW-013), para qualquer nível, inclusive os sem Flight Level ([7.12](#712-wiki-da-unidade)).
+
+O título de cada tela de Flight Level é o **nome do nível organizacional** ligado a ele na configuração (`GET /org-levels`); na instalação padrão, "Portfólio", "Cadeia" e "Squad". O mesmo nome é e o rótulo da unidade no formulário de criação. A interface nunca usa nomes de nível fixos no código ([Proposta 06](NAVIGATION-PROPOSAL.md#3-decisões-tomadas-2026-11-20), NAV-D1).
 
 **Celular:** abaixo de 720 px o menu lateral fica escondido; o botão ☰ do cabeçalho o abre como gaveta sobre o conteúdo, e escolher uma unidade ou um item fecha a gaveta.
 

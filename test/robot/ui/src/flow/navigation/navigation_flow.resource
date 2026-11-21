@@ -37,6 +37,7 @@ Navegacao - Escolher Unidade Pela Busca
     Wait For Current Workspace    ${squad}
     ${current}=    Get Current Workspace Text
     Should Be Equal    ${current}    ${squad}
+    Navegacao - Menu Da Squad    ${squad}
     Take Navigation Screenshot    ${screenshot}
 
 Navegacao - Recolher E Lembrar
@@ -70,3 +71,19 @@ Navegacao - Gaveta No Celular
     Click Org Node    ${root_name}
     Wait For Current Workspace    ${root_name}
     Wait For Sidebar Hidden
+
+Navegacao - Menu Da Squad
+    [Documentation]    Bug #66: com a Squad escolhida, o menu mostra onde o usuário está e só as visões dela (Quadro,
+    ...    Backlog, Sprints e Wiki), sem as de cima; o item Backlog abre a aba Backlog.
+    [Arguments]    ${squad}
+    ${title}=    Get Context Title Text
+    Should Start With    ${title}    ${squad}
+    ${count}=    Get View Count    ${NAV_VIEW_PORTFOLIO}
+    Should Be Equal As Integers    ${count}    0
+    ${count}=    Get View Count    ${NAV_VIEW_TACTICAL}
+    Should Be Equal As Integers    ${count}    0
+    ${count}=    Get View Count    ${NAV_VIEW_SQUAD_SPRINTS}
+    Should Be Equal As Integers    ${count}    1
+    Click Squad Backlog View
+    Wait For Squad Backlog Tab
+    Wait For Url To End With    /squad?tab=backlog

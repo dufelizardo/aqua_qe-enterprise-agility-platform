@@ -1,13 +1,11 @@
 import { Component, computed, effect, inject, output, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
+import { NavigationContext, landingFor } from '../core/context-nav';
 import { LevelsService } from '../core/levels.service';
 import { NavNode, WorkspaceService } from '../core/workspace.service';
 
 const EXPANDED_KEY = 'aquaqe.org-tree.expanded';
-
-/** Tela de cada Flight Level (as "visões" da unidade escolhida). */
-const ROUTE_OF: Record<string, string> = { FL3: '/portfolio', FL2: '/tactical', FL1: '/squad' };
 
 /**
  * Árvore organizacional do menu (Proposta 06, Revisão 2; PROPOSAL-07). Usa o mesmo serviço de contexto do resto da
@@ -83,6 +81,7 @@ export class OrgTree {
   protected readonly workspace = inject(WorkspaceService);
   protected readonly levels = inject(LevelsService);
   private readonly router = inject(Router);
+  private readonly nav = inject(NavigationContext);
 
   /** Avisa o menu que uma unidade foi escolhida (no celular, a gaveta fecha). */
   readonly picked = output<void>();
@@ -150,15 +149,19 @@ export class OrgTree {
   }
 
   /**
-   * Escolher a unidade é escolher o workspace. Unidade com Flight Level leva à tela do nível dela (PROPOSAL-07, seção
-   * 5); sem Flight Level, recarrega a tela atual no novo contexto.
+   * Escolher a unidade é escolher o workspace, e o menu passa a mostrar as visões dela (bug #66). Unidade com Flight
+   * Level abre a primeira visão dela; no Wiki, continua no Wiki; sem Flight Level, a tela atual, se existir no novo
+   * contexto ({@link landingFor}).
    */
   protected pick(node: NavNode): void {
     this.workspace.choose(node.id);
     this.picked.emit();
-    const target = node.flightLevel ? ROUTE_OF[node.flightLevel] : null;
-    const url = target ?? this.router.url;
-    void this.router.navigateByUrl('/workspace', { skipLocationChange: true }).then(() => this.router.navigateByUrl(url));
+    const currentPath = this.router.parseUrl(this.router.url).root.children['primary']?.segments.map((s) => s.path) ?? [];
+    const landing = landingFor(this.nav.viewsFor(node.level), '/' + currentPath.join('/'), node.flightLevel);
+    const target = landing
+      ? this.router.serializeUrl(this.router.createUrlTree([landing.path], { queryParams: landing.queryParams ?? {} }))
+      : this.router.url.split('?')[0]!;
+    void this.router.navigateByUrl('/workspace', { skipLocationChange: true }).then(() => this.router.navigateByUrl(target));
   }
 
   /** Setas direita e esquerda abrem e fecham o ramo (acessibilidade de árvore). */

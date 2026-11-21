@@ -2,9 +2,9 @@
 
 | | |
 |---|---|
-| **Versão** | 1.1 |
+| **Versão** | 1.2 |
 | **Data** | 2026-11-20 |
-| **Status** | PROPOSTO. A Fase 1 mínima (nomes de nível da configuração, trilha, seletor em árvore) foi implementada; a **Revisão 2** ([seção 6](#6-revisão-2-proposal-07-estrutura-organizacional-como-navegação)) levou a árvore para o menu lateral e também foi implementada. O restante segue em avaliação. |
+| **Status** | PROPOSTO. A Fase 1 mínima (nomes de nível da configuração, trilha, seletor em árvore) foi implementada; a **Revisão 2** ([seção 6](#6-revisão-2-proposal-07-estrutura-organizacional-como-navegação)) levou a árvore para o menu lateral e também foi implementada. A **Revisão 3** ([seção 7](#7-revisão-3-bug-66-menu-contextual-por-unidade), bug #66) tornou o menu contextual à unidade. O restante segue em avaliação. |
 | **Série** | 01: [Evolução](EVOLUTION-PROPOSAL.md) · 02: [Experiência](EXPERIENCE-PROPOSAL.md) · 03: [Administração](ADMIN-PROPOSAL.md) · 04: [Quadros](BOARDS-PROPOSAL.md) · 05: [Configuração](CONFIG-PROPOSAL.md) · 06: esta · 07: [Conhecimento](KNOWLEDGE-PROPOSAL.md) |
 | **Documentos-base** | [PRD v4.0](PRD.md), [SAD v1.0](SAD.md) (ADR-14), [SSD v1.0](SSD.md), [UX/UI v1.0](UX-UI.md) |
 
@@ -121,3 +121,28 @@ A PROPOSAL-07, recebida em 2026-11-20, pede a árvore organizacional **no menu l
 | Robot UI (`ui/test/navigation/org_tree.robot`) | Escolher a Squad pela busca leva a `/squad` com a unidade no cabeçalho; recolher um ramo fica lembrado depois de recarregar; gaveta no celular. |
 
 O cenário de interface do membro só de uma Squad depende de atribuir papel por unidade, que ainda não tem tela nem API (Administração › Usuários, backlog). Até lá, os ancestrais em cinza são cobertos pelo Vitest.
+
+## 7. Revisão 3 (bug #66): menu contextual por unidade
+
+O bug #66 (2026-11-20) apontou que, depois da Revisão 2, a árvore trocava a unidade, mas o menu continuava com os mesmos três itens de Flight Level. Na prática, a árvore era só um seletor de workspace. O princípio do bug é aceito: **a organização determina o contexto, o contexto orienta a navegação e as permissões determinam o que está disponível.**
+
+### 7.1 Decisões (2026-11-20)
+
+| Tema | Decisão |
+|---|---|
+| Visões por unidade | O **próprio nível** e o **consolidado dos níveis abaixo**, nunca os de cima, e o Wiki. Squad: Quadro, Backlog e Sprints. Empresa e Unidade de Negócio, sem Flight Level: o consolidado de todos os níveis. |
+| Rótulos | **Pelo trabalho**, sem nome fixo: o próprio nível leva o tipo principal do Flight Level no plural ("Iniciativas", "Features"); os de baixo, o nome do nível com "abaixo" ("Cadeias abaixo"). O título da seção mostra a unidade e o nível. |
+| O que não existe | Estratégia, investimentos, dependências, qualidade e indicadores (citados no bug) não aparecem até existirem (UX/UI 4). |
+| Troca de unidade | Unidade com Flight Level abre a primeira visão dela; no Wiki, continua no Wiki; sem Flight Level, recarrega a tela atual. Nada exige recarregar a aplicação. |
+
+### 7.2 Implementação
+
+- `core/context-nav.ts`:
+  - `contextViews`: as visões a partir do nível da unidade, dos níveis e dos tipos da configuração;
+  - `landingFor`: para onde ir ao escolher uma unidade;
+  - `NavigationContext`: o mesmo cálculo para o menu e para a árvore.
+- As abas do Squad ganharam endereço (`?tab=backlog`, `?tab=sprints`); o menu leva direto a elas.
+- As rotas e os identificadores de teste (`nav-portfolio`, `nav-tactical`, `nav-squad`) foram mantidos.
+- **Testes:**
+  - Vitest `context-nav.spec.ts`: as quatro situações, nomes personalizados, plural e escolha da tela;
+  - Robot UI `navigation`: com a Squad escolhida, o título mostra a Squad, não há visões de cima, e Backlog abre a aba.
