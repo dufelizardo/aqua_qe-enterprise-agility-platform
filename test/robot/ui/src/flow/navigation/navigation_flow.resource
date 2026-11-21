@@ -73,11 +73,12 @@ Navegacao - Gaveta No Celular
     Wait For Sidebar Hidden
 
 Navegacao - Menu Da Squad
-    [Documentation]    Bug #66: com a Squad escolhida, o menu mostra onde o usuário está e só as visões dela (Quadro,
-    ...    Backlog, Sprints e Wiki), sem as de cima; o item Backlog abre a aba Backlog.
+    [Documentation]    Bug #66: com a Squad escolhida, as funções dela aparecem dentro da árvore, sob a própria Squad
+    ...    (Quadro, Backlog, Sprints e Wiki), sem as de cima; o item Backlog abre a aba Backlog.
     [Arguments]    ${squad}
-    ${title}=    Get Context Title Text
-    Should Start With    ${title}    ${squad}
+    ${labels}=    Get Unit View Labels    ${squad}
+    ${expected}=    Create List    Quadro    Backlog    Sprints    Wiki
+    Should Be Equal    ${labels}    ${expected}
     ${count}=    Get View Count    ${NAV_VIEW_PORTFOLIO}
     Should Be Equal As Integers    ${count}    0
     ${count}=    Get View Count    ${NAV_VIEW_TACTICAL}

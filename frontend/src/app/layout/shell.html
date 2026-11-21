@@ -80,19 +80,6 @@
     <a routerLink="/home" routerLinkActive="active" (click)="drawer.set(false)" data-testid="nav-home">Home</a>
     <div class="nav-label">Organização</div>
     <app-org-tree (picked)="drawer.set(false)" />
-    <div class="nav-label context" [title]="contextTitle()" data-testid="nav-context">{{ contextTitle() }}</div>
-    @for (item of views(); track item.testId) {
-      <a
-        [routerLink]="item.path"
-        [queryParams]="item.queryParams"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="exactWithQuery"
-        (click)="drawer.set(false)"
-        [attr.data-testid]="item.testId"
-      >
-        {{ item.label }}
-      </a>
-    }
     @if (session.isPlatformAdmin()) {
       <hr class="nav-separator" />
       <a routerLink="/admin" routerLinkActive="active" (click)="drawer.set(false)" data-testid="nav-admin">Admin</a>

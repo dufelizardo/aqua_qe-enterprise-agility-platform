@@ -216,17 +216,6 @@
   letter-spacing: 0.08em;
 }
 
-/* Onde o usuário está: unidade e nível (bug #66). */
-.nav-label.context {
-  overflow: hidden;
-  color: var(--amber-500);
-  font-size: 13px;
-  text-overflow: ellipsis;
-  text-transform: none;
-  letter-spacing: 0;
-  white-space: nowrap;
-}
-
 @media (max-width: 720px) {
   .header {
     gap: 12px;

@@ -154,11 +154,21 @@ O ponto verde de "operacional" sobre o avatar, presente no protótipo, não é u
 | Item | Tela | Visível para |
 |---|---|---|
 | Home | Meu trabalho | todos |
-| **Organização** | Árvore das unidades: escolher uma troca o workspace | todos |
-| *unidade · nível* (título) | Visões da unidade escolhida, conforme o nível dela (tabela abaixo) | todos |
+| **Organização** | Árvore das unidades: escolher uma troca o workspace; as funções da unidade escolhida aparecem dentro da árvore, logo abaixo dela | todos |
 | Admin | Administração | `PLATFORM_ADMIN` |
 
-**Visões da unidade** (bug #66; [Proposta 06, Revisão 3](NAVIGATION-PROPOSAL.md#7-revisão-3-bug-66-menu-contextual-por-unidade)): o menu acompanha a unidade escolhida. Mostra o trabalho do próprio nível e o consolidado dos níveis abaixo, nunca os de cima, e o Wiki. O título da seção diz onde o usuário está ("Canais · Cadeia").
+**Funções da unidade** (bug #66; [Proposta 06, Revisão 3](NAVIGATION-PROPOSAL.md#7-revisão-3-bug-66-menu-contextual-por-unidade)): ficam **dentro da árvore**, logo abaixo da unidade escolhida e antes das unidades filhas, um nível mais para dentro. Só a unidade escolhida mostra funções; ao escolher outra, elas passam para ela. Mostram o trabalho do próprio nível e o consolidado dos níveis abaixo, nunca os de cima, e o Wiki.
+
+```text
+ORGANIZAÇÃO
+▾ Empresa
+  ▾ Portfólio Tecnologia      ← unidade escolhida
+      Iniciativas
+      Cadeias abaixo
+      Squads abaixo
+      Wiki
+    ▸ Cadeia Canais
+```
 
 | Unidade escolhida | Itens (instalação padrão) | Telas |
 |---|---|---|
@@ -175,7 +185,7 @@ Funcionalidades que ainda não existem (estratégia, investimentos, dependência
 
 **Organização** (Proposta 06, Revisão 2; PROPOSAL-07): árvore recolhível das unidades em que o usuário tem papel e das ativas abaixo delas. Quem só tem papel embaixo vê os ancestrais em cinza, sem ação, só para se localizar. Tem busca por nome (mantém o caminho até cada resultado), destaque da unidade ativa e expansão lembrada no navegador; sem nada lembrado, abre o caminho até a unidade ativa. Escolher uma unidade com Flight Level abre a primeira visão dela; no Wiki, continua no Wiki da nova unidade; uma unidade sem Flight Level recarrega a tela atual, sem recarga manual da aplicação. Teclado: Tab entre unidades, Enter escolhe, setas direita e esquerda abrem e fecham o ramo.
 
-Entre as visões da unidade fica também o item **Wiki** ([Proposta 07](KNOWLEDGE-PROPOSAL.md), KNOW-013), para qualquer nível, inclusive os sem Flight Level ([7.12](#712-wiki-da-unidade)).
+Entre as funções da unidade fica também o item **Wiki** ([Proposta 07](KNOWLEDGE-PROPOSAL.md), KNOW-013), para qualquer nível, inclusive os sem Flight Level ([7.12](#712-wiki-da-unidade)).
 
 O título de cada tela de Flight Level é o **nome do nível organizacional** ligado a ele na configuração (`GET /org-levels`); na instalação padrão, "Portfólio", "Cadeia" e "Squad". O mesmo nome é e o rótulo da unidade no formulário de criação. A interface nunca usa nomes de nível fixos no código ([Proposta 06](NAVIGATION-PROPOSAL.md#3-decisões-tomadas-2026-11-20), NAV-D1).
 

@@ -84,7 +84,7 @@ A PROPOSAL-07, recebida em 2026-11-20, pede a árvore organizacional **no menu l
 
 | ID | Tema | Decisão |
 |---|---|---|
-| ORG-D01 e ORG-D02 | Árvore no menu | **Aceitas.** O menu lateral tem, de cima para baixo: Home; **Organização** (a árvore); **Visões da unidade** (um item por Flight Level, com o nome do nível na configuração); Admin. A árvore e o resto da aplicação usam o mesmo serviço de contexto (`WorkspaceService`), então nunca divergem. O seletor do cabeçalho sai; o cabeçalho mostra só a unidade ativa. |
+| ORG-D01 e ORG-D02 | Árvore no menu | **Aceitas.** O menu lateral tem, de cima para baixo: Home; **Organização** (a árvore); **Visões da unidade** (um item por Flight Level, com o nome do nível na configuração); Admin. A árvore e o resto da aplicação usam o mesmo serviço de contexto (`WorkspaceService`), então nunca divergem. O seletor do cabeçalho sai; o cabeçalho mostra só a unidade ativa. *Revisto na [Revisão 3](#7-revisão-3-bug-66-menu-contextual-por-unidade): as funções ficam dentro da árvore, sob a unidade escolhida.* |
 | ORG-D03 | Ancestrais sem papel | **Aceita.** Quem só tem papel embaixo vê os ancestrais em cinza, só para se localizar: não são clicáveis e não dão acesso aos dados (regra 1 do [SSD 2.1](SSD.md#21-escopo-entre-unidades-rev-01-rev-02-rev-04)). |
 | ORG-D04 | Unidades que são workspace | Toda unidade ativa no escopo do usuário pode ser escolhida. Nada muda em relação ao seletor anterior. |
 | ORG-D05 | Visão organizacional consolidada | **Fase 2**, com o analytics (ORG-NAV-017 e 018). |
@@ -135,14 +135,17 @@ O bug #66 (2026-11-20) apontou que, depois da Revisão 2, a árvore trocava a un
 | O que não existe | Estratégia, investimentos, dependências, qualidade e indicadores (citados no bug) não aparecem até existirem (UX/UI 4). |
 | Troca de unidade | Unidade com Flight Level abre a primeira visão dela; no Wiki, continua no Wiki; sem Flight Level, recarrega a tela atual. Nada exige recarregar a aplicação. |
 
+**Correção (2026-11-20, depois do teste do usuário):** a primeira versão pôs as funções numa seção separada, abaixo da árvore. Isso não atendia ao bug. As funções passaram para **dentro da árvore**, logo abaixo da unidade escolhida e antes das unidades filhas, num grupo do item da unidade (`role="group"`). A seção separada e o título "unidade · nível" saíram do menu.
+
 ### 7.2 Implementação
 
 - `core/context-nav.ts`:
   - `contextViews`: as visões a partir do nível da unidade, dos níveis e dos tipos da configuração;
   - `landingFor`: para onde ir ao escolher uma unidade;
-  - `NavigationContext`: o mesmo cálculo para o menu e para a árvore.
+  - `NavigationContext`: o mesmo cálculo para a árvore e para a escolha da unidade.
+- `layout/org-tree.ts`: as funções da unidade escolhida são renderizadas dentro do item dela na árvore.
 - As abas do Squad ganharam endereço (`?tab=backlog`, `?tab=sprints`); o menu leva direto a elas.
 - As rotas e os identificadores de teste (`nav-portfolio`, `nav-tactical`, `nav-squad`) foram mantidos.
 - **Testes:**
   - Vitest `context-nav.spec.ts`: as quatro situações, nomes personalizados, plural e escolha da tela;
-  - Robot UI `navigation`: com a Squad escolhida, o título mostra a Squad, não há visões de cima, e Backlog abre a aba.
+  - Robot UI `navigation`: com a Squad escolhida, as funções dentro do item dela na árvore são Quadro, Backlog, Sprints e Wiki, nessa ordem; não há visões de cima; Backlog abre a aba.
