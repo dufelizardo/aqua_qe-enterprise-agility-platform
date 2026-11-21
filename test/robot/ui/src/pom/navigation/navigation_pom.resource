@@ -1,6 +1,7 @@
 *** Settings ***
 Documentation       Ações no menu lateral e na árvore organizacional. Sem asserções: as esperas só sincronizam.
 Library             Browser
+Library             Collections
 Resource            ../../resource/locators/navigation/navigation_locator.resource
 
 *** Keywords ***
@@ -72,9 +73,16 @@ Take Navigation Screenshot
     [Arguments]    ${name}
     Take Screenshot    filename=${name}
 
-Get Context Title Text
-    ${text}=    Get Text    ${NAV_CONTEXT_TITLE}
-    RETURN    ${text}
+Get Unit View Labels
+    [Arguments]    ${name}
+    ${locator}=    Evaluate    $NAV_UNIT_VIEWS_BY_NAME.replace('{}', $name)
+    ${elements}=    Get Elements    ${locator}
+    ${labels}=    Create List
+    FOR    ${element}    IN    @{elements}
+        ${text}=    Get Text    ${element}
+        Append To List    ${labels}    ${text}
+    END
+    RETURN    ${labels}
 
 Get View Count
     [Arguments]    ${locator}

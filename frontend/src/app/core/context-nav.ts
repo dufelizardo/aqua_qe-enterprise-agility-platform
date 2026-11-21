@@ -16,11 +16,6 @@ export class NavigationContext {
   private readonly typeNames = signal<Map<string, string>>(new Map());
   private loading: Promise<void> | null = null;
 
-  /** Nível da unidade ativa (nome e Flight Level). */
-  readonly currentLevel = computed(() => {
-    const unit = this.workspace.current();
-    return unit ? this.levels.levels().find((l) => l.key === unit.level) : undefined;
-  });
   readonly views = computed(() => this.viewsFor(this.workspace.current()?.level ?? null));
 
   load(): Promise<void> {

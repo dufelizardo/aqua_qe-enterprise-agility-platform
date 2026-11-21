@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, output, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
 import { NavigationContext, landingFor } from '../core/context-nav';
 import { LevelsService } from '../core/levels.service';
@@ -8,12 +8,14 @@ import { NavNode, WorkspaceService } from '../core/workspace.service';
 const EXPANDED_KEY = 'aquaqe.org-tree.expanded';
 
 /**
- * Árvore organizacional do menu (Proposta 06, Revisão 2; PROPOSAL-07). Usa o mesmo serviço de contexto do resto da
- * aplicação ({@link WorkspaceService}): escolher uma unidade aqui é escolher o workspace. Ancestrais sem papel aparecem
- * só para localização (ORG-D03); a expansão fica lembrada no navegador; a busca filtra por nome.
+ * Árvore organizacional do menu (Proposta 06, Revisões 2 e 3; PROPOSAL-07; bug #66). Usa o mesmo serviço de contexto
+ * do resto da aplicação ({@link WorkspaceService}): escolher uma unidade aqui é escolher o workspace, e as funções dela
+ * aparecem dentro da árvore, logo abaixo dela. Ancestrais sem papel aparecem só para localização (ORG-D03); a expansão
+ * fica lembrada no navegador; a busca filtra por nome.
  */
 @Component({
   selector: 'app-org-tree',
+  imports: [RouterLink, RouterLinkActive],
   template: `
     <div class="org-tree" data-testid="org-tree-nav">
       <input
@@ -68,6 +70,26 @@ const EXPANDED_KEY = 'aquaqe.org-tree.expanded';
                 >
               }
             </div>
+            @if (node.id === workspace.current()?.id) {
+              <!-- Funções da unidade escolhida, dentro da árvore, antes das unidades filhas (bug #66). -->
+              <ul role="group" class="views" [attr.aria-label]="'Funções de ' + node.name" data-testid="org-node-views">
+                @for (view of nav.views(); track view.testId) {
+                  <li>
+                    <a
+                      class="view"
+                      [style.padding-left.px]="30 + (node.depth + 1) * 12"
+                      [routerLink]="view.path"
+                      [queryParams]="view.queryParams"
+                      routerLinkActive="active"
+                      [routerLinkActiveOptions]="exact"
+                      (click)="picked.emit()"
+                      [attr.data-testid]="view.testId"
+                      >{{ view.label }}</a
+                    >
+                  </li>
+                }
+              </ul>
+            }
           </li>
         } @empty {
           <li class="empty">Nenhuma unidade.</li>
@@ -81,7 +103,13 @@ export class OrgTree {
   protected readonly workspace = inject(WorkspaceService);
   protected readonly levels = inject(LevelsService);
   private readonly router = inject(Router);
-  private readonly nav = inject(NavigationContext);
+  protected readonly nav = inject(NavigationContext);
+  protected readonly exact = {
+    paths: 'exact',
+    queryParams: 'exact',
+    matrixParams: 'ignored',
+    fragment: 'ignored',
+  } as const;
 
   /** Avisa o menu que uma unidade foi escolhida (no celular, a gaveta fecha). */
   readonly picked = output<void>();

@@ -8,7 +8,8 @@ ${NAV_MENU_TOGGLE}              css=[data-testid="menu-toggle"]
 ${NAV_ORG_TREE}                 css=[data-testid="org-tree-nav"]
 ${NAV_ORG_TREE_SEARCH}          css=[data-testid="org-tree-search"]
 ${NAV_WORKSPACE_CURRENT}        css=[data-testid="workspace-current"]
-${NAV_CONTEXT_TITLE}            css=[data-testid="nav-context"]
+# Funções da unidade com esse nome, dentro do item dela na árvore (bug #66): format com o nome.
+${NAV_UNIT_VIEWS_BY_NAME}       css=[role="treeitem"]:has([data-testid="org-node"]:text-is("{}")) [data-testid="org-node-views"] a
 ${NAV_VIEW_PORTFOLIO}           css=[data-testid="nav-portfolio"]
 ${NAV_VIEW_TACTICAL}            css=[data-testid="nav-tactical"]
 ${NAV_VIEW_SQUAD_BACKLOG}       css=[data-testid="nav-squad-backlog"]
