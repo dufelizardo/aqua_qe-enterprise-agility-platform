@@ -127,6 +127,8 @@ Para cada cenário, registrar quem cria, liga, lê e aprova o quê, usando a mat
 
 **Decisão (2026-11-20; [Proposta 07](KNOWLEDGE-PROPOSAL.md)).** Aceito. O formato de blocos do SSD 6 é o contrato. O editor é próprio e simples, com parágrafo e destaque em Markdown leve, título, lista, tabela, citação e código. Ele grava nesse formato, e a tela monta os elementos sem gerar HTML. Imagens, anexos e diagramas entram com o armazenamento de objetos. Um editor de terceiros, se vier, converte para o contrato. Implementado nas páginas de conhecimento (SSD 3.7.1); os documentos do artefato usam o mesmo motor na próxima entrega.
 
+**Revisão (2026-11-21, bug #67).** O editor de blocos montados um a um fragmentava a escrita. Ele foi trocado por um editor de texto contínuo, o **Tiptap 3**, baseado em ProseMirror. O contrato continua sendo o do SSD 6: cada seção passa a ser um bloco `richtext` com o documento do editor, e os blocos antigos são convertidos na tela, sem perda.
+
 ### REV-06 — Publicação de nova versão de workflow
 
 **Evidência.** O [SSD, seção 3.3](SSD.md#33-configuration), define duas regras: um status com artefatos não pode ser removido (`CONFIG_IN_USE`), e os artefatos existentes passam a usar a nova versão, preservando o status pela `key`.

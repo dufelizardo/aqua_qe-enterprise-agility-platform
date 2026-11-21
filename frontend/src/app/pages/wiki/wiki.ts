@@ -8,8 +8,7 @@ import { ApiError, messageOf, toApiError } from '../../core/api-error';
 import { LevelsService } from '../../core/levels.service';
 import { WorkspaceService } from '../../core/workspace.service';
 import { UnitHeader } from '../../layout/unit-header';
-import { BlockEditor } from '../../knowledge/block-editor';
-import { BlockView } from '../../knowledge/block-view';
+import { RichEditor } from '../../knowledge/rich-editor';
 import {
   KnowledgeService,
   Page,
@@ -20,7 +19,19 @@ import {
   PageVersion,
   STATUS_LABELS,
   pageTree,
+  RichDoc,
+  blocksToDoc,
+  docHasText,
+  docToBlocks,
 } from '../../knowledge/knowledge.service';
+
+/** Seção em edição: o documento do editor contínuo. */
+interface DraftSection {
+  key: string;
+  title: string;
+  required: boolean;
+  doc: RichDoc;
+}
 
 /** Conhecimento publicado de uma unidade acima da ativa (Proposta 07, KNOW-030; SSD 2.1, regra 9). */
 interface AncestorSpace {
@@ -36,7 +47,7 @@ interface AncestorSpace {
  */
 @Component({
   selector: 'app-wiki',
-  imports: [BlockView, BlockEditor, DatePipe, UnitHeader],
+  imports: [RichEditor, DatePipe, UnitHeader],
   templateUrl: './wiki.html',
   styleUrl: './wiki.scss',
 })
@@ -71,7 +82,15 @@ export class Wiki {
   protected readonly oldVersion = signal<Page | null>(null);
   protected readonly shown = computed(() => this.oldVersion() ?? this.page());
 
-  protected readonly draft = signal<PageSection[]>([]);
+  /** Seções em edição, cada uma com o documento do editor contínuo (bug #67). */
+  protected readonly draft = signal<DraftSection[]>([]);
+  /** Seções da versão mostrada, já convertidas para o editor (inclui o conteúdo do editor anterior). */
+  protected readonly shownDocs = computed(() =>
+    (this.shown()?.sections ?? []).map((s) => {
+      const doc = blocksToDoc(s.blocks);
+      return { key: s.key, title: s.title, doc, empty: !docHasText(doc) };
+    }),
+  );
   protected readonly draftTitle = signal('');
   protected readonly draftSummary = signal('');
   protected readonly conflict = signal(false);
@@ -212,7 +231,9 @@ export class Wiki {
     if (!page) {
       return;
     }
-    this.draft.set(structuredClone(page.sections));
+    this.draft.set(
+      page.sections.map((s) => ({ key: s.key, title: s.title, required: s.required, doc: blocksToDoc(s.blocks) })),
+    );
     this.draftTitle.set(page.title);
     this.draftSummary.set('');
     this.conflict.set(false);
@@ -220,8 +241,8 @@ export class Wiki {
     this.mode.set('edit');
   }
 
-  protected setBlocks(index: number, blocks: PageSection['blocks']): void {
-    this.draft.set(this.draft().map((s, i) => (i === index ? { ...s, blocks } : s)));
+  protected setDoc(index: number, doc: RichDoc): void {
+    this.draft.set(this.draft().map((s, i) => (i === index ? { ...s, doc } : s)));
   }
 
   protected async save(): Promise<void> {
@@ -232,7 +253,13 @@ export class Wiki {
     this.busy.set(true);
     this.error.set(null);
     try {
-      let saved = await this.knowledge.save(page.id, page.currentVersion, this.draft(), this.draftSummary().trim());
+      const sections: PageSection[] = this.draft().map((s) => ({
+        key: s.key,
+        title: s.title,
+        required: s.required,
+        blocks: docToBlocks(s.doc),
+      }));
+      let saved = await this.knowledge.save(page.id, page.currentVersion, sections, this.draftSummary().trim());
       const title = this.draftTitle().trim();
       if (title && title !== page.title) {
         saved = await this.knowledge.update(page.id, { title });

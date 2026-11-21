@@ -292,7 +292,10 @@ Esse fluxo é a fonte única para a trilha de auditoria, as notificações e, na
 - Concorrência por bloqueio otimista: se duas pessoas editam a mesma versão, a segunda a salvar recebe um aviso de conflito. Coedição simultânea está fora do MVP.
 - Anexos e imagens vão para o armazenamento de objetos; o documento guarda apenas a referência.
 - **Dono genérico (2026-11-20; [Proposta 07](KNOWLEDGE-PROPOSAL.md), KNOW-D06):** o mesmo motor guarda os documentos dos artefatos e as páginas de conhecimento das unidades (Wiki). Não há segundo mecanismo de versões, busca, anexos ou auditoria. Os templates ficam em `configuration`; o acesso, em `access` (regra 9 do SSD 2.1 para o conhecimento publicado).
-- **Editor (REV-05, decidido):** o contrato é o formato de blocos do SSD 6. O editor é próprio e converte para esse formato; trocar de editor não muda o que é gravado. O Markdown leve dos parágrafos é interpretado na tela, sem gerar HTML.
+- **Editor (REV-05; revisto no bug #67, 2026-11-21):** texto contínuo com **Tiptap 3** (ProseMirror), como no Confluence ou no Word: barra de ferramentas e atalhos.
+  - A seção é gravada como bloco `richtext` do SSD 6, com o JSON do ProseMirror; o conteúdo do editor anterior é convertido na tela, sem perda.
+  - O esquema do ProseMirror só aceita os nós e marcas conhecidos, e o link recusa `javascript:`; a leitura usa o mesmo editor, sem edição, então o conteúdo nunca vira HTML arbitrário.
+  - O primeiro editor (blocos montados um a um) foi substituído por fragmentar a escrita.
 
 ### 7.7 API
 

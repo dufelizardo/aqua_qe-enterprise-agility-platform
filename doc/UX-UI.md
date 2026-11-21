@@ -318,7 +318,7 @@ Abre quando a transição devolve `GATE_BLOCKED`. Título: "Ainda não é possí
 
 - Abre com a versão atual do documento (`GET /artifacts/{artifact}/documents/{type}`).
 - Índice de seções à esquerda, com marca de preenchida e asterisco nas obrigatórias (critério na seção 6.3 do SSD).
-- Sete tipos de bloco: título, parágrafo, lista, tabela, código, anexo e link.
+- Cada seção é uma área de texto contínua, com o mesmo editor da Wiki (7.12; bug #67). Anexos e imagens entram com o armazenamento de objetos.
 - **Salvar** envia `PUT /artifacts/{artifact}/documents/{type}` com o número da versão em que a edição se baseou. Não há salvamento automático no MVP; ao sair com alterações não salvas, a tela pede confirmação.
 - **Aprovar** aparece para quem tem o papel aprovador do template e fica desabilitado, com a explicação ao lado, enquanto houver seção obrigatória vazia. Usa `POST /artifacts/{artifact}/documents/{type}/status`.
 - Documento aprovado abre em modo de leitura, com o botão **Reabrir para edição**, que pede um comentário e usa o mesmo endpoint.
@@ -573,7 +573,13 @@ Princípio adotado da [Proposta 03](ADMIN-PROPOSAL.md#1-princípio-adotado-três
 - **Rota:** `/wiki`, com `?page=<id>` para abrir uma página por link. O espaço é a unidade ativa.
 - **Layout:** à esquerda, as páginas em árvore (subpáginas indentadas, com o status do regimento quando não publicado), "Nova página", "Novo regimento", "Mostrar arquivadas" e, abaixo, **Das unidades acima**: as páginas publicadas de cada ancestral. À direita, a página.
 - **Página:** título, tipo e status (no regimento), versão, autor e data; ações conforme a permissão: Editar, Nova subpágina, Histórico, Arquivar ou Restaurar; no regimento, Enviar para revisão, Aprovar, Voltar para rascunho, Publicar e Reabrir (com motivo). Aviso das seções obrigatórias vazias.
-- **Edição:** título editável e um editor de blocos por seção (parágrafo, título, lista, tabela, código, destaque e citação; subir, descer, remover), com resumo opcional da alteração. Conflito de edição como na [6.8](#68-diálogo-de-conflito-de-edição): o rascunho fica na tela e a pessoa recarrega.
+- **Edição (bug #67):** título editável e, em cada seção, uma **área de texto contínua**, como no Confluence ou no Word. Escreve-se direto, e a formatação vem da barra e dos atalhos:
+  - estilo (texto, título, subtítulo);
+  - negrito (Ctrl+B), itálico (Ctrl+I), sublinhado (Ctrl+U), código no texto e link (Ctrl+K);
+  - lista com marcadores, lista numerada, citação, bloco de código e tabela (inserir; com o cursor nela, incluir e remover linha e coluna);
+  - desfazer e refazer.
+
+  Há também um resumo opcional da alteração. Na leitura, o mesmo editor mostra o conteúdo, sem a barra. O regimento usa o mesmo editor em cada seção obrigatória. Conflito de edição como na [6.8](#68-diálogo-de-conflito-de-edição): o rascunho fica na tela e a pessoa recarrega.
 - **Histórico:** versões com autor, data, resumo e marcas de aprovada e publicada; abrir uma versão mostra o aviso "Você está vendo a versão N" e o retorno à atual.
 - **Quem lê pela regra 9** (SSD 2.1) vê só a versão publicada, com "Somente leitura (publicado)" e sem histórico.
 - **Dados:** `GET /org-units/{id}/pages`, `POST /org-units/{id}/pages`, `GET/PUT/PATCH /pages/{id}`, `GET /pages/{id}/versions[/{n}]`, `POST /pages/{id}/status`, `POST /pages/{id}/archive`, `POST /pages/{id}/restore` (SSD 3.7.1).

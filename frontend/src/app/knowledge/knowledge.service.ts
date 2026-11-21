@@ -4,8 +4,13 @@ import { firstValueFrom } from 'rxjs';
 
 const API = '/api/v1';
 
-/** Bloco do conteúdo (SSD 6; REV-05): o contrato é independente do editor. */
+/**
+ * Bloco do conteúdo (SSD 6). Desde o bug #67, cada seção é editada num editor de texto contínuo (Tiptap/ProseMirror)
+ * e gravada como um único bloco `richtext`, com o documento do editor. Os demais tipos são do editor anterior: continuam
+ * legíveis e são convertidos ao abrir ({@link blocksToDoc}).
+ */
 export type Block =
+  | { type: 'richtext'; doc: RichDoc }
   | { type: 'paragraph'; text: string }
   | { type: 'heading'; text: string; level: 2 | 3 }
   | { type: 'list'; ordered: boolean; items: string[] }
@@ -15,6 +20,19 @@ export type Block =
   | { type: 'quote'; text: string };
 
 export type BlockType = Block['type'];
+
+/** Nó do documento do editor (JSON do ProseMirror). */
+export interface RichNode {
+  type: string;
+  attrs?: Record<string, unknown>;
+  content?: RichNode[];
+  marks?: { type: string; attrs?: Record<string, unknown> }[];
+  text?: string;
+}
+
+export interface RichDoc extends RichNode {
+  type: 'doc';
+}
 
 export interface PageSection {
   key: string;
@@ -214,24 +232,6 @@ function safeHref(href: string): boolean {
   return /^(https?:\/\/|mailto:|\/(?!\/))/i.test(href);
 }
 
-/** Bloco vazio de cada tipo, para o editor. */
-export function emptyBlock(type: BlockType): Block {
-  switch (type) {
-    case 'heading':
-      return { type, text: '', level: 2 };
-    case 'list':
-      return { type, ordered: false, items: [''] };
-    case 'table':
-      return { type, rows: [['', ''], ['', '']] };
-    case 'code':
-      return { type, text: '' };
-    case 'callout':
-      return { type, text: '', tone: 'info' };
-    default:
-      return { type, text: '' } as Block;
-  }
-}
-
 /** Rótulos dos status do ciclo governado (KNOW-D05). */
 export const STATUS_LABELS: Record<PageStatus, string> = {
   DRAFT: 'Rascunho',
@@ -239,3 +239,101 @@ export const STATUS_LABELS: Record<PageStatus, string> = {
   APPROVED: 'Aprovado',
   PUBLISHED: 'Publicado',
 };
+
+/** Documento vazio do editor. */
+export function emptyDoc(): RichDoc {
+  return { type: 'doc', content: [{ type: 'paragraph' }] };
+}
+
+/**
+ * Converte os blocos de uma seção no documento do editor (bug #67). O bloco `richtext` já é o documento; os blocos do
+ * editor anterior viram os nós equivalentes, com o Markdown leve virando marcas (negrito, itálico, código, link). Nada se
+ * perde: o que o editor anterior gravou continua legível e passa a ser editável.
+ */
+export function blocksToDoc(blocks: Block[] | null | undefined): RichDoc {
+  const content: RichNode[] = [];
+  for (const block of blocks ?? []) {
+    switch (block.type) {
+      case 'richtext':
+        content.push(...(block.doc?.content ?? []));
+        break;
+      case 'heading':
+        content.push({ type: 'heading', attrs: { level: block.level === 3 ? 3 : 2 }, content: inline(block.text) });
+        break;
+      case 'list':
+        content.push({
+          type: block.ordered ? 'orderedList' : 'bulletList',
+          content: block.items
+            .filter((item) => item.trim())
+            .map((item) => ({ type: 'listItem', content: [{ type: 'paragraph', content: inline(item) }] })),
+        });
+        break;
+      case 'table':
+        content.push({
+          type: 'table',
+          content: block.rows.map((row, r) => ({
+            type: 'tableRow',
+            content: row.map((cell) => ({
+              type: r === 0 ? 'tableHeader' : 'tableCell',
+              content: [{ type: 'paragraph', content: inline(cell.trim()) }],
+            })),
+          })),
+        });
+        break;
+      case 'code':
+        content.push({ type: 'codeBlock', content: block.text ? [{ type: 'text', text: block.text }] : undefined });
+        break;
+      case 'callout':
+      case 'quote':
+        content.push({ type: 'blockquote', content: [{ type: 'paragraph', content: inline(block.text) }] });
+        break;
+      default:
+        content.push({ type: 'paragraph', content: inline((block as { text?: string }).text ?? '') });
+    }
+  }
+  return { type: 'doc', content: content.length > 0 ? content.map(clean) : [{ type: 'paragraph' }] };
+}
+
+/** O documento do editor como blocos da seção, para gravar. */
+export function docToBlocks(doc: RichDoc): Block[] {
+  return [{ type: 'richtext', doc }];
+}
+
+/** A seção tem texto? (o mesmo critério do servidor para as seções obrigatórias). */
+export function docHasText(doc: RichNode | undefined): boolean {
+  if (!doc) {
+    return false;
+  }
+  return (doc.text?.trim().length ?? 0) > 0 || (doc.content ?? []).some(docHasText);
+}
+
+function inline(text: string): RichNode[] | undefined {
+  const nodes: RichNode[] = parseInline(text ?? '')
+    .filter((part) => part.text.length > 0)
+    .map((part) => {
+      switch (part.kind) {
+        case 'strong':
+          return { type: 'text', text: part.text, marks: [{ type: 'bold' }] };
+        case 'em':
+          return { type: 'text', text: part.text, marks: [{ type: 'italic' }] };
+        case 'code':
+          return { type: 'text', text: part.text, marks: [{ type: 'code' }] };
+        case 'link':
+          return { type: 'text', text: part.text, marks: [{ type: 'link', attrs: { href: part.href } }] };
+        default:
+          return { type: 'text', text: part.text };
+      }
+    });
+  return nodes.length > 0 ? nodes : undefined;
+}
+
+/** Tira "content" vazio, que o ProseMirror recusa em nós de texto. */
+function clean(node: RichNode): RichNode {
+  const result: RichNode = { ...node };
+  if (result.content) {
+    result.content = result.content.map(clean);
+  } else {
+    delete result.content;
+  }
+  return result;
+}
