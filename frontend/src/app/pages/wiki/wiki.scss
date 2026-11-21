@@ -375,3 +375,9 @@ input:focus-visible {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.empty-section {
+  margin: 0;
+  color: var(--text-muted);
+  font-style: italic;
+}

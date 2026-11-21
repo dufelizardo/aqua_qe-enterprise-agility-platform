@@ -207,9 +207,11 @@
               </p>
             }
             @for (section of draft(); track section.key; let i = $index) {
-              <section class="section">
-                <h3>{{ section.title }}@if (section.required) {<span class="req" title="Obrigatória para aprovar"> *</span>}</h3>
-                <app-block-editor [blocks]="section.blocks" (blocksChange)="setBlocks(i, $event)" />
+              <section class="section" [attr.data-section]="section.key">
+                @if (draft().length > 1) {
+                  <h3>{{ section.title }}@if (section.required) {<span class="req" title="Obrigatória para aprovar"> *</span>}</h3>
+                }
+                <app-rich-editor [doc]="section.doc" [editable]="true" [label]="section.title" (docChange)="setDoc(i, $event)" />
               </section>
             }
             <div class="save-bar">
@@ -218,12 +220,16 @@
               <button type="button" class="btn" (click)="mode.set('read')">Cancelar</button>
             </div>
           } @else {
-            @for (section of p.sections; track section.key) {
+            @for (section of shownDocs(); track section.key) {
               <section class="section" [attr.data-section]="section.key">
-                @if (p.sections.length > 1) {
+                @if (shownDocs().length > 1) {
                   <h3>{{ section.title }}</h3>
                 }
-                <app-block-view [blocks]="section.blocks" />
+                @if (section.empty) {
+                  <p class="empty-section">Sem conteúdo.</p>
+                } @else {
+                  <app-rich-editor [doc]="section.doc" [label]="section.title" />
+                }
               </section>
             }
           }

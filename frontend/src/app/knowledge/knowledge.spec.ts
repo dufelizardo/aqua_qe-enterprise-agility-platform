@@ -1,4 +1,4 @@
-import { PageSummary, emptyBlock, pageTree, parseInline } from './knowledge.service';
+import { Block, PageSummary, blocksToDoc, docHasText, docToBlocks, pageTree, parseInline } from './knowledge.service';
 
 describe('parseInline (Markdown leve, sem HTML)', () => {
   it('separa negrito, itálico, código e link', () => {
@@ -50,10 +50,48 @@ describe('pageTree', () => {
   });
 });
 
-describe('emptyBlock', () => {
-  it('cria cada tipo com os campos do contrato', () => {
-    expect(emptyBlock('list')).toEqual({ type: 'list', ordered: false, items: [''] });
-    expect(emptyBlock('heading')).toEqual({ type: 'heading', text: '', level: 2 });
-    expect(emptyBlock('paragraph')).toEqual({ type: 'paragraph', text: '' });
+describe('blocksToDoc (bug #67: conteúdo do editor anterior no editor contínuo, sem perda)', () => {
+  it('converte parágrafo com Markdown leve em marcas', () => {
+    const doc = blocksToDoc([{ type: 'paragraph', text: 'Use **sempre** o *fluxo* `main` e [o guia](https://x.dev).' }]);
+    expect(doc.content?.[0]?.content).toEqual([
+      { type: 'text', text: 'Use ' },
+      { type: 'text', text: 'sempre', marks: [{ type: 'bold' }] },
+      { type: 'text', text: ' o ' },
+      { type: 'text', text: 'fluxo', marks: [{ type: 'italic' }] },
+      { type: 'text', text: ' ' },
+      { type: 'text', text: 'main', marks: [{ type: 'code' }] },
+      { type: 'text', text: ' e ' },
+      { type: 'text', text: 'o guia', marks: [{ type: 'link', attrs: { href: 'https://x.dev' } }] },
+      { type: 'text', text: '.' },
+    ]);
+  });
+
+  it('converte título, lista, tabela, código, destaque e citação', () => {
+    const blocks: Block[] = [
+      { type: 'heading', text: 'Objetivos', level: 2 },
+      { type: 'list', ordered: true, items: ['Um', 'Dois', ''] },
+      { type: 'table', rows: [['A ', ' B'], ['1', '2']] },
+      { type: 'code', text: 'mvn verify' },
+      { type: 'callout', text: 'Atenção', tone: 'warning' },
+      { type: 'quote', text: 'Citação' },
+    ];
+    const types = blocksToDoc(blocks).content?.map((n) => n.type);
+    expect(types).toEqual(['heading', 'orderedList', 'table', 'codeBlock', 'blockquote', 'blockquote']);
+    const table = blocksToDoc([blocks[2]!]).content?.[0];
+    expect(table?.content?.[0]?.content?.[0]?.type).toBe('tableHeader');
+    expect(table?.content?.[0]?.content?.[0]?.content?.[0]?.content?.[0]?.text).toBe('A');
+    expect(blocksToDoc([blocks[1]!]).content?.[0]?.content).toHaveLength(2);
+  });
+
+  it('o bloco richtext volta como está, e o documento vai e volta sem perda', () => {
+    const doc = blocksToDoc([{ type: 'paragraph', text: 'Texto' }]);
+    expect(blocksToDoc(docToBlocks(doc))).toEqual(doc);
+  });
+
+  it('seção vazia vira um parágrafo vazio e não conta como preenchida', () => {
+    const doc = blocksToDoc([]);
+    expect(doc).toEqual({ type: 'doc', content: [{ type: 'paragraph' }] });
+    expect(docHasText(doc)).toBe(false);
+    expect(docHasText(blocksToDoc([{ type: 'paragraph', text: 'x' }]))).toBe(true);
   });
 });

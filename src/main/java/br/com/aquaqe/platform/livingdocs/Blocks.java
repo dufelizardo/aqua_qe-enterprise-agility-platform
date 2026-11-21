@@ -8,13 +8,15 @@ import java.util.Set;
 import br.com.aquaqe.platform.shared.ApiException;
 
 /**
- * Blocos do conteúdo (SSD 6; REV-05): o contrato é independente do editor. Tipos aceitos nesta entrega: parágrafo e
- * destaque com Markdown leve, título, lista, tabela, citação e código. Imagens e anexos entram com o armazenamento de
- * objetos (ADR-10).
+ * Blocos do conteúdo (SSD 6). Desde o bug #67 o editor é de texto contínuo (Tiptap/ProseMirror) e grava cada seção como
+ * um bloco {@code richtext}, com o documento do editor em {@code doc}. Os tipos do editor anterior (parágrafo, título,
+ * lista, tabela, código, destaque, citação) continuam aceitos, para o conteúdo já gravado. Imagens e anexos entram com o
+ * armazenamento de objetos (ADR-10).
  */
 final class Blocks {
 
-	static final Set<String> TYPES = Set.of("paragraph", "heading", "list", "table", "code", "callout", "quote");
+	static final Set<String> TYPES = Set.of("richtext", "paragraph", "heading", "list", "table", "code", "callout",
+		"quote");
 	/** Limite de uma versão, sem contar anexos (SSD 6). */
 	static final int MAX_BYTES = 1024 * 1024;
 
@@ -26,6 +28,9 @@ final class Blocks {
 		for (Object block : blocks) {
 			if (!(block instanceof Map<?, ?> map) || !(map.get("type") instanceof String type) || !TYPES.contains(type)) {
 				throw ApiException.validation("sections." + sectionKey, "bloco de tipo desconhecido");
+			}
+			if ("richtext".equals(type) && !(map.get("doc") instanceof Map<?, ?> doc && "doc".equals(doc.get("type")))) {
+				throw ApiException.validation("sections." + sectionKey, "richtext precisa do documento do editor em doc");
 			}
 		}
 	}

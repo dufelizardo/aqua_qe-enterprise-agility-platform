@@ -20,8 +20,8 @@ Wiki - Abrir
     Should Start With    ${url}    ${AQUA_UI_URL}/wiki
 
 Wiki - Criar E Editar Pagina
-    [Documentation]    A página nova aparece na árvore e abre; salvar um parágrafo cria a versão 2, e o histórico
-    ...    mostra as duas versões.
+    [Documentation]    A página nova aparece na árvore e abre; escrever no editor contínuo, com negrito pela barra, e
+    ...    salvar cria a versão 2 (bug #67); a leitura mostra o texto em negrito; o histórico mostra as duas versões.
     [Arguments]    ${title_base}    ${text}    ${summary}    ${screenshot}
     ${title}=    Unique Name    ${title_base}
     Create Wiki Page    ${title}
@@ -32,6 +32,8 @@ Wiki - Criar E Editar Pagina
     Wait For Wiki Page Version    2
     ${content}=    Get Wiki Page Text
     Should Contain    ${content}    ${text}
+    ${bold}=    Get Bold Text Count
+    Should Be True    ${bold} >= 1
     Take Wiki Screenshot    ${screenshot}
     Open Wiki History
     ${count}=    Get Wiki Version Count

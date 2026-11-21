@@ -33,12 +33,19 @@ Wait For Wiki Page Link
     Wait For Elements State    ${locator}    visible    timeout=30s
 
 Write Paragraph And Save
+    [Documentation]    Editar, clicar na área de texto, ligar o negrito pela barra, digitar e salvar (bug #67).
     [Arguments]    ${text}    ${summary}
     Click    ${WIKI_EDIT}
-    Click    ${WIKI_ADD_PARAGRAPH}
-    Fill Text    ${WIKI_LAST_BLOCK_INPUT}    ${text}
+    Wait For Elements State    ${WIKI_EDITOR}    visible    timeout=30s
+    Click    ${WIKI_EDITOR}
+    Click    ${WIKI_RT_BOLD}
+    Keyboard Input    type    ${text}
     Fill Text    ${WIKI_SUMMARY}    ${summary}
     Click    ${WIKI_SAVE}
+
+Get Bold Text Count
+    ${count}=    Get Element Count    ${WIKI_READ_BOLD}
+    RETURN    ${count}
 
 Wait For Wiki Page Version
     [Arguments]    ${number}

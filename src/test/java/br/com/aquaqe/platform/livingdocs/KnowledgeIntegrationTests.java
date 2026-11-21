@@ -202,6 +202,36 @@ class KnowledgeIntegrationTests {
 	}
 
 	@Test
+	void editorContinuoGravaRichtext() throws Exception {
+		// Bug #67: o editor contínuo (Tiptap/ProseMirror) grava a seção como um bloco richtext com o documento.
+		String page = id(create("pedro", portfolio, "{\"title\":\"Editor contínuo\"}"));
+		String doc = "{\"type\":\"doc\",\"content\":[{\"type\":\"heading\",\"attrs\":{\"level\":2},"
+				+ "\"content\":[{\"type\":\"text\",\"text\":\"Objetivos\"}]},{\"type\":\"paragraph\",\"content\":["
+				+ "{\"type\":\"text\",\"text\":\"Crescer\",\"marks\":[{\"type\":\"bold\"},{\"type\":\"underline\"}]}]}]}";
+		save("pedro", page, 1, "{\"sections\":[{\"key\":\"content\",\"blocks\":[{\"type\":\"richtext\",\"doc\":" + doc + "}]}]}")
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.sections[0].blocks[0].type").value("richtext"))
+			.andExpect(jsonPath("$.sections[0].blocks[0].doc.content[1].content[0].marks[1].type").value("underline"));
+		save("pedro", page, 2, "{\"sections\":[{\"key\":\"content\",\"blocks\":[{\"type\":\"richtext\"}]}]}")
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.errors[0].field").value("sections.content"));
+
+		// No regimento, a seção obrigatória preenchida pelo editor contínuo conta para a aprovação.
+		String outra = unit("Portfólio Editor", "PORTFOLIO",
+			jdbc.queryForObject("select id from organization.org_unit where parent_id is null", UUID.class).toString());
+		grant("bia", "BUSINESS_OWNER", outra);
+		String reg = id(mvc.perform(json(post("/api/v1/org-units/{u}/regimento", outra), user("kn.admin"), "{}")));
+		List<String> keys = JsonPath.read(mvc.perform(get("/api/v1/pages/{id}", reg).with(user("kn.admin")))
+			.andReturn().getResponse().getContentAsString(), "$.sections[*].key");
+		String sections = keys.stream()
+			.map(k -> "{\"key\":\"" + k + "\",\"blocks\":[{\"type\":\"richtext\",\"doc\":" + doc + "}]}")
+			.collect(Collectors.joining(",", "{\"sections\":[", "]}"));
+		save("kn.admin", reg, 1, sections).andExpect(status().isOk()).andExpect(jsonPath("$.missingSections", hasSize(0)));
+		changeStatus("kn.admin", reg, "IN_REVIEW").andExpect(status().isOk());
+		changeStatus("bia", reg, "APPROVED").andExpect(status().isOk());
+	}
+
+	@Test
 	void operacoesVaoParaAOutboxDaAuditoria() throws Exception {
 		String page = id(create("pedro", portfolio, "{\"title\":\"Auditada\"}"));
 		save("pedro", page, 1, body("content", "Texto")).andExpect(status().isOk());

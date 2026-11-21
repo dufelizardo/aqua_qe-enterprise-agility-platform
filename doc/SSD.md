@@ -1000,8 +1000,23 @@ Um documento é uma lista de seções; cada seção corresponde a uma seção do
 
 ### 6.2 Tipos de bloco **(a validar)**
 
+**Editor de texto contínuo (bug #67, 2026-11-21; [Proposta 07, seção 9](KNOWLEDGE-PROPOSAL.md#9-revisão-bug-67-editor-de-texto-contínuo)):** a seção é editada numa área contínua, como no Confluence ou no Word, e gravada como **um bloco `richtext`**, com o documento do editor (JSON do ProseMirror) em `doc`:
+
+```json
+{ "type": "richtext", "doc": { "type": "doc", "content": [
+  { "type": "heading", "attrs": { "level": 2 }, "content": [ { "type": "text", "text": "Objetivos" } ] },
+  { "type": "paragraph", "content": [ { "type": "text", "text": "Crescer", "marks": [ { "type": "bold" } ] } ] }
+] } }
+```
+
+- **Nós aceitos pelo editor:** parágrafo, título (níveis 2 e 3), listas com marcadores e numeradas, citação, bloco de código, tabela com cabeçalho e linha horizontal.
+- **Marcas aceitas:** negrito, itálico, sublinhado, tachado, código e link (`https`, `mailto` e caminhos internos; `javascript:` é recusado).
+- O servidor exige `doc.type = "doc"`.
+- A tabela abaixo descreve os tipos do editor anterior. Eles continuam aceitos e legíveis, e a tela os converte para o editor contínuo ao abrir, sem perda.
+
 | Tipo | Campos | Observação |
 |---|---|---|
+| `richtext` | `doc` | Documento do editor contínuo (bug #67). É o que a tela grava. |
 | `heading` | `level` (2 ou 3), `text` | Subtítulo dentro da seção. |
 | `paragraph` | `text` | Texto com marcação Markdown em linha (negrito, itálico, código, link). |
 | `list` | `ordered`, `items` | Itens em texto com a mesma marcação. |
@@ -1014,7 +1029,7 @@ Todo bloco tem um `id` único dentro do documento, gerado pelo cliente.
 
 ### 6.3 Seção preenchida
 
-Uma seção conta como preenchida quando tem ao menos um bloco com conteúdo: texto que não seja só espaços, lista ou tabela com ao menos um item, anexo ou link válido. Blocos `heading` sozinhos não contam.
+Uma seção conta como preenchida quando tem ao menos um bloco com conteúdo: texto que não seja só espaços, lista ou tabela com ao menos um item, anexo ou link válido. Blocos `heading` sozinhos não contam. No `richtext`, conta qualquer texto do documento.
 
 ## 7. Eventos de domínio
 

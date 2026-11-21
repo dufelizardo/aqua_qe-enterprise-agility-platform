@@ -32,7 +32,7 @@ Também acertou ao separar **proprietário, visibilidade, aplicabilidade, ediç�
 |---|---|---|
 | Motor de documentos (`livingdocs`) | Especificado (SSD 3.7, 6 e 8.4; SAD 7.6), **sem código**. | **Implementado** com dono genérico: artefato ou unidade. Seções e blocos, versões imutáveis, bloqueio otimista e templates servem aos dois. |
 | Documentos de Iniciativa e Feature | MVP (PRD-RF-018 a 020). | Usarão o mesmo motor; próxima entrega (issue própria). |
-| Editor | Lacuna do PRD 14; REV-05 pedia contrato independente do editor. | **Decidido**: editor de blocos próprio sobre o contrato do SSD 6. |
+| Editor | Lacuna do PRD 14; REV-05 pedia contrato independente do editor. | **Decidido**: editor sobre o contrato do SSD 6; desde o bug #67, de texto contínuo (Tiptap). |
 | Templates (SSD 8.4) | "A validar", sem código. | Tabela `configuration.doc_template` com os cinco tipos do artefato, `PAGE` e `REGIMENTO`. |
 | Acesso (SSD 2.1) | A regra 3 mostra só o resumo dos ancestrais, nunca o conteúdo de documentos. | **Regra 9 nova**: o conhecimento **publicado** desce. Só acrescenta leituras, como a regra 8 permite. |
 | Anexos e imagens | ADR-10 (S3/MinIO) decidido; MinIO ainda fora do `compose.yaml`. | Fora desta etapa. |
@@ -68,7 +68,7 @@ Também acertou ao separar **proprietário, visibilidade, aplicabilidade, ediç�
 | KNOW-D06 | Arquitetura | Um só motor no `livingdocs`, com dono genérico. |
 | KNOW-D07 | Knowledge Center | Fase C, com `GET /search`. |
 | KNOW-D08 | Faseamento | Motor comum + Fase A agora; documentos do artefato logo depois; o MVP vigente não muda. |
-| REV-05 | Editor | Editor de blocos próprio: parágrafo e destaque com Markdown leve, título, lista, tabela, citação e código. O texto nunca vira HTML: a tela monta os elementos. |
+| REV-05 | Editor | Primeiro, editor de blocos próprio. **Revisto no bug #67:** editor de texto contínuo (Tiptap/ProseMirror), ver [seção 9](#9-revisão-bug-67-editor-de-texto-contínuo). |
 
 **Padrões assumidos, a validar:**
 - Quem edita páginas: todo papel na unidade, menos `VIEWER` (`EDIT_KNOWLEDGE`).
@@ -102,7 +102,7 @@ Também acertou ao separar **proprietário, visibilidade, aplicabilidade, ediç�
 | KNOW-017 auditoria | **Implementado**: `knowledge_page.created`, `.updated`, `.status_changed`, `.moved`, `.archived` e `.restored`. |
 | KNOW-018 publicar e arquivar | **Implementado**. |
 | KNOW-019 revisão periódica | Fase B. |
-| KNOW-020 editor de blocos | **Implementado** (sem imagens). |
+| KNOW-020 editor rico | **Implementado**: texto contínuo com Tiptap (bug #67), sem imagens. |
 | KNOW-021 anexos e imagens | Com o MinIO. |
 | KNOW-024, 025 | Fase D. |
 | KNOW-026 comparar versões | Parcial: abrir qualquer versão; comparação lado a lado depois. |
@@ -114,7 +114,7 @@ Também acertou ao separar **proprietário, visibilidade, aplicabilidade, ediç�
 | Camada | O que cobre |
 |---|---|
 | JUnit `KnowledgeIntegrationTests` | Página livre e subpágina; conflito de versão; histórico; regimento (seções obrigatórias, aprovador, aprovação e publicação separadas); regra 9 (o membro da Squad lê o publicado e recebe 404 no rascunho e 403 no histórico); 404 para outro ramo; `VIEWER` sem edição; mover sem ciclo; arquivar com filhos (409); blocos desconhecidos; eventos na outbox. |
-| Vitest `knowledge.spec.ts` | Markdown leve sem HTML (links perigosos ficam como texto) e árvore de páginas. |
+| Vitest `knowledge.spec.ts` | Conversão do conteúdo antigo para o editor contínuo, sem perda; Markdown leve sem HTML; árvore de páginas. |
 | Robot API `test/robot/api/test/knowledge` | Página, subpágina, versão e conflito; ciclo do regimento com o BO; 403 para `VIEWER`. |
 | Robot UI `test/robot/ui/test/wiki` | Criar e editar em blocos, histórico; regimento recusado sem as seções obrigatórias; PM sem "Aprovar". |
 
@@ -128,3 +128,33 @@ Em 2026-11-21 o usuário definiu que **Wiki e Regimento são independentes**: ca
 - O Wiki (`/org-units/{id}/pages`) não lista nem cria regimentos; o regimento não pode ser pai de página nem ser movido para o Wiki.
 - O motor continua o mesmo: versões, ciclo governado, regra 9 e auditoria valem para os dois.
 - Tela própria: UX/UI 7.13.
+
+## 9. Revisão (bug #67): editor de texto contínuo
+
+O primeiro editor obrigava a montar o documento bloco a bloco (escolher o tipo, preencher campos e reordenar). O bug #67 (2026-11-21) pediu um editor como o do Confluence, do Word ou do Bloco de Notas: abrir, clicar e escrever.
+
+**O que mudou**
+- **Editor:** área de texto contínua com **Tiptap 3** (ProseMirror), escolhido por ser maduro, de código aberto e por guardar o conteúdo num formato estruturado (JSON), o que mantém a verificação das seções obrigatórias e a comparação entre versões.
+- **Barra e atalhos:**
+  - estilo (texto, título, subtítulo);
+  - negrito, itálico, sublinhado, código no texto e link;
+  - listas com marcadores e numeradas, citação, bloco de código e tabela;
+  - desfazer e refazer.
+- **Contrato (SSD 6):** cada seção vira um bloco `richtext` com o documento do editor. O servidor continua validando a estrutura e contando como preenchida a seção que tem texto.
+- **Conteúdo antigo:** os blocos do editor anterior continuam aceitos e são convertidos para o editor ao abrir; ao salvar, passam a `richtext`. Versões antigas seguem legíveis. Não houve migração no banco, porque as versões são imutáveis.
+- **Segurança:** o esquema do ProseMirror só aceita os nós e marcas conhecidos, e o link recusa `javascript:`; a leitura usa o mesmo editor, sem edição.
+
+**Preservado:**
+- o motor comum `livingdocs`;
+- os espaços por unidade;
+- páginas e subpáginas;
+- o acesso (regras 1 a 7 e 9);
+- versões e histórico;
+- o bloqueio otimista;
+- o regimento governado (seções obrigatórias, revisão, aprovação e publicação);
+- a auditoria.
+
+**Testes**
+- JUnit `editorContinuoGravaRichtext`: grava e devolve o documento; recusa `richtext` sem `doc`; seção obrigatória preenchida pelo editor libera a aprovação.
+- Vitest: conversão de cada tipo antigo, ida e volta sem perda, seção vazia.
+- Robot UI: clicar na área, ligar o negrito pela barra, digitar e salvar; a leitura mostra o texto em negrito.

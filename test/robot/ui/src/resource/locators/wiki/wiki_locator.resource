@@ -13,8 +13,10 @@ ${WIKI_PAGE_TITLE}          css=[data-testid="wiki-page-title"]
 ${WIKI_PAGE_VERSION}        css=[data-testid="wiki-page-version"]
 ${WIKI_PAGE_STATUS}         css=[data-testid="wiki-page-status"]
 ${WIKI_EDIT}                css=[data-testid="wiki-edit"]
-${WIKI_ADD_PARAGRAPH}       css=[data-testid="add-paragraph"]
-${WIKI_LAST_BLOCK_INPUT}    css=[data-testid="block-input"] >> nth=-1
+# Editor de texto contínuo (bug #67): a área editável e o botão de negrito da barra.
+${WIKI_EDITOR}              css=.rich-editor.editing [data-testid="rich-content"]
+${WIKI_RT_BOLD}             css=[data-testid="rt-bold"]
+${WIKI_READ_BOLD}           css=[data-testid="wiki-page"] [data-testid="rich-content"] strong
 ${WIKI_SUMMARY}             css=[data-testid="wiki-summary"]
 ${WIKI_SAVE}                css=[data-testid="wiki-save"]
 ${WIKI_HISTORY}             css=[data-testid="wiki-history"]
