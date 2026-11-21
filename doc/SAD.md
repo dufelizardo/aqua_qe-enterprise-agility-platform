@@ -281,6 +281,8 @@ Esse fluxo é a fonte única para a trilha de auditoria, as notificações e, na
 - Um único consumidor grava na trilha, em ordem, para manter a cadeia consistente.
 - Senhas e tokens nunca entram no registro.
 
+**Implementação (2026-11-20; REV-03):** um único repassador entrega os eventos da outbox em ordem, um por transação, com uma trava do PostgreSQL que impede dois repassadores ao mesmo tempo, mesmo com várias instâncias da API. Se um consumidor falha, o repassador **para nesse evento e alerta** no log, sem pular; tenta de novo na rodada seguinte. O evento só é marcado como entregue na mesma transação em que a auditoria gravou, e a limpeza remove apenas eventos entregues. A métrica `aquaqe.outbox.lag` (segundos do evento mais antigo não entregue) e o aviso no log usam um limite configurável, provisório até o REV-03 fixar o SLA. Ainda pendente: o usuário de banco só com `INSERT` e `SELECT` no schema `audit`.
+
 **Limite conhecido:** em instalação on-premise, quem administra o banco consegue apagar dados. A cadeia de hash detecta a adulteração, mas não a impede. A exportação periódica do último hash para um local externo fica como pendência.
 
 ### 7.6 Documentação viva

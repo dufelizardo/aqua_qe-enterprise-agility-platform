@@ -728,7 +728,7 @@ Implementação (2026-11-20):
 | GET | `/audit-events/verification` | Verifica a cadeia de hash e informa o primeiro registro inconsistente, se houver. | consultar auditoria | 026 |
 | GET | `/search` | Busca textual em artefatos e documentos (parâmetros `q`, `kind`). | ler | — |
 
-A trilha não tem endpoint de escrita, alteração ou exclusão. Registro de auditoria:
+A trilha não tem endpoint de escrita, alteração ou exclusão. Consultar a trilha exige `PLATFORM_ADMIN` na unidade raiz, porque ela cobre a instalação inteira. A listagem vem da mais recente para a mais antiga; `from` e `to` são data e hora ISO-8601. A verificação responde `{ "valid": true, "checked": 1520, "firstInconsistent": null }`; quando a cadeia não confere, `valid` é `false` e `firstInconsistent` traz o `sequence` do primeiro registro com problema. Toda resposta de erro traz o `correlationId` (seção 1.6). Registro de auditoria:
 
 ```json
 {
@@ -1036,6 +1036,8 @@ Todos os eventos vão para a trilha de auditoria. A coluna **Notifica** indica o
 O conteúdo dos documentos não vai no evento: a trilha guarda a referência à versão, que é imutável.
 
 Eventos de autenticação (login, falha, MFA) ficam registrados no IdP. Trazê-los para a trilha da plataforma é uma pendência.
+
+**Implementados em 2026-11-20:** `artifact.created`, `artifact.updated` (só os campos alterados, antes e depois), `artifact.archived`, `artifact.status_changed`, `artifact.transition_blocked` (gravado em transação própria, seção 4.2), `org_unit.created`, `org_unit.updated`, `org_unit.link_added`, `org_unit.link_removed`, `role_assignment.granted` (papéis iniciais da raiz, sem ator: concedidos pelo sistema), `sprint.started` e `sprint.closed`. O envelope leva também `before` e `after`, que a auditoria registra. Ainda não geram evento: a configuração de quadros e a ordenação (`rank`), que não estão no catálogo; os demais entram com os módulos correspondentes.
 
 ## 8. Configuração padrão de instalação
 

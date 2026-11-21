@@ -18,6 +18,8 @@ import br.com.aquaqe.platform.access.Authorization;
 import br.com.aquaqe.platform.access.Permission;
 import br.com.aquaqe.platform.configuration.ArtifactConfiguration;
 import br.com.aquaqe.platform.configuration.ArtifactConfiguration.Status;
+import br.com.aquaqe.platform.events.DomainEvents;
+import br.com.aquaqe.platform.events.EventEnvelope.Aggregate;
 import br.com.aquaqe.platform.identity.CurrentUser;
 import br.com.aquaqe.platform.organization.OrgUnits;
 import br.com.aquaqe.platform.organization.OrgUnits.OrgUnitSummary;
@@ -43,15 +45,17 @@ class SprintService {
 	private final CurrentUser currentUser;
 	private final Artifacts artifacts;
 	private final ArtifactConfiguration configuration;
+	private final DomainEvents events;
 
 	SprintService(JdbcClient jdbc, OrgUnits orgUnits, Authorization authorization, CurrentUser currentUser,
-			Artifacts artifacts, ArtifactConfiguration configuration) {
+			Artifacts artifacts, ArtifactConfiguration configuration, DomainEvents events) {
 		this.jdbc = jdbc;
 		this.orgUnits = orgUnits;
 		this.authorization = authorization;
 		this.currentUser = currentUser;
 		this.artifacts = artifacts;
 		this.configuration = configuration;
+		this.events = events;
 	}
 
 	/** Sprints da squad: a ativa, as planejadas e as encerradas, nessa ordem. */
@@ -124,6 +128,9 @@ class SprintService {
 		}
 		jdbc.sql("update board.sprint set state = 'ACTIVE', start_date = coalesce(start_date, current_date) where id = :id")
 			.param("id", id).update();
+		events.publish("sprint.started", currentUser.require().id(), sprint.squadId(), new Aggregate("SPRINT", id, null),
+			Map.of("sprintId", id.toString(), "squadId", sprint.squadId().toString()), Map.of("state", "PLANNED"),
+			Map.of("state", "ACTIVE"));
 		return find(id).orElseThrow();
 	}
 
@@ -149,6 +156,9 @@ class SprintService {
 		}
 		jdbc.sql("update board.sprint set state = 'CLOSED', end_date = coalesce(end_date, current_date) where id = :id")
 			.param("id", id).update();
+		events.publish("sprint.closed", currentUser.require().id(), sprint.squadId(), new Aggregate("SPRINT", id, null),
+			Map.of("sprintId", id.toString(), "squadId", sprint.squadId().toString(), "carriedOver", notDone.size()),
+			Map.of("state", "ACTIVE"), Map.of("state", "CLOSED"));
 		return new CloseResult(find(id).orElseThrow(), notDone.size());
 	}
 

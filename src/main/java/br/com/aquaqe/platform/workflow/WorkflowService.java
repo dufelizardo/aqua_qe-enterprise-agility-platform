@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.com.aquaqe.platform.configuration.ArtifactConfiguration;
+import br.com.aquaqe.platform.events.DomainEvents;
+import br.com.aquaqe.platform.events.EventEnvelope.Aggregate;
 import br.com.aquaqe.platform.configuration.ArtifactConfiguration.Status;
 import br.com.aquaqe.platform.configuration.ArtifactConfiguration.StatusTransition;
 import br.com.aquaqe.platform.identity.UserDirectory;
@@ -39,14 +41,16 @@ class WorkflowService {
 	private final List<TransitionGuard> guards;
 	private final UserDirectory users;
 	private final JdbcClient jdbc;
+	private final DomainEvents events;
 
 	WorkflowService(Artifacts artifacts, ArtifactConfiguration configuration, List<TransitionGuard> guards,
-			UserDirectory users, JdbcClient jdbc) {
+			UserDirectory users, JdbcClient jdbc, DomainEvents events) {
 		this.artifacts = artifacts;
 		this.configuration = configuration;
 		this.guards = guards;
 		this.users = users;
 		this.jdbc = jdbc;
+		this.events = events;
 	}
 
 	/** Transições possíveis a partir do status atual, e se o usuário pode executá-las. */
@@ -86,6 +90,10 @@ class WorkflowService {
 			.orElseThrow(() -> unprocessable("TRANSITION_NOT_ALLOWED", "Este movimento não existe no fluxo."));
 		List<FailedRule> failed = evaluate(artifact, transition);
 		if (!failed.isEmpty()) {
+			// Transação própria: a tentativa vai ser desfeita, mas o bloqueio fica registrado (SSD 4.2).
+			events.publishSeparately("artifact.transition_blocked", artifact.actorId(), artifact.orgUnitId(),
+				new Aggregate("ARTIFACT", artifact.id(), artifact.key()), Map.of("key", artifact.key(), "transitionId",
+					transition.id().toString(), "failedRuleIds", failed.stream().map(FailedRule::ruleId).toList()));
 			throw new ApiException(HttpStatus.valueOf(422), "GATE_BLOCKED",
 				failed.size() + " regra(s) do gate não foram atendidas.", Map.of("failedRules", failed));
 		}
@@ -103,6 +111,11 @@ class WorkflowService {
 			.param("by", artifact.actorId())
 			.param("comment", comment == null || comment.isBlank() ? null : comment.strip())
 			.update();
+		events.publish("artifact.status_changed", artifact.actorId(), artifact.orgUnitId(),
+			new Aggregate("ARTIFACT", artifact.id(), artifact.key()),
+			Map.of("key", artifact.key(), "from", transition.from().key(), "to", transition.to().key(), "transitionId",
+				transition.id().toString()),
+			Map.of("status", transition.from().key()), Map.of("status", transition.to().key()));
 		return artifacts.view(artifact.id());
 	}
 

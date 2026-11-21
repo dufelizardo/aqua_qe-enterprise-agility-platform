@@ -31,7 +31,7 @@ Ao conferir a análise externa contra os documentos, três pontos foram ajustado
 |---|---|---|---|---|
 | REV-01 | Crítico | Regras de autorização entre unidades | SAD 7.2, SSD 2, ADR-14 | Resolvido em 2026-11-20 ([SSD 2.1](SSD.md#21-escopo-entre-unidades-rev-01-rev-02-rev-04)) |
 | REV-02 | Crítico | Contexto herdado vazio entre ramos | PRD-RF-017, SSD 3.4, UX/UI 6.9 | Resolvido em 2026-11-20 ([SSD 2.1](SSD.md#21-escopo-entre-unidades-rev-01-rev-02-rev-04)) |
-| REV-03 | Alto | Garantias da auditoria assíncrona | SAD 7.4 e 7.5, ADR-06, ADR-07, PRD-RF-026 | Aberto |
+| REV-03 | Alto | Garantias da auditoria assíncrona | SAD 7.4 e 7.5, ADR-06, ADR-07, PRD-RF-026 | Parcial em 2026-11-20: recomendações 2 a 5 implementadas; falta fixar o SLA (1) e restringir o usuário de banco |
 | REV-04 | Alto | Modelo organizacional (ADR-14) | SAD 5.1 e 13, SSD 3.2 | Resolvido em 2026-11-20 ([SSD 2.1](SSD.md#21-escopo-entre-unidades-rev-01-rev-02-rev-04)) |
 | REV-05 | Alto | Contrato do documento independente do editor | SSD 6, UX/UI 6.6, PRD-RF-018 e 020 | Aberto |
 | REV-06 | Alto | Publicação de nova versão de workflow | SSD 3.3, PRD-RF-011 | Aberto |
