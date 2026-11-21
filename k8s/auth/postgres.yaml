@@ -26,6 +26,11 @@ spec:
       app: aquaqe-keycloak-postgres
   template:
     metadata:
+      # O AppArmor do servidor (perfil cri-containerd.apparmor.d) passou a negar sinais entre os processos do PostgreSQL
+      # ("could not signal for checkpoint: Permission denied"), e o banco fica preso em recuperação. Libera só este
+      # contêiner. A anotação vale em qualquer versão do K3s (OPERACAO, seção 6.2).
+      annotations:
+        container.apparmor.security.beta.kubernetes.io/postgres: unconfined
       labels:
         app: aquaqe-keycloak-postgres
     spec:

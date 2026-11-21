@@ -158,6 +158,23 @@ A API entrega os eventos de domínio à trilha de auditoria em segundo plano (SA
 
 Para acompanhar: a métrica `aquaqe.outbox.lag` e, no log da API, os avisos "Outbox com atraso" e os erros "Falha ao entregar evento da outbox". Este último indica que o repassador parou num evento e está tentando de novo; a trilha não avança até o problema ser resolvido.
 
+### 6.2 PostgreSQL preso em recuperação (AppArmor) e banco de dev zerado
+
+**Sintoma (2026-11-21):** depois de reiniciar, o pod do PostgreSQL fica `0/1 Running`. O log mostra `FATAL: the database system is in recovery mode` e `could not signal for checkpoint: Permission denied`.
+
+**Causa:** o AppArmor do servidor (perfil `cri-containerd.apparmor.d`) nega sinais entre os processos do PostgreSQL. Confirmação: `sudo dmesg | grep -i 'apparmor="DENIED"'` mostra `operation="signal"` com `comm="postgres"`. Os pods que já estavam de pé só falham no próximo reinício.
+
+**Correção:** o contêiner `postgres` dos manifestos [k8s/apps/base/postgres.yaml](../k8s/apps/base/postgres.yaml) e [k8s/auth/postgres.yaml](../k8s/auth/postgres.yaml) roda sem AppArmor, pela anotação `container.apparmor.security.beta.kubernetes.io/postgres: unconfined`, que vale em qualquer versão do K3s. O ArgoCD aplica a mudança, e o pod é recriado com ela.
+
+**Zerar o banco de dev.** Apaga todos os dados; a API recria as tabelas pelas migrações na subida. Um comando por vez:
+
+1. `kubectl -n aqua-qe-agility-platform-dev delete pvc postgres-data --wait=false`
+2. `kubectl -n aqua-qe-agility-platform-dev delete pod -l app=aquaqe-postgres`
+3. `kubectl -n aqua-qe-agility-platform-dev get pvc`: o ArgoCD recria o `postgres-data` (`Bound`), e o PostgreSQL sobe do zero, com a senha do segredo `db-credentials`.
+4. `kubectl -n aqua-qe-agility-platform-dev rollout restart deploy/app`: a API recria as tabelas.
+
+Com a API de pé, `DROP DATABASE ... WITH (FORCE)` pode falhar porque o pool reconecta na hora (`ALTER DATABASE ... WITH ALLOW_CONNECTIONS false` antes resolve). Apagar o volume evita isso.
+
 ## 7. Desenvolvimento local
 
 ```bash
