@@ -21,7 +21,11 @@ public enum Permission {
 	EDIT_FL2(Set.of("PLATFORM_ADMIN", "PRODUCT_MANAGER", "TECH_LEAD")),
 
 	/** "Criar e editar itens de FL1". */
-	EDIT_FL1(Set.of("PLATFORM_ADMIN", "PRODUCT_MANAGER", "TECH_LEAD", "UX_DESIGNER", "QA_ENGINEER", "SQUAD_MEMBER"));
+	EDIT_FL1(Set.of("PLATFORM_ADMIN", "PRODUCT_MANAGER", "TECH_LEAD", "UX_DESIGNER", "QA_ENGINEER", "SQUAD_MEMBER")),
+
+	/** "Criar e editar páginas de conhecimento da unidade" (Proposta 07, a validar): todo papel, menos leitura. */
+	EDIT_KNOWLEDGE(Set.of("PLATFORM_ADMIN", "BUSINESS_OWNER", "PRODUCT_MANAGER", "TECH_LEAD", "UX_DESIGNER",
+		"QA_ENGINEER", "SQUAD_MEMBER"));
 
 	private final Set<String> roles;
 

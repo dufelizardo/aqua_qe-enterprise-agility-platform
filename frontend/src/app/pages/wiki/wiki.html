@@ -1,0 +1,238 @@
+<header class="page-header">
+  <p class="eyebrow">Conhecimento</p>
+  <h1 data-testid="page-title">Wiki · {{ workspace.current()?.name }}</h1>
+  <p class="lead">Regimentos, políticas, processos e acordos da unidade, com histórico de versões.</p>
+</header>
+
+<div class="layout">
+  <aside class="pages" aria-label="Páginas">
+    @if (list(); as l) {
+      @if (l.canEdit) {
+        <div class="actions">
+          <button type="button" class="btn primary" (click)="startCreate('PAGE', null)" data-testid="wiki-new-page">Nova página</button>
+          <button type="button" class="btn" (click)="startCreate('REGIMENTO', null)" data-testid="wiki-new-regimento">Novo regimento</button>
+        </div>
+      }
+      <ul class="page-tree" role="tree" aria-label="Páginas da unidade" data-testid="wiki-tree">
+        @for (node of tree(); track node.id) {
+          <li role="treeitem" [attr.aria-level]="node.depth + 1" [attr.aria-selected]="node.id === page()?.id">
+            <button
+              type="button"
+              class="page-link"
+              [class.current]="node.id === page()?.id"
+              [style.padding-left.px]="8 + node.depth * 14"
+              (click)="select(node.id)"
+              data-testid="wiki-page-link"
+            >
+              <span class="title">{{ node.title }}</span>
+              @if (node.governed && node.status !== 'PUBLISHED') {
+                <span class="chip" [attr.data-status]="node.status">{{ statusLabels[node.status] }}</span>
+              }
+            </button>
+          </li>
+        } @empty {
+          <li class="empty">{{ showArchived() ? 'Nenhuma página arquivada.' : 'Nenhuma página ainda.' }}</li>
+        }
+      </ul>
+      @if (l.access === 'FULL') {
+        <label class="check">
+          <input type="checkbox" [checked]="showArchived()" (change)="toggleArchived()" data-testid="wiki-show-archived" />
+          Mostrar arquivadas
+        </label>
+      }
+    } @else if (loadError()) {
+      <p class="error" role="alert">{{ loadError() }}</p>
+    }
+
+    @if (ancestors().length > 0) {
+      <section class="inherited" aria-label="Conhecimento das unidades acima" data-testid="wiki-inherited">
+        <h2>Das unidades acima</h2>
+        @for (space of ancestors(); track space.id) {
+          <h3>{{ space.name }}</h3>
+          <ul class="page-tree">
+            @for (node of space.pages; track node.id) {
+              <li>
+                <button type="button" class="page-link" [style.padding-left.px]="8 + node.depth * 14" (click)="select(node.id)" data-testid="wiki-inherited-link">
+                  <span class="title">{{ node.title }}</span>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    }
+  </aside>
+
+  <section class="content" aria-live="polite">
+    @if (creating(); as form) {
+      <form class="card create" (submit)="create($event)" data-testid="wiki-create-form">
+        <h2>{{ form.type === 'REGIMENTO' ? 'Novo regimento' : form.parentId ? 'Nova subpágina' : 'Nova página' }}</h2>
+        <label>
+          Título
+          <input [value]="newTitle()" (input)="newTitle.set(value($event))" maxlength="200" required data-testid="wiki-new-title" />
+        </label>
+        @if (form.type === 'REGIMENTO') {
+          <p class="hint">O regimento passa por revisão, aprovação e publicação. Quem está nas unidades abaixo só o vê depois de publicado.</p>
+        }
+        <div class="actions">
+          <button type="submit" class="btn primary" [disabled]="busy() || !newTitle().trim()" data-testid="wiki-create-submit">Criar</button>
+          <button type="button" class="btn" (click)="creating.set(null)">Cancelar</button>
+        </div>
+      </form>
+    }
+
+    @if (error()) {
+      <p class="error" role="alert" data-testid="wiki-error">{{ error() }}</p>
+    }
+
+    @if (page(); as current) {
+      @if (shown(); as p) {
+        <article class="card" data-testid="wiki-page">
+          <header class="page-head">
+            @if (mode() === 'edit') {
+              <input class="title-input" [value]="draftTitle()" (input)="draftTitle.set(value($event))" aria-label="Título da página" maxlength="200" data-testid="wiki-edit-title" />
+            } @else {
+              <h2 data-testid="wiki-page-title">{{ p.title }}</h2>
+            }
+            <div class="meta">
+              @if (p.governed) {
+                <span class="tag">{{ p.templateName }}</span>
+                <span class="chip" [attr.data-status]="p.status" data-testid="wiki-page-status">{{ statusLabels[p.status] }}</span>
+              }
+              @if (p.archived) {
+                <span class="chip" data-status="ARCHIVED">Arquivada</span>
+              }
+              <span data-testid="wiki-page-version">Versão {{ p.versionNumber }}</span>
+              @if (p.author) {
+                <span>· {{ p.author.name }}</span>
+              }
+              <span>· {{ p.savedAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+              @if (p.access === 'PUBLISHED') {
+                <span class="tag">Somente leitura (publicado)</span>
+              }
+            </div>
+          </header>
+
+          @if (oldVersion()) {
+            <p class="banner" data-testid="wiki-old-version">
+              Você está vendo a versão {{ p.versionNumber }}, de {{ p.savedAt | date: 'dd/MM/yyyy HH:mm' }}.
+              <button type="button" class="link" (click)="oldVersion.set(null)">Voltar à versão atual</button>
+            </p>
+          }
+
+          @if (mode() !== 'edit' && !oldVersion()) {
+            <div class="toolbar" role="group" aria-label="Ações da página">
+              @if (current.canEdit && !current.archived) {
+                @if (!current.governed || current.status === 'DRAFT' || current.status === 'PUBLISHED') {
+                  <button type="button" class="btn primary" (click)="startEdit()" data-testid="wiki-edit">Editar</button>
+                }
+                <button type="button" class="btn" (click)="startCreate('PAGE', current.id)" data-testid="wiki-new-subpage">Nova subpágina</button>
+              }
+              @if (current.governed && !current.archived) {
+                @if (current.status === 'DRAFT' && current.canEdit) {
+                  <button type="button" class="btn" (click)="changeStatus('IN_REVIEW')" [disabled]="busy()" data-testid="wiki-submit-review">Enviar para revisão</button>
+                }
+                @if (current.status === 'IN_REVIEW' && current.canApprove) {
+                  <button type="button" class="btn primary" (click)="changeStatus('APPROVED')" [disabled]="busy()" data-testid="wiki-approve">Aprovar</button>
+                }
+                @if (current.status === 'IN_REVIEW' && (current.canEdit || current.canApprove)) {
+                  <button type="button" class="btn" (click)="changeStatus('DRAFT')" [disabled]="busy()" data-testid="wiki-back-draft">Voltar para rascunho</button>
+                }
+                @if (current.status === 'APPROVED' && current.canApprove) {
+                  <button type="button" class="btn primary" (click)="changeStatus('PUBLISHED')" [disabled]="busy()" data-testid="wiki-publish">Publicar</button>
+                }
+                @if (current.status === 'APPROVED' && current.canEdit) {
+                  <button type="button" class="btn" (click)="ask('reopen')" data-testid="wiki-reopen">Reabrir</button>
+                }
+              }
+              @if (current.access === 'FULL') {
+                <button type="button" class="btn" (click)="showHistory()" data-testid="wiki-history">Histórico</button>
+              }
+              @if (current.canEdit && !current.archived) {
+                <button type="button" class="btn subtle" (click)="ask('archive')" data-testid="wiki-archive">Arquivar</button>
+              }
+              @if (current.canEdit && current.archived) {
+                <button type="button" class="btn" (click)="restore()" data-testid="wiki-restore">Restaurar</button>
+              }
+            </div>
+          }
+
+          @if (asking(); as action) {
+            <form class="ask" (submit)="confirmAsk($event)">
+              <label>
+                {{ action === 'reopen' ? 'Por que reabrir? (obrigatório)' : 'Motivo do arquivamento (opcional)' }}
+                <input [value]="askText()" (input)="askText.set(value($event))" maxlength="500" data-testid="wiki-ask-text" />
+              </label>
+              <button type="submit" class="btn primary" [disabled]="busy() || (action === 'reopen' && !askText().trim())" data-testid="wiki-ask-confirm">
+                {{ action === 'reopen' ? 'Reabrir' : 'Arquivar' }}
+              </button>
+              <button type="button" class="btn" (click)="asking.set(null)">Cancelar</button>
+            </form>
+          }
+
+          @if (current.missingSections.length > 0 && current.governed && mode() !== 'edit' && !oldVersion()) {
+            <p class="banner warn" data-testid="wiki-missing">
+              Seções obrigatórias sem conteúdo: {{ missingTitles() }}.
+            </p>
+          }
+
+          @if (mode() === 'history') {
+            <section class="history" aria-label="Histórico de versões" data-testid="wiki-versions">
+              <h3>Histórico</h3>
+              <ol>
+                @for (v of versions(); track v.number) {
+                  <li>
+                    <button type="button" class="link" (click)="openVersion(v.number)" data-testid="wiki-version-link">Versão {{ v.number }}</button>
+                    <span>{{ v.author?.name }} · {{ v.savedAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+                    @if (v.published) {
+                      <span class="chip" data-status="PUBLISHED">Publicada</span>
+                    } @else if (v.approved) {
+                      <span class="chip" data-status="APPROVED">Aprovada</span>
+                    }
+                    @if (v.summary) {
+                      <span class="summary">{{ v.summary }}</span>
+                    }
+                  </li>
+                }
+              </ol>
+              <button type="button" class="btn" (click)="mode.set('read')">Fechar histórico</button>
+            </section>
+          }
+
+          @if (mode() === 'edit') {
+            @if (conflict()) {
+              <p class="banner warn" role="alert" data-testid="wiki-conflict">
+                Esta página foi alterada por outra pessoa enquanto você editava. Copie o que precisar e recarregue para ver a versão nova.
+                <button type="button" class="link" (click)="reloadAfterConflict()">Recarregar</button>
+              </p>
+            }
+            @for (section of draft(); track section.key; let i = $index) {
+              <section class="section">
+                <h3>{{ section.title }}@if (section.required) {<span class="req" title="Obrigatória para aprovar"> *</span>}</h3>
+                <app-block-editor [blocks]="section.blocks" (blocksChange)="setBlocks(i, $event)" />
+              </section>
+            }
+            <div class="save-bar">
+              <input class="summary-input" placeholder="Resumo da alteração (opcional)" [value]="draftSummary()" (input)="draftSummary.set(value($event))" maxlength="300" data-testid="wiki-summary" />
+              <button type="button" class="btn primary" (click)="save()" [disabled]="busy() || conflict()" data-testid="wiki-save">Salvar</button>
+              <button type="button" class="btn" (click)="mode.set('read')">Cancelar</button>
+            </div>
+          } @else {
+            @for (section of p.sections; track section.key) {
+              <section class="section" [attr.data-section]="section.key">
+                @if (p.sections.length > 1) {
+                  <h3>{{ section.title }}</h3>
+                }
+                <app-block-view [blocks]="section.blocks" />
+              </section>
+            }
+          }
+        </article>
+      }
+    } @else if (!creating() && !error()) {
+      <div class="card placeholder">
+        <p>Escolha uma página à esquerda{{ list()?.canEdit ? ' ou crie a primeira' : '' }}.</p>
+      </div>
+    }
+  </section>
+</div>

@@ -162,6 +162,8 @@ O ponto verde de "operacional" sobre o avatar, presente no protótipo, não é u
 
 **Organização** (Proposta 06, Revisão 2; PROPOSAL-07): árvore recolhível das unidades em que o usuário tem papel e das ativas abaixo delas. Quem só tem papel embaixo vê os ancestrais em cinza, sem ação, só para se localizar. Tem busca por nome (mantém o caminho até cada resultado), destaque da unidade ativa e expansão lembrada no navegador; sem nada lembrado, abre o caminho até a unidade ativa. Escolher uma unidade com Flight Level abre a tela desse nível; uma unidade sem Flight Level recarrega a tela atual. Teclado: Tab entre unidades, Enter escolhe, setas direita e esquerda abrem e fecham o ramo.
 
+Sob **Visões da unidade** fica também o item **Wiki** ([Proposta 07](KNOWLEDGE-PROPOSAL.md), KNOW-013), para qualquer nível, inclusive os sem Flight Level ([7.12](#712-wiki-da-unidade)).
+
 Os itens de Flight Level, sob **Visões da unidade**, levam o **nome do nível organizacional** ligado a cada Flight Level na configuração (`GET /org-levels`); na instalação padrão, "Portfólio", "Cadeia" e "Squad". O mesmo nome é o título da tela e o rótulo da unidade no formulário de criação. A interface nunca usa nomes de nível fixos no código ([Proposta 06](NAVIGATION-PROPOSAL.md#3-decisões-tomadas-2026-11-20), NAV-D1).
 
 **Celular:** abaixo de 720 px o menu lateral fica escondido; o botão ☰ do cabeçalho o abre como gaveta sobre o conteúdo, e escolher uma unidade ou um item fecha a gaveta.
@@ -541,6 +543,18 @@ Princípio adotado da [Proposta 03](ADMIN-PROPOSAL.md#1-princípio-adotado-três
 | **Organizacional** | Estrutura e vínculos, usuários e papéis, workflows e gates, templates, auditoria | `PLATFORM_ADMIN` na unidade ou acima dela | Administração (seção 7.10) |
 | **Conta e login** | Senha, MFA, sessões, provedores de identidade | O usuário (conta) e o administrador do realm (políticas) | Console do Keycloak (SAD, ADR-08) |
 | **Plataforma** | Módulos habilitados, endereços, segredos, integrações (Fase 2), parâmetros técnicos | Quem opera a instalação | Deploy: variáveis, Helm e Kustomize ([OPERACAO](OPERACAO.md)); integrações na Administração |
+
+### 7.12 Wiki da unidade
+
+- **Objetivo:** guardar o conhecimento da unidade (regimentos, políticas, processos, acordos, padrões) e ler o publicado pelas unidades acima ([Proposta 07](KNOWLEDGE-PROPOSAL.md), Fase A).
+- **Rota:** `/wiki`, com `?page=<id>` para abrir uma página por link. O espaço é a unidade ativa.
+- **Layout:** à esquerda, as páginas em árvore (subpáginas indentadas, com o status do regimento quando não publicado), "Nova página", "Novo regimento", "Mostrar arquivadas" e, abaixo, **Das unidades acima**: as páginas publicadas de cada ancestral. À direita, a página.
+- **Página:** título, tipo e status (no regimento), versão, autor e data; ações conforme a permissão: Editar, Nova subpágina, Histórico, Arquivar ou Restaurar; no regimento, Enviar para revisão, Aprovar, Voltar para rascunho, Publicar e Reabrir (com motivo). Aviso das seções obrigatórias vazias.
+- **Edição:** título editável e um editor de blocos por seção (parágrafo, título, lista, tabela, código, destaque e citação; subir, descer, remover), com resumo opcional da alteração. Conflito de edição como na [6.8](#68-diálogo-de-conflito-de-edição): o rascunho fica na tela e a pessoa recarrega.
+- **Histórico:** versões com autor, data, resumo e marcas de aprovada e publicada; abrir uma versão mostra o aviso "Você está vendo a versão N" e o retorno à atual.
+- **Quem lê pela regra 9** (SSD 2.1) vê só a versão publicada, com "Somente leitura (publicado)" e sem histórico.
+- **Dados:** `GET /org-units/{id}/pages`, `POST /org-units/{id}/pages`, `GET/PUT/PATCH /pages/{id}`, `GET /pages/{id}/versions[/{n}]`, `POST /pages/{id}/status`, `POST /pages/{id}/archive`, `POST /pages/{id}/restore` (SSD 3.7.1).
+- **Celular:** abaixo de 900 px, a lista de páginas fica acima da página.
 
 ## 8. Fluxos de interação
 

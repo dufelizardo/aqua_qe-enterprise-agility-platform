@@ -94,7 +94,9 @@ Formato Problem Details, com campos adicionais:
 | `APPROVER_ROLE_REQUIRED` | 403 | Aprovação tentada por quem não tem o papel exigido pela regra. |
 | `NOT_FOUND` | 404 | Recurso inexistente **ou fora do escopo de visibilidade do usuário**. |
 | `VERSION_CONFLICT` | 409 | `version` desatualizado. |
-| `DOCUMENT_NOT_EDITABLE` | 409 | Tentativa de salvar documento com status `APPROVED`. |
+| `DOCUMENT_NOT_EDITABLE` | 409 | Tentativa de salvar documento com status `APPROVED` (ou, nas páginas governadas, `IN_REVIEW`), ou página arquivada. |
+| `DOCUMENT_INCOMPLETE` | 422 | Aprovação com seções obrigatórias vazias. Traz `missingSections` (seção 3.7.1). |
+| `DOCUMENT_TOO_LARGE` | 413 | Versão acima de 1 MB (seção 6). |
 | `CONFIG_IN_USE` | 409 | Remoção de status ou tipo ainda usado por artefatos. |
 | `HAS_CHILDREN` | 409 | Arquivamento de artefato com filhos ativos. |
 | `ATTACHMENT_TOO_LARGE` | 413 | Anexo acima do limite configurado. |
@@ -158,6 +160,7 @@ Decidido em 2026-11-20. A matriz acima diz **o que** cada papel faz; esta seçã
 6. **Listagem e busca seguem o detalhe.** Tudo o que o usuário pode abrir aparece nas listagens e na busca (regras 1 e 2); o que ele não pode abrir não aparece, nem como contagem.
 7. **Resposta fora do escopo.** Artefato que o usuário não pode ler: `404 NOT_FOUND`, sem revelar que existe. Artefato que ele lê, mas não pode editar: `403 FORBIDDEN`.
 8. **Fase 2.** Os níveis de visibilidade Private, Shared e Enterprise (RF-SC06 a 08) só **acrescentam** leituras a estas regras; nenhum caso permitido no MVP passa a ser negado.
+9. **Conhecimento publicado desce (2026-11-20; [Proposta 07](KNOWLEDGE-PROPOSAL.md), KNOW-D04).** As páginas de conhecimento **publicadas** de uma unidade podem ser lidas por quem tem papel nela ou em qualquer unidade abaixo dela: a Squad lê o regimento publicado da Cadeia e do Portfólio. Rascunhos, histórico e ações seguem as regras 1 a 7. Só acrescenta leituras, como a regra 8 exige.
 
 **Matriz por relação.** Para um usuário e um artefato, vale a primeira linha que se aplica:
 
@@ -605,6 +608,39 @@ Resumo (`GET /artifacts/FEAT-1024/documents`):
 }
 ```
 
+### 3.7.1 Páginas de conhecimento por unidade ([Proposta 07](KNOWLEDGE-PROPOSAL.md), Fase A)
+
+O mesmo motor de documentos tem **dono genérico**: um artefato (os cinco documentos acima) ou uma **unidade organizacional** (página de conhecimento). O espaço de conhecimento é a própria unidade; a raiz é o espaço institucional. Implementado em 2026-11-20.
+
+| Método | Caminho | Descrição | Permissão |
+|---|---|---|---|
+| GET | `/org-units/{id}/pages` | Páginas da unidade (metadados), com `access` (`FULL` ou `PUBLISHED`) e `canEdit`. `?archived=true` lista as arquivadas. Para quem lê pela regra 9, só as publicadas. | ler (regras 1 a 7 ou 9) |
+| POST | `/org-units/{id}/pages` | Cria página: `title`, `type` (`PAGE` ou `REGIMENTO`), `parentId` opcional (página da mesma unidade). | `EDIT_KNOWLEDGE` |
+| GET | `/pages/{id}` | Conteúdo da versão atual; para quem lê pela regra 9, da versão publicada. Traz `canEdit`, `canApprove` e `missingSections`. | ler |
+| PUT | `/pages/{id}` | Salva nova versão: `baseVersion`, `sections` (seção 6), `summary` opcional. `VERSION_CONFLICT` se `baseVersion` não for a atual. | `EDIT_KNOWLEDGE` |
+| PATCH | `/pages/{id}` | Renomeia (`title`) e move (`parentId`, `null` para a raiz). Recusa pai de outra unidade, arquivado ou descendente da própria página. | `EDIT_KNOWLEDGE` |
+| GET | `/pages/{id}/versions` | Histórico (sem conteúdo), com `approved` e `published`. | ler pelas regras 1 a 7 |
+| GET | `/pages/{id}/versions/{n}` | Conteúdo de uma versão. | ler pelas regras 1 a 7 |
+| POST | `/pages/{id}/status` | Ciclo da página governada: `{"status": ..., "comment": ...}`. | ver abaixo |
+| POST | `/pages/{id}/archive` | Arquiva (`reason` opcional). Página com subpáginas ativas: `HAS_CHILDREN`. | `EDIT_KNOWLEDGE` |
+| POST | `/pages/{id}/restore` | Restaura; se o pai continua arquivado, volta para a raiz do espaço. | `EDIT_KNOWLEDGE` |
+
+`EDIT_KNOWLEDGE` **(a validar)**: todo papel na unidade ou acima, menos `VIEWER`. Quem só lê pela regra 9 recebe `403` ao editar e ao pedir o histórico de uma página publicada; o rascunho de outra unidade responde `404`.
+
+Ciclo (Proposta 07, KNOW-D05):
+
+| Template | De | Para | Quem |
+|---|---|---|---|
+| Não governado (`PAGE`) | — | `PUBLISHED` a cada gravação | quem edita |
+| Governado (`REGIMENTO`) | `DRAFT` | `IN_REVIEW` | quem edita |
+| | `IN_REVIEW` | `APPROVED` (exige as obrigatórias: `DOCUMENT_INCOMPLETE`) | papel aprovador do template ou `PLATFORM_ADMIN` |
+| | `IN_REVIEW` | `DRAFT` | quem edita ou quem aprova |
+| | `APPROVED` | `PUBLISHED` (publica a versão aprovada) | quem aprova |
+| | `APPROVED` | `DRAFT` (com `comment` obrigatório) | quem edita |
+| | `PUBLISHED` | `DRAFT`, automático ao salvar; a versão publicada continua valendo para quem lê pela regra 9 | quem edita |
+
+Outras passagens: `TRANSITION_NOT_ALLOWED`. Gravar em `IN_REVIEW` ou `APPROVED`: `DOCUMENT_NOT_EDITABLE`. Os documentos de Iniciativa e Feature passam a usar este motor na próxima entrega, com o ciclo da tabela anterior.
+
 ### 3.8 `portfolio`
 
 | Método | Caminho | Descrição | Permissão | RF |
@@ -1028,6 +1064,11 @@ Todos os eventos vão para a trilha de auditoria. A coluna **Notifica** indica o
 | `org_unit.link_added` **(a validar)** | Vínculo "atende a" criado. | `orgUnitId`, `servesOrgUnitId` | — |
 | `org_unit.link_removed` **(a validar)** | Vínculo "atende a" removido. | `orgUnitId`, `servesOrgUnitId` | — |
 | `role_assignment.granted` | Papel atribuído. | `userId`, `role`, `orgUnitId` | — |
+| `knowledge_page.created` | Página de conhecimento criada (seção 3.7.1). | `type`; depois: `title`, `parentId` | — |
+| `knowledge_page.updated` | Nova versão salva ou página renomeada. | `version`; antes e depois: versão e status, ou título | — |
+| `knowledge_page.status_changed` | Revisão, aprovação, publicação ou volta a rascunho. | `from`, `to`, `comment` | — |
+| `knowledge_page.moved` | Página movida para outro pai. | antes e depois: `parentId` | — |
+| `knowledge_page.archived` / `.restored` | Página arquivada ou restaurada. | `reason` | — |
 | `role_assignment.revoked` | Papel revogado. | `userId`, `role`, `orgUnitId` | — |
 | `config.workflow_published` | Nova versão de workflow. | `workflowId`, `versionNumber` | — |
 | `config.template_published` | Nova versão de template. | `templateId`, `versionNumber` | — |
@@ -1037,7 +1078,7 @@ O conteúdo dos documentos não vai no evento: a trilha guarda a referência à 
 
 Eventos de autenticação (login, falha, MFA) ficam registrados no IdP. Trazê-los para a trilha da plataforma é uma pendência.
 
-**Implementados em 2026-11-20:** `artifact.created`, `artifact.updated` (só os campos alterados, antes e depois), `artifact.archived`, `artifact.status_changed`, `artifact.transition_blocked` (gravado em transação própria, seção 4.2), `org_unit.created`, `org_unit.updated`, `org_unit.link_added`, `org_unit.link_removed`, `role_assignment.granted` (papéis iniciais da raiz, sem ator: concedidos pelo sistema), `sprint.started` e `sprint.closed`. O envelope leva também `before` e `after`, que a auditoria registra. Ainda não geram evento: a configuração de quadros e a ordenação (`rank`), que não estão no catálogo; os demais entram com os módulos correspondentes.
+**Implementados em 2026-11-20:** `artifact.created`, `artifact.updated` (só os campos alterados, antes e depois), `artifact.archived`, `artifact.status_changed`, `artifact.transition_blocked` (gravado em transação própria, seção 4.2), `org_unit.created`, `org_unit.updated`, `org_unit.link_added`, `org_unit.link_removed`, `role_assignment.granted` (papéis iniciais da raiz, sem ator: concedidos pelo sistema), `sprint.started`, `sprint.closed` e os `knowledge_page.*` (Proposta 07). O envelope leva também `before` e `after`, que a auditoria registra. Ainda não geram evento: a configuração de quadros e a ordenação (`rank`), que não estão no catálogo; os demais entram com os módulos correspondentes.
 
 ## 8. Configuração padrão de instalação
 
@@ -1162,7 +1203,7 @@ Convenções:
 | | `workflow_artifact_type` | `workflow_id`, `artifact_type_id` | PK composta. |
 | | `workflow_status` | `workflow_id`, `key`, `name`, `phase`, `category`, `position` | (`workflow_id`, `key`) único. |
 | | `workflow_transition` | `workflow_id`, `from_status_id`, `to_status_id` | Única por (`from_status_id`, `to_status_id`). |
-| | `doc_template` | `document_type`, `version_number`, `sections` (JSON), `approver_role`, `org_unit_id` | (`document_type`, `org_unit_id`, `version_number`) único. |
+| | `doc_template` | `document_type`, `version_number`, `name`, `sections` (JSON), `approver_role`, `governed`, `org_unit_id` | (`document_type`, `org_unit_id`, `version_number`) único. Tipos: os cinco do artefato, `PAGE` e `REGIMENTO`. |
 | `workitem` | `artifact` | `key`, `type_id`, `parent_id`, `org_unit_id`, `status_id`, `title`, `description`, `owner_id`, `technical_lead_id`, `qa_owner_id`, `assignee_id`, `size`, `custom_fields` (JSON), `rank`, `archived`, `blocked`, `blocked_reason`, `version`, `search_vector` | `key` única; índices em `parent_id`, em (`org_unit_id`, `type_id`, `status_id`) e índice de texto em `search_vector`. |
 | | `key_sequence` | `key_prefix` (PK), `next_value` | Gera o número da chave legível. |
 | | `artifact_link` | `source_id`, `target_id`, `type`, `created_by` | Único por (`source_id`, `target_id`, `type`); origem diferente do destino. |
@@ -1174,8 +1215,8 @@ Convenções:
 | `governance` | `gate` | `transition_id`, `name` | Um por transição. |
 | | `gate_rule` | `gate_id`, `position`, `category`, `type`, `params` (JSON), `message` | Índice em `gate_id`. |
 | | `approval` | `artifact_id`, `gate_rule_id`, `decision`, `comment`, `decided_by`, `decided_at`, `superseded` | Só inserção, exceto o marcador `superseded`; índice em (`artifact_id`, `gate_rule_id`). |
-| `livingdocs` | `document` | `artifact_id`, `type`, `status`, `template_id`, `current_version`, `approved_version`, `classification`, `search_vector` | (`artifact_id`, `type`) único. |
-| | `document_version` | `document_id`, `number`, `content` (JSON), `author_id`, `saved_at` | (`document_id`, `number`) único; só inserção. |
+| `livingdocs` | `document` | `owner_type` (`ARTIFACT` ou `ORG_UNIT`), `artifact_id`, `org_unit_id`, `type`, `title`, `parent_id`, `position`, `status`, `template_id`, `current_version`, `approved_version`, `published_version`, `classification`, `archived_at`, `archive_reason`, `search_vector` (com a busca) | (`artifact_id`, `type`) único quando o dono é artefato; índices em `org_unit_id` e `parent_id`. |
+| | `document_version` | `document_id`, `number`, `sections` (JSON), `summary`, `author_id`, `saved_at` | (`document_id`, `number`) PK; um gatilho recusa alteração e exclusão. |
 | `portfolio` | `business_case` | `initiative_id`, `problem`, `expected_outcome`, `estimated_cost`, `currency`, `expected_benefit`, `risks`, `status`, `validated_by`, `validated_at`, `version` | `initiative_id` único. |
 | `board` | `board` | `org_unit_id`, `level`, `name`, `filters` (JSON) | Índice em `org_unit_id`. |
 | | `board_column` | `board_id`, `position`, `name`, `phase`, `status_keys`, `wip_limit`, `wip_policy` | (`board_id`, `position`) único; `wip_limit` ≥ 1 ou nulo; `wip_policy` `WARN` ou `BLOCK`. |

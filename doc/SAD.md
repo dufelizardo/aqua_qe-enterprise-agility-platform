@@ -165,7 +165,7 @@ flowchart TB
 | `workitem` | D02, D03 | Artefatos de todos os níveis, hierarquia, vínculos, RNs e CAs, contexto herdado. | Artefato, Vínculo, RN, CA |
 | `workflow` | D05 | Status atual e execução de transições; consulta os guardas antes de mudar o status. | Transição executada |
 | `governance` | D05 | Gates, validações e aprovações; implementa o guarda de transição. | Gate, Regra, Aprovação |
-| `livingdocs` | D04 | Documentos do artefato (PRD, SAD, SSD, UX/UI, QA), versões e status. | Documento, Versão |
+| `livingdocs` | D04 | Motor de documentos com dono genérico: documentos do artefato (PRD, SAD, SSD, UX/UI, QA) e páginas de conhecimento por unidade ([Proposta 07](KNOWLEDGE-PROPOSAL.md)), versões e status. | Documento, Versão |
 | `portfolio` | D01 | Dados próprios da Iniciativa: business case. | Business case |
 | `board` | D02, D03 | Quadros por nível, colunas Upstream e Downstream, sprints. | Quadro, Sprint |
 
@@ -291,6 +291,8 @@ Esse fluxo é a fonte única para a trilha de auditoria, as notificações e, na
 - Salvar cria uma nova versão; versões anteriores ficam disponíveis para consulta e comparação (PRD-RF-020).
 - Concorrência por bloqueio otimista: se duas pessoas editam a mesma versão, a segunda a salvar recebe um aviso de conflito. Coedição simultânea está fora do MVP.
 - Anexos e imagens vão para o armazenamento de objetos; o documento guarda apenas a referência.
+- **Dono genérico (2026-11-20; [Proposta 07](KNOWLEDGE-PROPOSAL.md), KNOW-D06):** o mesmo motor guarda os documentos dos artefatos e as páginas de conhecimento das unidades (Wiki). Não há segundo mecanismo de versões, busca, anexos ou auditoria. Os templates ficam em `configuration`; o acesso, em `access` (regra 9 do SSD 2.1 para o conhecimento publicado).
+- **Editor (REV-05, decidido):** o contrato é o formato de blocos do SSD 6. O editor é próprio e converte para esse formato; trocar de editor não muda o que é gravado. O Markdown leve dos parágrafos é interpretado na tela, sem gerar HTML.
 
 ### 7.7 API
 
