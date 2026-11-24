@@ -80,6 +80,25 @@ jobs:
       - run: pip install -r test/robot/requirements.txt
       - name: Sintaxe e imports das suítes Robot
         run: bash test/robot/run_tests.sh all --dryrun
+      # PROP-003, Fase 1: camadas LKDF verificadas a cada push (bloqueia com violação não excetuada).
+      - name: Testes do validador LKDF
+        run: python -m unittest discover -s test/robot/tools/tests
+      - name: Conformidade LKDF
+        run: python test/robot/tools/lkdf_lint.py
+      # PROP-003, Fase 0: inventário de suítes, casos e rastreabilidade, calculado a cada execução.
+      - name: Inventário das suítes
+        if: always()
+        run: python test/robot/tools/inventory.py
+      - name: Publicar o inventário
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: robot-inventory
+          path: |
+            test/robot/results/inventory.md
+            test/robot/results/inventory.json
+          if-no-files-found: ignore
+          retention-days: 30
 
   analyze:
     runs-on: ubuntu-latest

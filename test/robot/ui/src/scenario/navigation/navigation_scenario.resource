@@ -1,17 +1,18 @@
 *** Settings ***
 Resource            ../../flow/navigation/navigation_flow.resource
+Resource            ../../flow/common/browser_flow.resource
 
 *** Keywords ***
 PREREQUISITE: OPEN BROWSER ON NAVIGATION
     [Documentation]    Navegador novo, sem cookies nem expansão lembrada, direto em /home.
-    Open AQuA-QE Browser    /home
+    Navegador - Abrir    /home
 
 PREREQUISITE: OPEN MOBILE BROWSER ON NAVIGATION
     [Documentation]    Como o anterior, com a tela de um celular.
-    Open AQuA-QE Mobile Browser    /home
+    Navegador - Abrir Celular    /home
 
 TEARDOWN: CLOSE NAVIGATION BROWSER
-    Close AQuA-QE Browser
+    Navegador - Fechar
 
 NAV ORG - ESCOLHER UNIDADE NA ARVORE
     [Documentation]    Monta um ramo, acha a Squad pela busca e a escolhe no menu.

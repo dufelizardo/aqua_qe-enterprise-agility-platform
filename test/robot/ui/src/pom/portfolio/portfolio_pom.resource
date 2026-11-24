@@ -183,3 +183,6 @@ Click Board Level
 
 Wait For Board Or Empty
     Wait For Elements State    css=[data-testid="board"], [data-testid="board-empty"]    visible    timeout=30s
+
+Wait For Unit Trail
+    Wait For Elements State    ${LEVEL_UNIT_TRAIL}    visible    timeout=30s

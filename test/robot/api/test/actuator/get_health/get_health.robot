@@ -10,5 +10,5 @@ Metadata            Project    Layered Keyword Driven Framework (LKDF)
 *** Test Cases ***
 CT-001 - SAD-7.9: Validate GET Health - HTTP 200 OK
     [Documentation]    Saúde geral, liveness e readiness respondem UP sem autenticação.
-    [Tags]    GET    Health    HTTP200    smoke
+    [Tags]    GET    Health    HTTP200    SAD-7.9    smoke
     ACTUATOR - HEALTH - GET

@@ -6,13 +6,31 @@
 | Tipo | Proposta técnica e de evolução da engenharia de qualidade |
 | Versão | 1.0 |
 | Data | 2026-11-24 |
-| Status | **Proposta em avaliação — não aprovada e não implementada como iniciativa consolidada** |
+| Status | **Aprovada em etapas (2026-11-24).** Fases 0 e 1 implementadas (ver [Situação](#situação-2026-11-24)); Fases 2 a 4 aguardam priorização. |
 | Proposta complementar | [PROP-001 — Evolução da Gestão do Conhecimento e Documentação Organizacional](PROP-001-gestao-do-conhecimento-e-documentacao-organizacional.md) |
 | Proposta complementar | [PROP-002 — Organização Flexível da Wiki](PROP-002-organizacao-flexivel-da-wiki.md) |
 | Documentos de referência | [PRD](../PRD.md), [SAD](../SAD.md), [SSD](../SSD.md), [QA](../QA.md), [Operação](../OPERACAO.md) |
 | Referência arquitetural de automação | [Layered Keyword-Driven Framework (LKDF)](https://github.com/dufelizardo/Layered-Keyword-Driven-Framework-LKDF) |
 
 > **Importante:** esta proposta consolida oportunidades de evolução identificadas na análise do projeto de testes. Ela não declara que todas as recomendações já estejam implementadas, não substitui o plano de QA e não altera automaticamente requisitos, arquitetura, contratos ou pipeline. Cada mudança depende de validação, priorização e atualização dos documentos responsáveis.
+
+## Situação (2026-11-24)
+
+Decisão do usuário: começar pela **Fase 0** (baseline e saneamento) e pela **Fase 1** (guardrails LKDF), nesta ordem, antes das propostas de Wiki (PROP-002) e dos documentos do artefato (#63).
+
+| Fase | Situação | Onde |
+|---|---|---|
+| 0 — Baseline e saneamento | **Implementada.** `test/robot/tools/inventory.py` calcula suítes, casos, camadas e rastreabilidade a cada execução (14 suítes e 51 casos em 2026-11-24; o único caso sem identificador ganhou a tag `SAD-7.9`). O `doc/QA.md` foi reconciliado: saiu a frase "o projeto ainda não tem código", e a estrutura e o pipeline foram atualizados. | [QA, seção 3.2](../QA.md#32-estrutura-de-pastas) |
+| 1 — Guardrails LKDF | **Implementada.** `test/robot/tools/lkdf_lint.py`, com 14 testes próprios, roda no job `robot-dryrun` e bloqueia o pipeline. Ele encontrou 13 violações reais, todas corrigidas: <br>• cenários de interface abrindo e fechando o navegador pelo POM, que agora passam pelo `flow/common/browser_flow.resource`; <br>• um FLOW com `Wait For Elements State`; <br>• um cenário chamando `Get Card Key`. <br>Há uma exceção registrada. | [QA, seção 3.4](../QA.md#34-conformidade-verificada-guardrail-lkdf), [OPERACAO, seção 6.3](../OPERACAO.md#63-checks-do-pipeline-de-testes) |
+| 2 — Autorização e isolamento | Aguarda priorização. | — |
+| 3 — Cobertura por domínio e rastreabilidade | Aguarda priorização. | — |
+| 4 — Confiabilidade e indicadores | Parcial antes desta proposta: retentativa seletiva e issue de teste instável (ADR-18). | [QA, seção 9](../QA.md#9-ambiente-e-execução) |
+
+**Decisões da seção 15 respondidas nesta etapa**
+1. **Regras bloqueantes desde a primeira versão:** LKDF-QA-001, 002, 003, 004, 005, 007, 008 e 010 (caminho local). Ficam como **avisos**: LKDF-QA-009 (documentação, tags e rastreabilidade) e o literal de segredo da 010. A LKDF-QA-006 (RESOURCE sem lógica) entra quando houver keyword em `resource/`.
+2. **Ferramenta:** o parser do próprio Robot Framework (`robot.api`) e a libdoc das bibliotecas seguras, sem dependência nova.
+5. **Relatório:** inventário em Markdown e JSON, publicado como artefato `robot-inventory` do pipeline, com retenção de 30 dias. O relatório de rastreabilidade com resultados de execução fica para a Fase 3.
+6. **Checks obrigatórios:** dry-run, testes do validador e conformidade LKDF em todo push e PR, inclusive na promoção para `main`.
 
 ---
 

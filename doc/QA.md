@@ -2,14 +2,21 @@
 
 | | |
 |---|---|
-| **Versão** | 1.0 |
-| **Data** | 2026-11-20 |
-| **Status** | Rascunho para revisão |
-| **Documentos-base** | [PRD v4.0](PRD.md), [SAD v1.0](SAD.md), [SSD v1.0](SSD.md), [UX/UI v1.0](UX-UI.md), [Revisão 01](REVIEW-01.md), [Proposta de evolução](EVOLUTION-PROPOSAL.md) |
+| **Versão** | 1.1 |
+| **Data** | 2026-11-24 |
+| **Status** | Em uso. Reconciliado com o código e o pipeline na Fase 0 da [PROP-003](propostas/PROP-003-evolucao-da-qualidade-e-automacao-de-testes.md). |
+| **Documentos-base** | [PRD v4.0](PRD.md), [SAD v1.0](SAD.md), [SSD v1.0](SSD.md), [UX/UI v1.0](UX-UI.md), [Revisão 01](REVIEW-01.md), [Proposta de evolução](EVOLUTION-PROPOSAL.md), [PROP-003](propostas/PROP-003-evolucao-da-qualidade-e-automacao-de-testes.md) |
 
 Este documento define a estratégia de testes do MVP: níveis, ferramentas, arquitetura da automação, convenções, rastreabilidade, ambiente e critérios de entrada e saída. Os testes de aceitação de API e de interface usam **Robot Framework** organizado pelo **Layered Keyword-Driven Framework (LKDF)** ([dufelizardo/Layered-Keyword-Driven-Framework-LKDF](https://github.com/dufelizardo/Layered-Keyword-Driven-Framework-LKDF)), o mesmo padrão já aplicado no projeto Mais Saúde Pública.
 
-O projeto ainda não tem código. Este plano antecede a implementação e será revisado quando o primeiro módulo existir.
+**Situação (2026-11-24; [PROP-003](propostas/PROP-003-evolucao-da-qualidade-e-automacao-de-testes.md), Fase 0).** O plano está em uso. Todos os níveis da [seção 2](#2-níveis-de-teste-e-ferramentas) existem e rodam no pipeline:
+- JUnit com Testcontainers e Spring Modulith (`src/test`);
+- Vitest no frontend;
+- Robot de API e de interface (`test/robot`).
+
+A baseline da automação Robot não é mantida à mão: o `test/robot/tools/inventory.py` a calcula a cada execução e publica `inventory.md` como artefato do pipeline. Em 2026-11-24 eram **14 suítes e 51 casos** (9 de API e 5 de interface), todos com identificador de rastreabilidade. As camadas LKDF são verificadas automaticamente ([seção 3.4](#34-conformidade-verificada-guardrail-lkdf)).
+
+Esses números são uma fotografia, não uma medida de cobertura. A matriz de cobertura por domínio e a de autorização são as Fases 2 e 3 da PROP-003.
 
 ---
 
@@ -36,7 +43,7 @@ O projeto ainda não tem código. Este plano antecede a implementação e será 
 | Fronteiras de módulo | Nenhum módulo acessa internals de outro (ADR-04). | Spring Modulith `ApplicationModules.verify()` | `src/test` | Código, no build. |
 | **Aceitação de API** | Contratos do SSD, autorização, gates, auditoria, de fora para dentro. | **Robot Framework + RequestsLibrary**, padrão LKDF | `test/robot/api` | Aplicação de pé, via HTTP. |
 | **Jornadas e interface** | Fluxos da UX/UI e comportamento das telas. | **Robot Framework + Browser** (Playwright), padrão LKDF | `test/robot/ui` | Frontend e API de pé, no navegador. |
-| Unidade do frontend | Componentes e serviços Angular. | Ferramenta padrão do Angular CLI | `frontend` | Código, em processo. |
+| Unidade do frontend | Componentes, serviços e funções puras do Angular. | Vitest (Angular CLI); no Windows, roda em contêiner `node:24-alpine` | `frontend/src/**/*.spec.ts` | Código, em processo. |
 
 Os testes Robot **complementam** os testes JUnit, sem substituí-los. JUnit roda no build e dá retorno rápido. Robot roda contra a aplicação real e verifica o comportamento que o usuário e os integradores enxergam.
 
@@ -68,30 +75,28 @@ Dependência estritamente unidirecional: `TEST` → `SCENARIO` → `FLOW` → `P
 
 O exemplo de UI do repositório LKDF (`adopet_ui`) tem asserções e ramificação dentro da POM. **Esse desvio não deve ser repetido aqui**: na POM de UI, `Get Text` devolve o valor e quem faz a asserção é o FLOW.
 
+Abrir e fechar o navegador também passa pelo FLOW: os cenários chamam `Navegador - Abrir`, `Navegador - Abrir Celular` e `Navegador - Fechar` (`ui/src/flow/common/browser_flow.resource`), e não o POM `aquaqe_ui_common`.
+
 ### 3.2 Estrutura de pastas
 
-Uma pasta por módulo do backend ([SAD, seção 5.1](SAD.md#51-módulos-do-mvp)) e uma subpasta por operação:
+Uma pasta por módulo do backend ([SAD, seção 5.1](SAD.md#51-módulos-do-mvp)) e uma subpasta por operação. A estrutura real em 2026-11-24:
 
 ```text
 test/robot/
-├── requirements.txt
+├── requirements.txt                    versões fixadas (robotframework, requests, browser)
 ├── run_tests.sh / run_tests.ps1        escrevem em ./results/; aceitam --dryrun
+├── ci_run.sh / flaky.py                aceitação no CI e registro de instáveis (ADR-18)
+├── tools/                              PROP-003: inventory.py, lkdf_lint.py, lkdf_exceptions.txt, tests/
 ├── api/
-│   ├── src/
-│   │   ├── pom/
-│   │   │   ├── common/                  sessão HTTP, obtenção de token por persona
-│   │   │   ├── workitem/<operacao>/
-│   │   │   ├── workflow/<operacao>/
-│   │   │   ├── governance/<operacao>/
-│   │   │   ├── livingdocs/<operacao>/
-│   │   │   ├── access/  organization/  configuration/  board/  portfolio/  audit/
-│   │   ├── flow/        (mesma árvore; flow/common/ com validação de schema e de erro)
-│   │   ├── scenario/    (mesma árvore)
-│   │   └── resource/{config,data_driven,schema}/
+│   ├── src/{pom,flow,scenario}/<modulo>/<operacao>/
+│   │      módulos: actuator, audit, board, identity, knowledge, organization, workflow, workitem; pom/common
+│   │      (sessão HTTP e token por persona)
+│   ├── src/resource/{config,data_driven}/
 │   └── test/<modulo>/<operacao>/*.robot
 └── ui/
-    ├── src/{pom,flow,scenario}/<tela>/
-    ├── src/resource/{config,data_driven,locators}/<tela>/
+    ├── src/{pom,flow,scenario}/<tela>/  telas: admin, login, navigation, portfolio, wiki; pom/common e
+    │                                    flow/common (navegador)
+    ├── src/resource/{data_driven,locators}/<tela>/
     └── test/<jornada>/*.robot
 ```
 
@@ -111,6 +116,32 @@ POST Transition - Status Code 422 - Gate Blocked
     Should Be Equal As Integers    ${response.status_code}    422
     Validate Error Code    ${response.json()}    GATE_BLOCKED
     Validate Failed Rule    ${response.json()}    REQUIRED_FIELD    ownerId
+```
+
+### 3.4 Conformidade verificada (guardrail LKDF)
+
+As regras das camadas não dependem só da revisão: o `test/robot/tools/lkdf_lint.py` as verifica a cada push, pelo parser do Robot Framework, sem rodar as suítes ([PROP-003](propostas/PROP-003-evolucao-da-qualidade-e-automacao-de-testes.md), Fase 1).
+
+| Regra | O que bloqueia |
+|---|---|
+| LKDF-QA-001 / 007 | Import ou chamada para cima, ou pulando camada (TEST→SCENARIO→FLOW→POM; RESOURCE em qualquer uma; FLOW→FLOW e POM→POM permitidos); ciclo de imports. |
+| LKDF-QA-002 | Asserção (`Should …`) ou `IF`/`FOR` no TEST. |
+| LKDF-QA-003 | Asserção ou `IF`/`FOR` no SCENARIO; SCENARIO chamando POM. |
+| LKDF-QA-004 | FLOW usando keyword técnica (Browser, RequestsLibrary) ou passando seletor literal (`css=`, `xpath=`). O FLOW só usa BuiltIn, Collections, String, DateTime e keywords do projeto. |
+| LKDF-QA-005 | Asserção na POM. |
+| LKDF-QA-008 | API importando recurso de UI, ou o contrário. |
+| LKDF-QA-010 | Caminho absoluto de máquina local. |
+
+**Avisos (não bloqueiam):** caso sem `[Documentation]`, `[Tags]` ou identificador de rastreabilidade; suíte sem `Metadata`; variável de senha ou token com valor literal (LKDF-QA-009 e 010).
+
+**Exceções.** Ficam em `test/robot/tools/lkdf_exceptions.txt`: regra, arquivo, keyword, motivo, responsável e data de revisão. Exceção vencida deixa de valer. Hoje há uma: o token inválido de propósito do caso 401 de `identity`.
+
+**Executar localmente:**
+
+```bash
+python test/robot/tools/lkdf_lint.py                          # conformidade (sai com 1 se houver erro)
+python -m unittest discover -s test/robot/tools/tests         # testes do próprio validador
+python test/robot/tools/inventory.py                          # inventário em test/robot/results/
 ```
 
 ## 4. Convenções
@@ -198,7 +229,7 @@ O que a implementação precisa oferecer para que os testes acima sejam possíve
 - **Execução:** `run_tests.sh` / `run_tests.ps1`, com saída em `results/`. `--dryrun` faz só a checagem de sintaxe e imports. `--include smoke` seleciona por tag.
 - **CI** ([`pipeline.yml`](../.github/workflows/pipeline.yml), no modelo do Mais Saúde Pública):
   1. JUnit, integração e Spring Modulith em todo push e PR.
-  2. Robot `--dryrun` em todo push e PR.
+  2. Robot `--dryrun` em todo push e PR, seguido dos testes do validador, da **conformidade LKDF (bloqueia)** e do inventário, publicado como artefato `robot-inventory` ([seção 3.4](#34-conformidade-verificada-guardrail-lkdf)).
   3. Suíte Robot completa (API e UI) nos PRs de promoção para a `main`, por [`ci_run.sh`](../test/robot/ci_run.sh). O job builda a imagem real, sobe os containers efêmeros e roda a suíte contra eles. O merge fica bloqueado se a suíte falhar.
   4. `results/` publicado como artifact, inclusive quando a suíte falha, com os logs dos containers.
 - **Retentativas** (SAD, ADR-18). Cada tipo de falha tem um tratamento:
@@ -233,6 +264,10 @@ O que a implementação precisa oferecer para que os testes acima sejam possíve
 - Convenção `data-testid`, a incorporar na UX/UI.
 - Capítulos do ASVS nível 2 aplicáveis e quais são verificáveis por Robot (REV-13).
 - Gestão de defeitos: onde registrar e como ligar ao caso de teste, enquanto a própria plataforma não oferece gestão de testes (Fase 2).
-- Versões exatas das bibliotecas, a fixar quando o esqueleto `test/robot` for criado.
+- ~~Versões exatas das bibliotecas~~: fixadas em `test/robot/requirements.txt`.
+- Próximas fases da [PROP-003](propostas/PROP-003-evolucao-da-qualidade-e-automacao-de-testes.md):
+  - matriz de autorização e isolamento (Fase 2);
+  - cobertura por domínio e rastreabilidade requisito → caso → execução (Fase 3);
+  - indicadores de confiabilidade (Fase 4).
 
 <!-- aqeap-qa-db5e074a82 -->
