@@ -38,8 +38,14 @@ Squad - Abrir Quadro Do Nivel
     Wait For Current Workspace    ${squad}
     Click Current Unit View    nav-squad
     Wait For Level Board Page    ${squad}
-    Wait For Elements State    ${LEVEL_UNIT_TRAIL}    visible    timeout=30s
+    Wait For Unit Trail
     Squad - Trocar Nivel Do Quadro    ${board_level}
+
+Portfolio - Chave Do Cartao
+    [Documentation]    Chave do cartão (ex.: INIT-12) pelo status e título, para usar como pai de outro item.
+    [Arguments]    ${status}    ${title}
+    ${key}=    Get Card Key    ${status}    ${title}
+    RETURN    ${key}
 
 Squad - Trocar Nivel Do Quadro
     [Documentation]    O seletor do Quadro da Squad troca o nível do quadro; garante o quadro desse nível.

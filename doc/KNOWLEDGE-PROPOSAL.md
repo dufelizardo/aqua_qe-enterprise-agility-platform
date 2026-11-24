@@ -7,6 +7,7 @@
 | **Status** | PROPOSTO. As decisões da seção 4 foram tomadas e a **Fase A** foi implementada; as fases B a D seguem em avaliação. O MVP do PRD não muda. |
 | **Série** | 01: [Evolução](EVOLUTION-PROPOSAL.md) · 02: [Experiência](EXPERIENCE-PROPOSAL.md) · 03: [Administração](ADMIN-PROPOSAL.md) · 04: [Quadros](BOARDS-PROPOSAL.md) · 05: [Configuração](CONFIG-PROPOSAL.md) · 06: [Navegação](NAVIGATION-PROPOSAL.md) · 07: esta |
 | **Documentos-base** | [PRD v4.0](PRD.md), [SAD v1.0](SAD.md), [SSD v1.0](SSD.md), [UX/UI v1.0](UX-UI.md) |
+| **Propostas complementares** | [PROP-001 — gestão do conhecimento (análise de lacunas)](propostas/PROP-001-gestao-do-conhecimento-e-documentacao-organizacional.md) · [PROP-002 — organização flexível da Wiki](propostas/PROP-002-organizacao-flexivel-da-wiki.md) |
 
 A proposta, recebida como PROPOSAL-08 em 2026-11-20, amplia o domínio D04 (Living Documentation). Além dos documentos das Iniciativas e Features, a plataforma passa a guardar o **conhecimento da organização**: regimentos, políticas, processos, acordos e padrões. Cada unidade organizacional ganha seu espaço, com páginas e subpáginas, versões, um ciclo de publicação, e leitura do conhecimento publicado pelas unidades acima.
 

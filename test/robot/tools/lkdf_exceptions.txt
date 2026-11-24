@@ -1,0 +1,4 @@
+# Exceções do validador LKDF (PROP-003, Fase 1). Uma por linha:
+# REGRA | arquivo (relativo a test/robot) | keyword ou * | motivo | responsável | revisar até (AAAA-MM-DD)
+# Exceção é desvio deliberado e temporário: sem motivo, responsável e data de revisão, não vale.
+LKDF-QA-010 | api/src/resource/data_driven/identity/identity_driven.resource | ${get_me_invalid_token} | Token inválido de propósito, para o caso 401; não é segredo. | QA | 2027-05-24

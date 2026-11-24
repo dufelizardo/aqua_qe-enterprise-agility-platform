@@ -1,13 +1,14 @@
 *** Settings ***
 Resource            ../../flow/wiki/wiki_flow.resource
+Resource            ../../flow/common/browser_flow.resource
 
 *** Keywords ***
 PREREQUISITE: OPEN BROWSER ON WIKI
     [Documentation]    Navegador novo, sem cookies, direto em /home (o login leva de volta para lá).
-    Open AQuA-QE Browser    /home
+    Navegador - Abrir    /home
 
 TEARDOWN: CLOSE WIKI BROWSER
-    Close AQuA-QE Browser
+    Navegador - Fechar
 
 WIKI UI - CRIAR E EDITAR PAGINA
     [Arguments]    ${username}    ${display_name}    ${root_name}    ${title_base}    ${text}    ${summary}

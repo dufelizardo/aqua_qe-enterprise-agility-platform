@@ -1,13 +1,14 @@
 *** Settings ***
 Resource            ../../flow/admin/admin_flow.resource
+Resource            ../../flow/common/browser_flow.resource
 
 *** Keywords ***
 PREREQUISITE: OPEN BROWSER ON ADMIN
     [Documentation]    Navegador novo, sem cookies, direto em /home (o login leva de volta para lá).
-    Open AQuA-QE Browser    /home
+    Navegador - Abrir    /home
 
 TEARDOWN: CLOSE BROWSER
-    Close AQuA-QE Browser
+    Navegador - Fechar
 
 ADMIN ORG - CRIAR PORTFOLIO
     [Documentation]    O administrador cria um Portfólio sob a raiz.

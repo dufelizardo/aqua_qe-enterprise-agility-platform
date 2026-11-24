@@ -175,6 +175,16 @@ Para acompanhar: a métrica `aquaqe.outbox.lag` e, no log da API, os avisos "Out
 
 Com a API de pé, `DROP DATABASE ... WITH (FORCE)` pode falhar porque o pool reconecta na hora (`ALTER DATABASE ... WITH ALLOW_CONNECTIONS false` antes resolve). Apagar o volume evita isso.
 
+### 6.3 Checks do pipeline de testes
+
+O job `robot-dryrun` do [`pipeline.yml`](../.github/workflows/pipeline.yml) roda, em todo push e PR, sem precisar da aplicação de pé:
+- o dry-run das suítes;
+- os testes do validador LKDF;
+- a **conformidade LKDF**, que bloqueia o pipeline quando há violação não excetuada ([QA, seção 3.4](QA.md#34-conformidade-verificada-guardrail-lkdf));
+- o inventário das suítes, publicado como artefato `robot-inventory`, mantido por 30 dias.
+
+Para corrigir uma falha de conformidade, o relatório do passo "Conformidade LKDF" indica arquivo, linha, regra e camadas. A correção é mover a chamada para a camada certa. Exceção só com motivo, responsável e data de revisão em `test/robot/tools/lkdf_exceptions.txt`.
+
 ## 7. Desenvolvimento local
 
 ```bash

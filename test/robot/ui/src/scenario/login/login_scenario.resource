@@ -1,17 +1,18 @@
 *** Settings ***
 Resource            ../../flow/login/login_flow.resource
+Resource            ../../flow/common/browser_flow.resource
 
 *** Keywords ***
 PREREQUISITE: OPEN BROWSER ON LANDING
     [Documentation]    Navegador novo, sem cookies, na landing pública.
-    Open AQuA-QE Browser    /
+    Navegador - Abrir    /
 
 PREREQUISITE: OPEN BROWSER ON PROTECTED PAGE
     [Documentation]    Navegador novo, sem cookies, direto numa tela interna (/home).
-    Open AQuA-QE Browser    /home
+    Navegador - Abrir    /home
 
 TEARDOWN: CLOSE BROWSER
-    Close AQuA-QE Browser
+    Navegador - Fechar
 
 LANDING - ENTRAR NO SISTEMA
     [Documentation]    Jornada da landing até a página de login.
