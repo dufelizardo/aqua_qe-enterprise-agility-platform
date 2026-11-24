@@ -122,3 +122,20 @@ Wiki - Vem Antes
     ${i}=    Get Index From List    ${titles}    ${earlier}
     ${j}=    Get Index From List    ${titles}    ${later}
     Should Be True    0 <= ${i} < ${j}
+
+Wiki - Arrastar Pagina
+    [Documentation]    PROP-002: com três páginas novas, arrastar a terceira sobre a primeira a põe antes dela, na raiz.
+    [Arguments]    ${title_base}
+    ${first}=    Unique Name    ${title_base} A
+    ${second}=    Unique Name    ${title_base} B
+    ${third}=    Unique Name    ${title_base} C
+    Create Wiki Page    ${first}
+    Wait For Wiki Page Link    ${first}
+    Create Wiki Page    ${second}
+    Wait For Wiki Page Link    ${second}
+    Create Wiki Page    ${third}
+    Wait For Wiki Page Title    ${third}
+    Drag Wiki Page Onto    ${third}    ${first}
+    Wait Until Keyword Succeeds    30s    1s    Wiki - Vem Antes    ${third}    ${first}
+    ${level}=    Get Wiki Tree Level    ${third}
+    Should Be Equal    ${level}    1

@@ -19,11 +19,11 @@ Decisão do usuário: **mover e reordenar, alternativa A**. Páginas-pai funcion
 
 | Item | Situação |
 |---|---|
-| Reordenar, mover para outro nível, promover, rebaixar, mover para a raiz | **Implementado**: `POST /pages/{id}/rank` e ações na tela. |
+| Reordenar, mover para outro nível, promover, rebaixar, mover para a raiz | **Implementado**: `POST /pages/{id}/rank` e o menu ⋯ de cada página na árvore. |
 | Movimentação de subárvore, sem ciclo | **Implementado.** |
 | Identidade, conteúdo, versões, status e links preservados | **Implementado**: organizar não cria versão; o link é pelo id. |
 | Auditoria da movimentação | **Implementado**: `knowledge_page.moved`, com pai e posição antes e depois. |
-| Arrastar e soltar, com alternativa por teclado | **Implementado**: arrastar reordena entre irmãs; as ações fazem tudo pelo teclado. |
+| Arrastar e soltar, com alternativa por teclado | **Implementado**: arrastar põe a página onde foi solta, inclusive em outro nível; o menu ⋯ faz tudo pelo teclado. |
 | Ordem manual compartilhada pela unidade | **Implementado.** |
 | Agrupadores (pastas sem conteúdo) | Não implementado, conforme a decisão (alternativa B adiada). |
 | Ordenações alternativas (alfabética, por data) | Não implementado. |

@@ -39,3 +39,9 @@ WIKI UI - ORGANIZAR PAGINAS
     [Arguments]    ${username}    ${display_name}    ${root_name}    ${title_base}
     Wiki - Abrir    ${username}    ${display_name}    ${root_name}
     Wiki - Organizar Paginas    ${title_base}
+
+WIKI UI - ARRASTAR PAGINA
+    [Documentation]    Arrastar e soltar na árvore do Wiki (PROP-002).
+    [Arguments]    ${username}    ${display_name}    ${root_name}    ${title_base}
+    Wiki - Abrir    ${username}    ${display_name}    ${root_name}
+    Wiki - Arrastar Pagina    ${title_base}

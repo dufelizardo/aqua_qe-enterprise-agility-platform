@@ -2,6 +2,7 @@ import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { DatePipe } from '@angular/common';
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { MatMenuModule } from '@angular/material/menu';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
 
@@ -54,7 +55,7 @@ interface AncestorSpace {
  */
 @Component({
   selector: 'app-wiki',
-  imports: [RichEditor, DatePipe, UnitHeader, CdkDropList, CdkDrag],
+  imports: [RichEditor, DatePipe, UnitHeader, CdkDropList, CdkDrag, MatMenuModule],
   templateUrl: './wiki.html',
   styleUrl: './wiki.scss',
 })
@@ -367,48 +368,49 @@ export class Wiki {
 
   // ------------------------------------------------------------------------------------------ organizar (PROP-002)
 
-  /** Mover para…: destino escolhido ('' = raiz). */
-  protected readonly moving = signal(false);
+  /** Mover para…: a página escolhida no menu ⋯ e o destino ('' = raiz). */
+  protected readonly moving = signal<PageNode | null>(null);
   protected readonly moveTarget = signal('');
   protected readonly targets = computed(() => {
-    const page = this.page();
-    return page ? moveTargets(this.list()?.items ?? [], page.id) : [];
+    const node = this.moving();
+    return node ? moveTargets(this.list()?.items ?? [], node.id) : [];
   });
 
-  protected canOrganize(op: RankOp): boolean {
-    const page = this.page();
-    return !!page && rankFor(this.list()?.items ?? [], page.id, op) !== null;
+  protected canOrganize(id: string, op: RankOp): boolean {
+    return rankFor(this.list()?.items ?? [], id, op) !== null;
   }
 
-  protected async organize(op: RankOp): Promise<void> {
-    const page = this.page();
-    const request = page ? rankFor(this.list()?.items ?? [], page.id, op) : null;
-    if (page && request) {
-      await this.applyRank(page.id, request);
+  protected async organize(id: string, op: RankOp): Promise<void> {
+    const request = rankFor(this.list()?.items ?? [], id, op);
+    if (request) {
+      await this.applyRank(id, request);
     }
   }
 
-  protected openMove(): void {
-    this.moveTarget.set(this.page()?.parentId ?? '');
-    this.moving.set(true);
+  protected openMove(node: PageNode): void {
+    this.moveTarget.set(node.parentId ?? '');
+    this.moving.set(node);
   }
 
   protected async confirmMove(event: Event): Promise<void> {
     event.preventDefault();
-    const page = this.page();
-    if (page) {
-      await this.applyRank(page.id, { parentId: this.moveTarget() || null });
-      this.moving.set(false);
+    const node = this.moving();
+    if (node) {
+      await this.applyRank(node.id, { parentId: this.moveTarget() || null });
+      this.moving.set(null);
     }
   }
 
-  /** Arrastar e soltar reordena entre irmãs; para mudar de nível, as ações acima. */
+  /** Arrastar e soltar: a página vai para onde foi solta, no nível da linha vizinha (PROP-002). */
   protected async dropped(event: CdkDragDrop<PageSummary[]>): Promise<void> {
+    if (event.previousIndex === event.currentIndex) {
+      return;
+    }
     const move = dropRank(this.tree(), event.previousIndex, event.currentIndex);
     if (move) {
       await this.applyRank(move.id, move.request);
-    } else if (event.previousIndex !== event.currentIndex) {
-      this.error.set('Arraste para reordenar no mesmo nível. Para mudar de nível, use Promover, Rebaixar ou Mover para….');
+    } else {
+      this.error.set('Uma página não pode ir para dentro dela mesma.');
     }
   }
 

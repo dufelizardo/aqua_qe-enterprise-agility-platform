@@ -146,11 +146,25 @@ describe('organizar a árvore (PROP-002)', () => {
     expect(moveTargets(items, 'a1').map((n) => n.id)).toEqual(['a', 'a2', 'b', 'c']);
   });
 
-  it('arrastar só reordena entre irmãs', () => {
+  it('arrastar põe a página onde foi solta, no nível da linha vizinha', () => {
     const tree = pageTree(items); // a, a1, a1x, a2, b, c
     expect(dropRank(tree, 4, 5)).toEqual({ id: 'b', request: { afterId: 'c' } });
     expect(dropRank(tree, 5, 0)).toEqual({ id: 'c', request: { beforeId: 'a' } });
-    expect(dropRank(tree, 4, 1)).toBeNull();
+    // b solta sobre a1 (subindo): vira irmã de a1, antes dela.
+    expect(dropRank(tree, 4, 1)).toEqual({ id: 'b', request: { parentId: 'a', beforeId: 'a1' } });
+    // a2 solta abaixo de b (descendo): vai para a raiz, depois de b.
+    expect(dropRank(tree, 3, 4)).toEqual({ id: 'a2', request: { parentId: null, afterId: 'b' } });
+    // c solta sobre a1x (subindo): vira subpágina de a1, antes de a1x.
+    expect(dropRank(tree, 5, 2)).toEqual({ id: 'c', request: { parentId: 'a1', beforeId: 'a1x' } });
+    // a2 solta logo abaixo de b, que agora tem subpágina: vira a primeira subpágina de b.
+    const withChild = pageTree([...items, p('b1', 'b')]); // a, a1, a1x, a2, b, b1, c
+    expect(dropRank(withChild, 3, 4)).toEqual({ id: 'a2', request: { parentId: 'b', beforeId: 'b1' } });
     expect(dropRank(tree, 3, 3)).toBeNull();
+  });
+
+  it('arrastar não põe a página dentro dela mesma', () => {
+    const tree = pageTree(items);
+    expect(dropRank(tree, 0, 2)).toBeNull();
+    expect(dropRank(tree, 1, 2)).toBeNull();
   });
 });

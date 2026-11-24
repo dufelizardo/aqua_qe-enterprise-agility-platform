@@ -165,7 +165,7 @@ O primeiro editor obrigava a montar o documento bloco a bloco (escolher o tipo, 
 A [PROP-002](propostas/PROP-002-organizacao-flexivel-da-wiki.md) (2026-11-21) pediu que a unidade organize a árvore do Wiki como quiser: ordem manual, mover, promover e rebaixar, sem perder identidade, histórico ou links. Decidido em 2026-11-24: **alternativa A**. Páginas-pai funcionam como agrupador; pastas sem conteúdo ficam para depois, se a necessidade aparecer.
 
 - **API:** `POST /pages/{id}/rank` (SSD 3.7.1), no mesmo padrão da ordenação dos artefatos: posição entre as irmãs vizinhas e, opcionalmente, um novo pai. A página e as subpáginas mantêm o id, o conteúdo e as versões.
-- **Tela:** ações na página (subir, descer, promover, rebaixar, mover para…) e arrastar e soltar na árvore, só entre irmãs (UX/UI 7.12).
+- **Tela:** menu ⋯ em cada página da árvore (subir, descer, promover, rebaixar, mover para…) e arrastar e soltar, que põe a página onde foi solta, inclusive em outro nível (UX/UI 7.12).
 - **Auditoria:** `knowledge_page.moved`, com pai e posição antes e depois.
 - **Decisões da seção 14 da PROP-002:**
   - agrupador = página-pai;

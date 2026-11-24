@@ -396,12 +396,36 @@ export function moveTargets(items: PageSummary[], pageId: string): PageNode[] {
   return pageTree(items).filter((node) => !blocked.has(node.id));
 }
 
-/** Arrastar e soltar (PROP-002): só reordena entre irmãs; soltar em outro nível não faz nada. */
+/**
+ * Arrastar e soltar (PROP-002). `from` e `to` são índices da árvore achatada (como o CDK informa). A página vai para onde
+ * foi solta, no nível da linha vizinha: subindo, fica antes da linha que ocupava `to`; descendo, fica logo abaixo dela e,
+ * se a linha seguinte for subpágina dela, vira a primeira subpágina. `parentId` só vai quando o nível muda. Nulo quando
+ * não há movimento ou quando o destino é a própria página ou uma descendente (seria ciclo).
+ */
 export function dropRank(tree: PageNode[], from: number, to: number): { id: string; request: RankRequest } | null {
   const dragged = tree[from];
   const target = tree[to];
-  if (!dragged || !target || from === to || target.parentId !== dragged.parentId) {
+  if (!dragged || !target || from === to) {
     return null;
   }
-  return { id: dragged.id, request: to > from ? { afterId: target.id } : { beforeId: target.id } };
+  const own = new Set([dragged.id]);
+  for (const node of tree.slice(from + 1)) {
+    if (node.depth <= dragged.depth) {
+      break;
+    }
+    own.add(node.id);
+  }
+  if (own.has(target.id)) {
+    return null;
+  }
+  const withParent = (parentId: string | null, anchor: RankRequest): RankRequest =>
+    parentId === dragged.parentId ? anchor : { parentId, ...anchor };
+  if (to < from) {
+    return { id: dragged.id, request: withParent(target.parentId, { beforeId: target.id }) };
+  }
+  const below = tree.slice(to + 1).find((node) => !own.has(node.id));
+  if (below && below.parentId === target.id) {
+    return { id: dragged.id, request: withParent(target.id, { beforeId: below.id }) };
+  }
+  return { id: dragged.id, request: withParent(target.parentId, { afterId: target.id }) };
 }

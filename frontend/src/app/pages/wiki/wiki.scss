@@ -32,7 +32,9 @@ h1 {
 
 .pages {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
+  min-width: 0;
 }
 
 .actions,
@@ -85,9 +87,56 @@ h1 {
 }
 
 .page-tree {
+  min-width: 0;
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+/* Linha da árvore: o título é cortado com reticências (o nome inteiro fica no title) e o menu ⋯ organiza (PROP-002). */
+.node {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  border-radius: 8px;
+
+  .page-link {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .more {
+    flex: none;
+    width: 28px;
+    height: 28px;
+    margin-left: 2px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+
+    &:hover {
+      background: var(--blue-50);
+    }
+
+    &:focus-visible,
+    &[aria-expanded='true'] {
+      opacity: 1;
+    }
+  }
+
+  &:hover .more,
+  &.current .more {
+    opacity: 1;
+  }
+}
+
+.page-tree li.cdk-drag {
+  cursor: grab;
 }
 
 .page-link {
@@ -382,13 +431,6 @@ input:focus-visible {
   font-style: italic;
 }
 
-/* Organizar a árvore (PROP-002). */
-.organize {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
 .page-tree li.cdk-drag-preview {
   border-radius: 8px;
   background: var(--surface);
@@ -402,4 +444,11 @@ input:focus-visible {
 
 .page-tree.cdk-drop-list-dragging li:not(.cdk-drag-placeholder) {
   transition: transform 150ms ease;
+}
+
+/* Telas de toque não têm hover: o menu ⋯ fica sempre visível. */
+@media (hover: none) {
+  .node .more {
+    opacity: 1;
+  }
 }

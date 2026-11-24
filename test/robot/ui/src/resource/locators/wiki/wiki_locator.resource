@@ -26,6 +26,7 @@ ${WIKI_APPROVE}             css=[data-testid="wiki-approve"]
 ${WIKI_BACK_DRAFT}          css=[data-testid="wiki-back-draft"]
 ${WIKI_ERROR}               css=[data-testid="wiki-error"]
 # Organizar a árvore (PROP-002).
+${WIKI_CURRENT_NODE_MENU}   css=[data-testid="wiki-tree"] li.current [data-testid="wiki-node-menu"]
 ${WIKI_UP}                  css=[data-testid="wiki-up"]
 ${WIKI_MOVE}                css=[data-testid="wiki-move"]
 ${WIKI_MOVE_TARGET}         css=[data-testid="wiki-move-target"]
