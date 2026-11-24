@@ -10,9 +10,17 @@
           <button type="button" class="btn primary" (click)="startCreate('PAGE', null)" data-testid="wiki-new-page">Nova página</button>
         </div>
       }
-      <ul class="page-tree" role="tree" aria-label="Páginas da unidade" data-testid="wiki-tree">
+      <ul
+        class="page-tree"
+        role="tree"
+        aria-label="Páginas da unidade"
+        cdkDropList
+        [cdkDropListDisabled]="!l.canEdit || showArchived()"
+        (cdkDropListDropped)="dropped($event)"
+        data-testid="wiki-tree"
+      >
         @for (node of tree(); track node.id) {
-          <li role="treeitem" [attr.aria-level]="node.depth + 1" [attr.aria-selected]="node.id === page()?.id">
+          <li cdkDrag [cdkDragData]="node" role="treeitem" [attr.aria-level]="node.depth + 1" [attr.aria-selected]="node.id === page()?.id">
             <button
               type="button"
               class="page-link"
@@ -148,6 +156,16 @@
               @if (current.access === 'FULL') {
                 <button type="button" class="btn" (click)="showHistory()" data-testid="wiki-history">Histórico</button>
               }
+              @if (current.canEdit && !current.archived && !isRegimento()) {
+                <!-- Organizar a árvore (PROP-002): sem mudar conteúdo, versão ou id. -->
+                <span class="organize" role="group" aria-label="Organizar a página na árvore" data-testid="wiki-organize">
+                  <button type="button" class="btn" (click)="organize('up')" [disabled]="busy() || !canOrganize('up')" title="Subir" aria-label="Subir" data-testid="wiki-up">↑</button>
+                  <button type="button" class="btn" (click)="organize('down')" [disabled]="busy() || !canOrganize('down')" title="Descer" aria-label="Descer" data-testid="wiki-down">↓</button>
+                  <button type="button" class="btn" (click)="organize('promote')" [disabled]="busy() || !canOrganize('promote')" title="Promover para o nível de cima" data-testid="wiki-promote">← Promover</button>
+                  <button type="button" class="btn" (click)="organize('demote')" [disabled]="busy() || !canOrganize('demote')" title="Rebaixar: vira subpágina da página de cima" data-testid="wiki-demote">Rebaixar →</button>
+                  <button type="button" class="btn" (click)="openMove()" [disabled]="busy()" data-testid="wiki-move">Mover para…</button>
+                </span>
+              }
               @if (current.canEdit && !current.archived) {
                 <button type="button" class="btn subtle" (click)="ask('archive')" data-testid="wiki-archive">Arquivar</button>
               }
@@ -155,6 +173,22 @@
                 <button type="button" class="btn" (click)="restore()" data-testid="wiki-restore">Restaurar</button>
               }
             </div>
+          }
+
+          @if (moving()) {
+            <form class="ask" (submit)="confirmMove($event)" data-testid="wiki-move-form">
+              <label>
+                Mover "{{ current.title }}" (e as subpáginas) para
+                <select [value]="moveTarget()" (change)="moveTarget.set(value($event))" data-testid="wiki-move-target">
+                  <option value="" [selected]="moveTarget() === ''">Raiz do Wiki</option>
+                  @for (target of targets(); track target.id) {
+                    <option [value]="target.id" [selected]="moveTarget() === target.id">{{ '— '.repeat(target.depth) }}{{ target.title }}</option>
+                  }
+                </select>
+              </label>
+              <button type="submit" class="btn primary" [disabled]="busy()" data-testid="wiki-move-confirm">Mover</button>
+              <button type="button" class="btn" (click)="moving.set(false)">Cancelar</button>
+            </form>
           }
 
           @if (asking(); as action) {

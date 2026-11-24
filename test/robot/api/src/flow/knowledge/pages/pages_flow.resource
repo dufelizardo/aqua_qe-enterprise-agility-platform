@@ -114,3 +114,25 @@ Knowledge - Pages - By HTTP Status Code
     ELSE
         Fail    Status HTTP '${meuHTTP}' não previsto para as páginas de conhecimento.
     END
+
+Pages - Reorganizar
+    [Documentation]    PROP-002: B passa para antes de A; depois A vai para dentro de B, sem versão nova; mover A
+    ...    para dentro de si mesma é recusado.
+    [Arguments]    ${unit_name}    ${title}
+    ${unit}=    Create Knowledge Unit    ${unit_name}
+    ${a}=    Create Page    pm    ${unit}    ${title} A
+    ${b}=    Create Page    pm    ${unit}    ${title} B
+    ${payload}=    Create Dictionary    beforeId=${a}[id]
+    ${response}=    POST Page Rank As Persona    pm    ${b}[id]    ${payload}
+    Should Be Equal As Integers    ${response.status_code}    200
+    ${listing}=    GET Pages As Persona    pm    ${unit}
+    Should Be Equal    ${listing.json()}[items][0][id]    ${b}[id]
+    Should Be Equal    ${listing.json()}[items][1][id]    ${a}[id]
+    ${payload}=    Create Dictionary    parentId=${b}[id]
+    ${response}=    POST Page Rank As Persona    pm    ${a}[id]    ${payload}
+    Should Be Equal As Integers    ${response.status_code}    200
+    Should Be Equal    ${response.json()}[parentId]    ${b}[id]
+    Should Be Equal As Integers    ${response.json()}[versionNumber]    1
+    ${payload}=    Create Dictionary    parentId=${a}[id]
+    ${response}=    POST Page Rank As Persona    pm    ${a}[id]    ${payload}
+    Validate Error Body    ${response}    400    VALIDATION_FAILED

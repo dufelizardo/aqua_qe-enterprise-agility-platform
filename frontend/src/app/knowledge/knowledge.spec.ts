@@ -1,4 +1,15 @@
-import { Block, PageSummary, blocksToDoc, docHasText, docToBlocks, pageTree, parseInline } from './knowledge.service';
+import {
+  Block,
+  PageSummary,
+  blocksToDoc,
+  docHasText,
+  docToBlocks,
+  dropRank,
+  moveTargets,
+  pageTree,
+  parseInline,
+  rankFor,
+} from './knowledge.service';
 
 describe('parseInline (Markdown leve, sem HTML)', () => {
   it('separa negrito, itálico, código e link', () => {
@@ -93,5 +104,53 @@ describe('blocksToDoc (bug #67: conteúdo do editor anterior no editor contínuo
     expect(doc).toEqual({ type: 'doc', content: [{ type: 'paragraph' }] });
     expect(docHasText(doc)).toBe(false);
     expect(docHasText(blocksToDoc([{ type: 'paragraph', text: 'x' }]))).toBe(true);
+  });
+});
+
+describe('organizar a árvore (PROP-002)', () => {
+  const p = (id: string, parentId: string | null): PageSummary => ({
+    id,
+    parentId,
+    title: id,
+    type: 'PAGE',
+    governed: false,
+    status: 'PUBLISHED',
+    publishedVersion: 1,
+    archived: false,
+    updatedAt: '2026-11-24T00:00:00Z',
+  });
+  // Raiz: a, b, c; a tem a1 e a2; a1 tem a1x.
+  const items = [p('a', null), p('a1', 'a'), p('a1x', 'a1'), p('a2', 'a'), p('b', null), p('c', null)];
+
+  it('subir e descer usam a irmã vizinha; nas pontas não se aplicam', () => {
+    expect(rankFor(items, 'b', 'up')).toEqual({ beforeId: 'a' });
+    expect(rankFor(items, 'b', 'down')).toEqual({ afterId: 'c' });
+    expect(rankFor(items, 'a', 'up')).toBeNull();
+    expect(rankFor(items, 'c', 'down')).toBeNull();
+    expect(rankFor(items, 'a2', 'up')).toEqual({ beforeId: 'a1' });
+  });
+
+  it('promover vai para o nível do pai, logo depois dele; na raiz não se aplica', () => {
+    expect(rankFor(items, 'a2', 'promote')).toEqual({ parentId: null, afterId: 'a' });
+    expect(rankFor(items, 'a1x', 'promote')).toEqual({ parentId: 'a', afterId: 'a1' });
+    expect(rankFor(items, 'b', 'promote')).toBeNull();
+  });
+
+  it('rebaixar vira subpágina da irmã de cima; a primeira não se aplica', () => {
+    expect(rankFor(items, 'b', 'demote')).toEqual({ parentId: 'a' });
+    expect(rankFor(items, 'a', 'demote')).toBeNull();
+  });
+
+  it('Mover para… não oferece a própria página nem as descendentes', () => {
+    expect(moveTargets(items, 'a').map((n) => n.id)).toEqual(['b', 'c']);
+    expect(moveTargets(items, 'a1').map((n) => n.id)).toEqual(['a', 'a2', 'b', 'c']);
+  });
+
+  it('arrastar só reordena entre irmãs', () => {
+    const tree = pageTree(items); // a, a1, a1x, a2, b, c
+    expect(dropRank(tree, 4, 5)).toEqual({ id: 'b', request: { afterId: 'c' } });
+    expect(dropRank(tree, 5, 0)).toEqual({ id: 'c', request: { beforeId: 'a' } });
+    expect(dropRank(tree, 4, 1)).toBeNull();
+    expect(dropRank(tree, 3, 3)).toBeNull();
   });
 });

@@ -23,3 +23,8 @@ CT-003 - KNOW-012: Validate POST Pages - HTTP 403 FORBIDDEN
     [Documentation]    Quem só lê não cria página.
     [Tags]    POST    Pages    HTTP403    KNOW-012    security    ASVS-V4
     KNOWLEDGE - PAGES    403    ${knowledge_unit_name}    ${knowledge_page_title}    ${knowledge_text}
+
+CT-004 - KNOW-006: Validate POST Page Rank - HTTP 200 OK (reordenar e mover sem versão nova)
+    [Documentation]    PROP-002: reordenar irmãs, mover para dentro de outra página e recusar ciclo.
+    [Tags]    POST    PageRank    HTTP200    KNOW-006    PROP-002
+    KNOWLEDGE - ORGANIZE PAGES    ${knowledge_unit_name}    ${knowledge_page_title}

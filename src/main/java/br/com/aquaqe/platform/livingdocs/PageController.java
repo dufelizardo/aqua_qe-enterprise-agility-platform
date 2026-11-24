@@ -78,6 +78,12 @@ class PageController {
 		return service.changeStatus(id, body);
 	}
 
+	/** Reordena e move a página no Wiki (PROP-002). */
+	@PostMapping("/api/v1/pages/{id}/rank")
+	Map<String, Object> rank(@PathVariable UUID id, @RequestBody Map<String, Object> body) {
+		return service.rank(id, body);
+	}
+
 	@PostMapping("/api/v1/pages/{id}/archive")
 	Map<String, Object> archive(@PathVariable UUID id, @RequestBody(required = false) Map<String, Object> body) {
 		return service.archive(id, body);

@@ -381,3 +381,25 @@ input:focus-visible {
   color: var(--text-muted);
   font-style: italic;
 }
+
+/* Organizar a árvore (PROP-002). */
+.organize {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.page-tree li.cdk-drag-preview {
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgba(15, 34, 51, 0.18);
+  list-style: none;
+}
+
+.page-tree li.cdk-drag-placeholder {
+  opacity: 0.3;
+}
+
+.page-tree.cdk-drop-list-dragging li:not(.cdk-drag-placeholder) {
+  transition: transform 150ms ease;
+}

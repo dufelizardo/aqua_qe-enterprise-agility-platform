@@ -320,6 +320,80 @@ class PageService {
 		return get(page.id());
 	}
 
+	/**
+	 * Reordena e move uma página dentro do Wiki da unidade (PROP-002): {@code beforeId} ou {@code afterId} apontam a
+	 * irmã de referência; {@code parentId} (se presente, inclusive nulo = raiz) muda o nível, levando as subpáginas
+	 * junto. Só muda a posição: não cria versão, não mexe no status e mantém o id (os links continuam valendo).
+	 */
+	@Transactional
+	Map<String, Object> rank(UUID id, Map<String, Object> body) {
+		UUID user = user();
+		PageRow page = editable(id, user);
+		if (REGIMENTO.equals(page.type())) {
+			throw ApiException.validation("parentId", "o regimento não fica dentro do Wiki");
+		}
+		boolean moving = body.containsKey("parentId");
+		UUID parentId = moving ? parent(body.get("parentId"), page.orgUnitId(), page.id()) : page.parentId();
+		UUID beforeId = uuidOrNull(body.get("beforeId"), "beforeId");
+		UUID afterId = uuidOrNull(body.get("afterId"), "afterId");
+		if (beforeId != null && afterId != null) {
+			throw ApiException.validation("beforeId", "informe beforeId ou afterId, não os dois");
+		}
+		if (beforeId == null && afterId == null && !moving) {
+			throw ApiException.validation("beforeId", "informe beforeId, afterId ou parentId");
+		}
+		List<PageRow> siblings = repository.pagesOf(page.orgUnitId()).stream()
+			.filter(p -> !p.archived() && !REGIMENTO.equals(p.type()) && !p.id().equals(page.id()))
+			.filter(p -> Objects.equals(p.parentId(), parentId))
+			.toList();
+		double position;
+		UUID anchorId = beforeId != null ? beforeId : afterId;
+		if (anchorId == null) {
+			position = siblings.isEmpty() ? page.position() : siblings.getLast().position() + 1000;
+		}
+		else {
+			int index = -1;
+			for (int i = 0; i < siblings.size(); i++) {
+				if (siblings.get(i).id().equals(anchorId)) {
+					index = i;
+				}
+			}
+			if (index < 0) {
+				throw ApiException.validation(beforeId != null ? "beforeId" : "afterId",
+					"a página de referência precisa estar no mesmo nível");
+			}
+			double anchor = siblings.get(index).position();
+			if (beforeId != null) {
+				position = index == 0 ? anchor - 1000 : (siblings.get(index - 1).position() + anchor) / 2;
+			}
+			else {
+				position = index == siblings.size() - 1 ? anchor + 1000 : (anchor + siblings.get(index + 1).position()) / 2;
+			}
+		}
+		repository.reposition(page.id(), parentId, position);
+		Map<String, Object> before = new LinkedHashMap<>();
+		before.put("parentId", String.valueOf(page.parentId()));
+		before.put("position", page.position());
+		Map<String, Object> after = new LinkedHashMap<>();
+		after.put("parentId", String.valueOf(parentId));
+		after.put("position", position);
+		events.publish("knowledge_page.moved", user, page.orgUnitId(), aggregate(page.id(), page.title()), Map.of(),
+			before, after);
+		return get(page.id());
+	}
+
+	private static UUID uuidOrNull(Object value, String field) {
+		if (value == null || String.valueOf(value).isBlank()) {
+			return null;
+		}
+		try {
+			return UUID.fromString(String.valueOf(value));
+		}
+		catch (IllegalArgumentException ex) {
+			throw ApiException.validation(field, "valor inválido");
+		}
+	}
+
 	@Transactional
 	Map<String, Object> archive(UUID id, Map<String, Object> body) {
 		UUID user = user();

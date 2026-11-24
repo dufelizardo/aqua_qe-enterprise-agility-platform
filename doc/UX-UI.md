@@ -580,6 +580,7 @@ Princípio adotado da [Proposta 03](ADMIN-PROPOSAL.md#1-princípio-adotado-três
   - desfazer e refazer.
 
   Há também um resumo opcional da alteração. Na leitura, o mesmo editor mostra o conteúdo, sem a barra. O regimento usa o mesmo editor em cada seção obrigatória. Conflito de edição como na [6.8](#68-diálogo-de-conflito-de-edição): o rascunho fica na tela e a pessoa recarrega.
+- **Organizar a árvore ([PROP-002](propostas/PROP-002-organizacao-flexivel-da-wiki.md)):** para quem edita, a página aberta tem **↑ Subir**, **↓ Descer**, **← Promover** (vai para o nível do pai, logo depois dele), **Rebaixar →** (vira subpágina da página de cima) e **Mover para…** (escolhe a raiz ou qualquer página que não seja ela mesma nem uma subpágina dela). As subpáginas vão junto. Na árvore, **arrastar e soltar** reordena no mesmo nível; para mudar de nível, usam-se as ações, que também funcionam pelo teclado. Organizar não cria versão, não muda o status e não muda o link da página (`?page=<id>`). A ordem é a mesma para todos da unidade.
 - **Histórico:** versões com autor, data, resumo e marcas de aprovada e publicada; abrir uma versão mostra o aviso "Você está vendo a versão N" e o retorno à atual.
 - **Quem lê pela regra 9** (SSD 2.1) vê só a versão publicada, com "Somente leitura (publicado)" e sem histórico.
 - **Dados:** `GET /org-units/{id}/pages`, `POST /org-units/{id}/pages`, `GET/PUT/PATCH /pages/{id}`, `GET /pages/{id}/versions[/{n}]`, `POST /pages/{id}/status`, `POST /pages/{id}/archive`, `POST /pages/{id}/restore` (SSD 3.7.1).
