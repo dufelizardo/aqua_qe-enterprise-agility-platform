@@ -39,6 +39,11 @@ public class Authorization {
 		return repository.hasAnyRole(userId, Set.of(role, "PLATFORM_ADMIN"), lineage);
 	}
 
+	/** Usuários com algum papel vigente em alguma das unidades. */
+	public Set<UUID> peopleIn(java.util.Collection<UUID> orgUnitIds) {
+		return orgUnitIds.isEmpty() ? Set.of() : Set.copyOf(repository.usersIn(orgUnitIds));
+	}
+
 	/**
 	 * Unidades cujo conhecimento <b>publicado</b> o usuário lê (SSD 2.1, regra 9; Proposta 07, KNOW-D04): as do
 	 * {@link #readScope(UUID) escopo de leitura} e todas as que estão acima das unidades em que ele tem papel.

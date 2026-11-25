@@ -156,3 +156,17 @@ Artefato - Documentar E Aprovar PRD
     Wait For Document Status    Aprovado
     Click Artifact Overview Tab
     Wait For Overview Document Status    PRD    Aprovado
+
+Artefato - Editar Titulo E Responsavel
+    [Documentation]    O título do cartão abre a página; clicar no título e no Responsável edita cada campo; ao voltar,
+    ...    o cartão mostra o título novo.
+    [Arguments]    ${status}    ${title}    ${new_title}    ${person}
+    ${card}=    Card Locator    ${status}    ${title}
+    Open Card Page    ${card}
+    Wait For Artifact Title    ${title}
+    Rename Artifact    ${new_title}
+    Wait For Artifact Title    ${new_title}
+    Choose Artifact Person    ownerId    ${person}
+    Wait For Artifact Field    ownerId    ${person}
+    Click Artifact Back
+    Wait For Card In Column    ${status}    ${new_title}

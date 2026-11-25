@@ -24,3 +24,4 @@ ${squad_unit_label}                 Squad
 ${squad_task_base}                  Robot UI Task
 ${squad_sprint_base}                Robot UI Sprint
 ${portfolio_document_text}           Texto escrito pela suíte de interface.
+${portfolio_renamed_suffix}          (renomeada)

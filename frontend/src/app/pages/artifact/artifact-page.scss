@@ -118,3 +118,85 @@
   padding: 0;
   list-style: none;
 }
+
+/* Edição dos dados do artefato clicando no campo. */
+.editable {
+  display: inline-block;
+  max-width: 100%;
+  margin: -2px -6px;
+  padding: 2px 6px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: text;
+
+  &:hover {
+    border-color: var(--border-strong);
+    background: var(--surface-muted, #f4f6f8);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--blue-500);
+    outline-offset: 1px;
+  }
+
+  &.multiline {
+    white-space: pre-wrap;
+  }
+}
+
+.field-edit {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+
+  input,
+  select,
+  textarea {
+    min-width: 0;
+    padding: 6px 8px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    font: inherit;
+  }
+
+  textarea {
+    width: 100%;
+    resize: vertical;
+  }
+}
+
+.title-edit {
+  margin: 8px 0;
+
+  input {
+    flex: 1 1 260px;
+    font-size: 22px;
+    font-weight: 700;
+  }
+}
+
+.person-edit,
+.description-edit {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.person-options {
+  display: grid;
+  gap: 2px;
+  max-height: 220px;
+  margin: 0;
+  padding: 4px 0;
+  overflow: auto;
+  list-style: none;
+
+  button {
+    padding: 4px 0;
+    text-align: left;
+  }
+}

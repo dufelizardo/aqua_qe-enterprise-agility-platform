@@ -64,6 +64,10 @@ export class LevelBoard {
   private readonly tabParam = toSignal(inject(ActivatedRoute).queryParamMap.pipe(map((q) => q.get('tab'))), {
     initialValue: null,
   });
+  /** Nível do quadro da Squad no endereço (?nivel=), para o "Voltar" da página do artefato manter o nível. */
+  private readonly levelParam = toSignal(inject(ActivatedRoute).queryParamMap.pipe(map((q) => q.get('nivel'))), {
+    initialValue: null,
+  });
 
   /** Chave do nível, vinda dos dados da rota. */
   readonly screen = input<keyof typeof LEVEL_SETUPS>('portfolio');
@@ -162,7 +166,9 @@ export class LevelBoard {
     effect(() => {
       const screen = this.screen();
       untracked(() => {
-        this.boardScreen.set(screen);
+        const asked = this.levelParam();
+        const kept = this.routeSetup().level === 'FL1' && this.boardLevels.some((l) => l.key === asked);
+        this.boardScreen.set(kept ? (asked as keyof typeof LEVEL_SETUPS) : screen);
         this.creating.set(false);
         this.configuring.set(false);
         this.board.set(null);
@@ -189,6 +195,7 @@ export class LevelBoard {
       return;
     }
     this.boardScreen.set(key);
+    void this.router.navigate([], { queryParams: { nivel: key }, queryParamsHandling: 'merge', replaceUrl: true });
     this.creating.set(false);
     this.configuring.set(false);
     this.board.set(null);

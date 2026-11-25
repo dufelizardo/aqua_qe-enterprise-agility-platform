@@ -54,3 +54,27 @@ Wait For Overview Document Status
     [Arguments]    ${type}    ${label}
     ${locator}=    Evaluate    $ARTIFACT_DOC_STATUS_BY_TYPE.replace('{}', $type)
     Wait For Condition    Text    ${locator}    ==    ${label}    timeout=30s
+
+Rename Artifact
+    [Documentation]    Clica no título, troca o texto e salva.
+    [Arguments]    ${new_title}
+    Click    ${ARTIFACT_TITLE}
+    Fill Text    ${ARTIFACT_TITLE_INPUT}    ${new_title}
+    Click    ${ARTIFACT_TITLE_SAVE}
+
+Choose Artifact Person
+    [Documentation]    Clica no campo de pessoa (ownerId, technicalLeadId ou qaOwnerId), busca pelo nome e escolhe.
+    [Arguments]    ${field}    ${name}
+    ${locator}=    Evaluate    $ARTIFACT_FIELD_BY_NAME.replace('{}', $field)
+    Click    ${locator}
+    Fill Text    ${ARTIFACT_PERSON_SEARCH}    ${name}
+    ${option}=    Evaluate    $ARTIFACT_PERSON_OPTION.replace('{}', $name)
+    Click    ${option} >> nth=0
+
+Wait For Artifact Field
+    [Arguments]    ${field}    ${text}
+    ${locator}=    Evaluate    $ARTIFACT_FIELD_BY_NAME.replace('{}', $field)
+    Wait For Condition    Text    ${locator}    ==    ${text}    timeout=30s
+
+Click Artifact Back
+    Click    ${ARTIFACT_BACK}

@@ -19,7 +19,18 @@ import {
 } from '../../knowledge/artifact-documents.service';
 import { RichDoc, blocksToDoc, docToBlocks } from '../../knowledge/knowledge.service';
 import { RichEditor } from '../../knowledge/rich-editor';
-import { Artifact, WorkService } from '../../work/work.service';
+import { Artifact, ArtifactPatch, PersonRef, SIZES, WorkService } from '../../work/work.service';
+
+/** Campo da Visão geral aberto para edição. */
+export type EditableField = 'title' | 'description' | 'size' | PersonField;
+export type PersonField = 'ownerId' | 'technicalLeadId' | 'qaOwnerId';
+
+/** Rótulo e valor atual de cada campo de pessoa. */
+export const PERSON_FIELDS: { field: PersonField; label: string; of: (a: Artifact) => PersonRef | null | undefined }[] = [
+  { field: 'ownerId', label: 'Responsável', of: (a) => a.owner },
+  { field: 'technicalLeadId', label: 'Tech Lead', of: (a) => a.technicalLead },
+  { field: 'qaOwnerId', label: 'QA', of: (a) => a.qaOwner },
+];
 
 interface DraftSection {
   key: string;
@@ -85,6 +96,16 @@ export class ArtifactPage {
   protected readonly error = signal<string | null>(null);
   protected readonly busy = signal(false);
 
+  // Edição dos dados do artefato, um campo por vez, clicando nele.
+  protected readonly sizes = SIZES;
+  protected readonly personFields = PERSON_FIELDS;
+  protected readonly editing = signal<EditableField | null>(null);
+  protected readonly textDraft = signal('');
+  protected readonly personQuery = signal('');
+  protected readonly personResults = signal<PersonRef[]>([]);
+  protected readonly fieldNotice = signal<string | null>(null);
+  private searchSeq = 0;
+
   constructor() {
     effect(() => {
       const key = this.key();
@@ -124,6 +145,96 @@ export class ArtifactPage {
     } catch (error) {
       this.document.set(null);
       this.error.set(messageOf(toApiError(error)));
+    }
+  }
+
+  protected startField(field: EditableField): void {
+    const a = this.artifact();
+    if (!a?.canEdit || this.busy()) {
+      return;
+    }
+    this.fieldNotice.set(null);
+    this.error.set(null);
+    this.textDraft.set(field === 'title' ? a.title : field === 'description' ? (a.description ?? '') : '');
+    this.personQuery.set('');
+    this.personResults.set([]);
+    this.editing.set(field);
+    if (field === 'ownerId' || field === 'technicalLeadId' || field === 'qaOwnerId') {
+      void this.searchPeople('');
+    }
+  }
+
+  protected cancelField(): void {
+    this.editing.set(null);
+  }
+
+  protected async saveTitle(event?: Event): Promise<void> {
+    event?.preventDefault();
+    const title = this.textDraft().trim();
+    if (!title) {
+      return;
+    }
+    await this.patch({ title });
+  }
+
+  protected async saveDescription(): Promise<void> {
+    const description = this.textDraft().trim();
+    await this.patch({ description: description || null });
+  }
+
+  protected async saveSize(value: string): Promise<void> {
+    await this.patch({ size: value || null });
+  }
+
+  protected async choosePerson(field: PersonField, person: PersonRef | null): Promise<void> {
+    await this.patch({ [field]: person?.id ?? null });
+  }
+
+  protected async searchPeople(q: string): Promise<void> {
+    const a = this.artifact();
+    if (!a) {
+      return;
+    }
+    this.personQuery.set(q);
+    const seq = ++this.searchSeq;
+    try {
+      const people = await this.work.people(a.key, q);
+      if (seq === this.searchSeq) {
+        this.personResults.set(people);
+      }
+    } catch (error) {
+      this.error.set(messageOf(toApiError(error)));
+    }
+  }
+
+  protected titleKey(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      this.cancelField();
+    }
+  }
+
+  /** Grava um campo; em conflito de versão, recarrega e pede para refazer. */
+  private async patch(change: ArtifactPatch): Promise<void> {
+    const a = this.artifact();
+    if (!a) {
+      return;
+    }
+    this.busy.set(true);
+    this.error.set(null);
+    try {
+      this.artifact.set(await this.work.updateArtifact(a.key, change, a.version));
+      this.editing.set(null);
+    } catch (error) {
+      const apiError = toApiError(error);
+      if (apiError.code === 'VERSION_CONFLICT') {
+        this.editing.set(null);
+        this.artifact.set(await this.work.artifact(a.key));
+        this.fieldNotice.set('Alguém alterou este item. Os dados foram atualizados; refaça a alteração.');
+      } else {
+        this.error.set(messageOf(apiError));
+      }
+    } finally {
+      this.busy.set(false);
     }
   }
 

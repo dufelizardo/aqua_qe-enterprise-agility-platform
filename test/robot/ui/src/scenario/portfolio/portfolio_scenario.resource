@@ -80,3 +80,16 @@ PORTFOLIO - DOCUMENTOS DA INICIATIVA
     Squad - Abrir Quadro Do Nivel    ${squad}    ${squad_level_name}    portfolio
     Portfolio - Criar Iniciativa    ${title}    ${initiative_description}    ${squad}
     Artefato - Documentar E Aprovar PRD    IDEA    ${title}    ${document_text}
+
+PORTFOLIO - EDITAR DADOS DA INICIATIVA
+    [Documentation]    Cria a Iniciativa no Quadro da Squad, abre a página dela pelo cartão e edita o título e o
+    ...    Responsável clicando nos campos.
+    [Arguments]    ${username}    ${display_name}    ${root_name}    ${portfolio_base}    ${portfolio_label}
+    ...    ${cadeia_base}    ${cadeia_label}    ${squad_base}    ${squad_label}    ${squad_level_name}
+    ...    ${initiative_base}    ${initiative_description}    ${renamed_suffix}
+    ${squad}=    Squad - Preparar Squad    ${username}    ${display_name}    ${root_name}    ${portfolio_base}
+    ...    ${portfolio_label}    ${cadeia_base}    ${cadeia_label}    ${squad_base}    ${squad_label}
+    ${title}=    Unique Name    ${initiative_base}
+    Squad - Abrir Quadro Do Nivel    ${squad}    ${squad_level_name}    portfolio
+    Portfolio - Criar Iniciativa    ${title}    ${initiative_description}    ${squad}
+    Artefato - Editar Titulo E Responsavel    IDEA    ${title}    ${title} ${renamed_suffix}    ${display_name}

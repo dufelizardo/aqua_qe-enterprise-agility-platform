@@ -3,7 +3,26 @@
   <header class="artifact-header" data-testid="artifact-header">
     <button type="button" class="link" (click)="back()" data-testid="artifact-back">← Voltar</button>
     <p class="eyebrow">{{ a.key }} · {{ a.orgUnit.name }}</p>
-    <h1 data-testid="artifact-title">{{ a.title }}</h1>
+    @if (editing() === 'title') {
+      <form class="field-edit title-edit" (submit)="saveTitle($event)">
+        <input
+          [value]="textDraft()"
+          (input)="textDraft.set(value($event))"
+          (keydown)="titleKey($event)"
+          maxlength="200"
+          aria-label="Título"
+          data-testid="artifact-title-input"
+        />
+        <button type="submit" class="btn primary" [disabled]="busy() || !textDraft().trim()" data-testid="artifact-title-save">Salvar</button>
+        <button type="button" class="btn" (click)="cancelField()">Cancelar</button>
+      </form>
+    } @else if (a.canEdit) {
+      <h1>
+        <button type="button" class="editable" (click)="startField('title')" title="Clique para editar" data-testid="artifact-title">{{ a.title }}</button>
+      </h1>
+    } @else {
+      <h1 data-testid="artifact-title">{{ a.title }}</h1>
+    }
     <p class="meta"><span class="chip" data-testid="artifact-status">{{ a.status.name }}</span></p>
     <nav class="tabs" aria-label="Abas do artefato" data-testid="artifact-tabs">
       <a [routerLink]="[]" [queryParams]="{ tab: null }" [class.on]="!docType()" data-testid="artifact-tab-overview">Visão geral</a>
@@ -23,13 +42,88 @@
     <section class="overview" data-testid="artifact-overview">
       <div class="card">
         <h2>Visão geral</h2>
+        @if (fieldNotice()) {
+          <p class="banner" role="status" data-testid="artifact-field-notice">{{ fieldNotice() }}</p>
+        }
+        @if (a.canEdit) {
+          <p class="hint">Clique em um campo para editar.</p>
+        }
         <dl class="fields">
-          <dt>Responsável</dt>
-          <dd>{{ a.owner?.name ?? '—' }}</dd>
+          @for (p of personFields; track p.field) {
+            <dt>{{ p.label }}</dt>
+            <dd>
+              @if (editing() === p.field) {
+                <div class="field-edit person-edit" [attr.data-testid]="'artifact-person-edit-' + p.field">
+                  <input
+                    [value]="personQuery()"
+                    (input)="searchPeople(value($event))"
+                    (keydown.escape)="cancelField()"
+                    placeholder="Buscar pelo nome"
+                    [attr.aria-label]="'Buscar ' + p.label"
+                    data-testid="artifact-person-search"
+                  />
+                  <ul class="person-options" role="listbox" [attr.aria-label]="p.label">
+                    <li>
+                      <button type="button" class="link" (click)="choosePerson(p.field, null)" [disabled]="busy()" data-testid="artifact-person-none">Ninguém</button>
+                    </li>
+                    @for (person of personResults(); track person.id) {
+                      <li>
+                        <button type="button" class="link" (click)="choosePerson(p.field, person)" [disabled]="busy()" data-testid="artifact-person-option">{{ person.name }}</button>
+                      </li>
+                    } @empty {
+                      <li class="muted">Ninguém encontrado.</li>
+                    }
+                  </ul>
+                  <button type="button" class="btn" (click)="cancelField()">Cancelar</button>
+                </div>
+              } @else if (a.canEdit) {
+                <button type="button" class="editable" (click)="startField(p.field)" [attr.data-testid]="'artifact-field-' + p.field">{{ p.of(a)?.name ?? '—' }}</button>
+              } @else {
+                <span [attr.data-testid]="'artifact-field-' + p.field">{{ p.of(a)?.name ?? '—' }}</span>
+              }
+            </dd>
+          }
           <dt>Estimativa</dt>
-          <dd>{{ a.size ?? '—' }}</dd>
+          <dd>
+            @if (editing() === 'size') {
+              <span class="field-edit">
+                <select (change)="saveSize(value($event))" (keydown.escape)="cancelField()" [disabled]="busy()" aria-label="Estimativa" data-testid="artifact-size-select">
+                  <option value="" [selected]="!a.size">—</option>
+                  @for (s of sizes; track s) {
+                    <option [value]="s" [selected]="a.size === s">{{ s }}</option>
+                  }
+                </select>
+                <button type="button" class="btn" (click)="cancelField()">Cancelar</button>
+              </span>
+            } @else if (a.canEdit) {
+              <button type="button" class="editable" (click)="startField('size')" data-testid="artifact-field-size">{{ a.size ?? '—' }}</button>
+            } @else {
+              <span data-testid="artifact-field-size">{{ a.size ?? '—' }}</span>
+            }
+          </dd>
           <dt>Descrição</dt>
-          <dd>{{ a.description || '—' }}</dd>
+          <dd>
+            @if (editing() === 'description') {
+              <div class="field-edit description-edit">
+                <textarea
+                  rows="6"
+                  [value]="textDraft()"
+                  (input)="textDraft.set(value($event))"
+                  (keydown.escape)="cancelField()"
+                  aria-label="Descrição"
+                  data-testid="artifact-description-input"
+                ></textarea>
+                <div>
+                  <button type="button" class="btn primary" (click)="saveDescription()" [disabled]="busy()" data-testid="artifact-description-save">Salvar</button>
+                  <button type="button" class="btn" (click)="cancelField()">Cancelar</button>
+                </div>
+              </div>
+            } @else if (a.canEdit) {
+              <button type="button" class="editable multiline" (click)="startField('description')" data-testid="artifact-field-description">{{ a.description || 'Adicionar uma descrição…' }}</button>
+            } @else {
+              <span data-testid="artifact-field-description">{{ a.description || '—' }}</span>
+            }
+          </dd>
         </dl>
       </div>
       @if (hasDocuments()) {

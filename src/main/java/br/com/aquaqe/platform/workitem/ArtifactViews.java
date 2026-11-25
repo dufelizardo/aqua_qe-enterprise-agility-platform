@@ -18,7 +18,14 @@ public final class ArtifactViews {
 	public record ArtifactView(UUID id, String key, String type, String level, String title, String description,
 			ParentRef parent, UnitRef orgUnit, StatusRef status, Person owner, Person technicalLead, Person qaOwner,
 			Person assignee, String size, Map<String, Object> customFields, long childCount, boolean archived,
-			int version, Instant createdAt, Instant updatedAt, boolean blocked, String blockedReason) {
+			int version, Instant createdAt, Instant updatedAt, boolean blocked, String blockedReason, Boolean canEdit) {
+
+		/** O mesmo artefato dizendo se quem pediu pode editá-lo (só na leitura de um artefato e no PATCH). */
+		ArtifactView withCanEdit(boolean value) {
+			return new ArtifactView(id, key, type, level, title, description, parent, orgUnit, status, owner,
+				technicalLead, qaOwner, assignee, size, customFields, childCount, archived, version, createdAt, updatedAt,
+				blocked, blockedReason, value);
+		}
 	}
 
 	public record ParentRef(UUID id, String key, String type, String title) {

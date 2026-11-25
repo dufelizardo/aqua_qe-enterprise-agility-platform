@@ -348,6 +348,7 @@ Regra ao publicar uma versão de template: documentos existentes mantêm a vers�
 | DELETE | `/artifacts/{artifact}` | Arquiva (não apaga). | editar no nível | — |
 | GET | `/artifacts/{artifact}/children` | Filhos diretos. | ler | 010, 031 |
 | GET | `/artifacts/{artifact}/context` | Resumo dos ancestrais. | ler | 017 |
+| GET | `/artifacts/{artifact}/people` | Pessoas que podem ser escolhidas nos campos de pessoa (filtro `q` pelo nome, até 20): quem tem papel vigente na unidade do artefato, nas de cima e nas de baixo. | editar no nível | 010 |
 | GET | `/artifacts/{artifact}/links` | Vínculos não hierárquicos. | ler | 031 |
 | POST | `/artifacts/{artifact}/links` | Cria vínculo. | editar no nível | 031 |
 | DELETE | `/artifacts/{artifact}/links/{linkId}` | Remove vínculo. | editar no nível | 031 |
@@ -479,6 +480,8 @@ Como as regras de escopo foram aplicadas (2026-11-20):
 - **Responsável padrão (decidido em 2026-11-20, a especificar):** quem fica como Owner de um artefato criado sem `ownerId` varia por instituição (em algumas é o PO, em outras o PM). Será configurável, por tipo de artefato e por unidade, na configuração organizacional. Até lá, o artefato nasce sem Owner.
 
 Vínculos: `type` é um de `RELATES_TO`, `ORIGINATES_FROM`, `DUPLICATES`. `ORIGINATES_FROM` é o vínculo de um Bug ou Problema de Produção com o artefato de origem.
+
+Página do artefato (2026-11-25): `GET /artifacts/{artifact}` e o `PATCH` devolvem também `canEdit`, que diz se quem pediu tem a permissão de edição do nível; nas listagens o campo vem nulo. A tela usa o `PATCH` campo a campo, sempre com a `version` lida, e o `GET .../people` para Responsável, Technical Lead e QA.
 
 Ordenação (`POST /artifacts/{artifact}/rank`): o corpo traz `beforeId` ou `afterId`; a API recalcula a posição do artefato em relação ao vizinho informado. Implementada em 2026-11-20: a ordem é **global** (um número por artefato, novos itens entram no fim), então qualquer lista ordenada por ela respeita a mesma prioridade. `GET /artifacts?sort=rank` lista nessa ordem, e as colunas dos quadros também a usam. Exige a permissão de edição do nível; o vizinho precisa ser legível.
 

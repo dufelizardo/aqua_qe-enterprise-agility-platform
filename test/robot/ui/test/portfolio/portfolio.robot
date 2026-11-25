@@ -52,3 +52,11 @@ CT-005 - PRD-RF-018: Validate Iniciativa - abrir pelo cartão, documentar e apro
     ...    ${portfolio_root_name}    ${portfolio_unit_base}    ${portfolio_unit_label}    ${tactical_cadeia_base}
     ...    ${tactical_cadeia_label}    ${squad_unit_base}    ${squad_unit_label}    ${squad_level_name}
     ...    ${portfolio_initiative_base}    ${portfolio_initiative_description}    ${portfolio_document_text}
+
+CT-006 - PRD-RF-010: Validate Iniciativa - editar título e Responsável na página do artefato
+    [Documentation]    Clicar no título e no Responsável edita cada campo; o quadro mostra o título novo.
+    [Tags]    UI    Portfolio    ArtifactEdit    PRD-RF-010
+    PORTFOLIO - EDITAR DADOS DA INICIATIVA    ${portfolio_admin_username}    ${portfolio_admin_display_name}
+    ...    ${portfolio_root_name}    ${portfolio_unit_base}    ${portfolio_unit_label}    ${tactical_cadeia_base}
+    ...    ${tactical_cadeia_label}    ${squad_unit_base}    ${squad_unit_label}    ${squad_level_name}
+    ...    ${portfolio_initiative_base}    ${portfolio_initiative_description}    ${portfolio_renamed_suffix}

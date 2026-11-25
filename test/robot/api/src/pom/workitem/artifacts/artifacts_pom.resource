@@ -58,3 +58,23 @@ DELETE Artifact As Persona
     ...    expected_status=ANY
     Log    ${response.status_code} ${response.text}
     RETURN    ${response}
+
+PATCH Artifact As Persona
+    [Arguments]    ${persona}    ${artifact}    ${payload}
+    ${session}=    Get AQuA-QE Session For Persona    ${persona}
+    ${response}=    PATCH On Session    ${session}    ${API_BASE_PATH}${WORKITEM_ARTIFACTS_ENDPOINT}/${artifact}
+    ...    json=${payload}    expected_status=ANY
+    Log    ${response.status_code} ${response.text}
+    RETURN    ${response}
+
+GET Artifact People As Persona
+    [Arguments]    ${persona}    ${artifact}    ${q}=${None}
+    ${session}=    Get AQuA-QE Session For Persona    ${persona}
+    ${params}=    Create Dictionary
+    IF    $q is not None
+        Set To Dictionary    ${params}    q=${q}
+    END
+    ${response}=    GET On Session    ${session}    ${API_BASE_PATH}${WORKITEM_ARTIFACTS_ENDPOINT}/${artifact}/people
+    ...    params=${params}    expected_status=ANY
+    Log    ${response.status_code} ${response.text}
+    RETURN    ${response}
