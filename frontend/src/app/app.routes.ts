@@ -3,6 +3,7 @@ import { Routes } from '@angular/router';
 import { adminGuard } from './core/admin.guard';
 import { authGuard } from './core/auth.guard';
 import { workspaceGuard } from './core/workspace.service';
+import { confirmLeave } from './knowledge/draft-store';
 
 /** Rotas do MVP (UX/UI, seção 5). A landing é pública; o restante exige sessão. */
 export const routes: Routes = [
@@ -54,6 +55,7 @@ export const routes: Routes = [
         path: 'wiki',
         title: 'Wiki · AQuA-QE',
         canActivate: [workspaceGuard],
+        canDeactivate: [confirmLeave],
         loadComponent: () => import('./pages/wiki/wiki').then((m) => m.Wiki),
         data: { mode: 'wiki' },
       },
@@ -62,6 +64,7 @@ export const routes: Routes = [
         path: 'regimento',
         title: 'Regimento · AQuA-QE',
         canActivate: [workspaceGuard],
+        canDeactivate: [confirmLeave],
         loadComponent: () => import('./pages/wiki/wiki').then((m) => m.Wiki),
         data: { mode: 'regimento' },
       },
@@ -69,6 +72,7 @@ export const routes: Routes = [
       {
         path: 'artefato/:key',
         title: 'Artefato · AQuA-QE',
+        canDeactivate: [confirmLeave],
         loadComponent: () => import('./pages/artifact/artifact-page').then((m) => m.ArtifactPage),
       },
       {

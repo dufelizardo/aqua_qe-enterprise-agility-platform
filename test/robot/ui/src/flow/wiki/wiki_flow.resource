@@ -157,3 +157,31 @@ Wiki - Menu Da Pagina
     Archive Current Wiki Page
     Wait For Wiki Page Link Gone    Cópia de ${renamed}
     Wait For Wiki Page Link    ${renamed}
+
+Wiki - Rascunho Automatico
+    [Documentation]    #82: o texto digitado fica guardado como rascunho; sair pergunta antes; ao editar de novo o
+    ...    rascunho volta; salvar cria a versão e apaga o rascunho.
+    [Arguments]    ${title_base}    ${draft_text}
+    ${first}=    Unique Name    ${title_base} R1
+    ${second}=    Unique Name    ${title_base} R2
+    Create Wiki Page    ${first}
+    Wait For Wiki Page Link    ${first}
+    Create Wiki Page    ${second}
+    Wait For Wiki Page Title    ${second}
+    Open Wiki Page    ${first}
+    Wait For Wiki Page Title    ${first}
+    Start Editing And Type    ${draft_text}
+    Wait For Wiki Draft Saved
+    Open Wiki Page Accepting Leave    ${second}
+    Wait For Wiki Page Title    ${second}
+    Open Wiki Page    ${first}
+    Wait For Wiki Page Title    ${first}
+    Click Wiki Edit
+    Wait For Wiki Draft Restored
+    ${text}=    Get Wiki Editor Text
+    Should Contain    ${text}    ${draft_text}
+    Click Wiki Save
+    Wait For Wiki Page Version    2
+    Click Wiki Edit
+    ${count}=    Get Wiki Draft Restored Count
+    Should Be Equal As Integers    ${count}    0

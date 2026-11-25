@@ -200,3 +200,9 @@
     text-align: left;
   }
 }
+
+/* Rascunho automático (#82). */
+.draft-status {
+  color: var(--text-muted);
+  font-size: 13px;
+}

@@ -1,7 +1,7 @@
 import { DatePipe, Location } from '@angular/common';
-import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { Component, HostListener, computed, effect, inject, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 
 import { messageOf, toApiError } from '../../core/api-error';
@@ -17,6 +17,7 @@ import {
   TYPES_WITH_DOCUMENTS,
   sectionIndex,
 } from '../../knowledge/artifact-documents.service';
+import { DraftMatch, DraftStore, LEAVE_MESSAGE, LeaveAware, draftBlocks, draftKey, draftMatch } from '../../knowledge/draft-store';
 import { RichDoc, blocksToDoc, docToBlocks } from '../../knowledge/knowledge.service';
 import { RichEditor } from '../../knowledge/rich-editor';
 import { Artifact, ArtifactPatch, PersonRef, SIZES, WorkService } from '../../work/work.service';
@@ -50,11 +51,18 @@ interface DraftSection {
   templateUrl: './artifact-page.html',
   styleUrls: ['../wiki/wiki.scss', './artifact-page.scss'],
 })
-export class ArtifactPage {
+export class ArtifactPage implements LeaveAware {
   private readonly route = inject(ActivatedRoute);
   private readonly work = inject(WorkService);
   private readonly documents = inject(ArtifactDocumentsService);
   private readonly location = inject(Location);
+  private readonly router = inject(Router);
+  // Rascunho automático neste navegador (#82).
+  private readonly drafts = inject(DraftStore);
+  protected readonly dirty = signal(false);
+  protected readonly draftSavedAt = signal<Date | null>(null);
+  protected readonly draftFound = signal<{ match: DraftMatch; savedAt: Date; version: number } | null>(null);
+  private draftTimer: ReturnType<typeof setTimeout> | null = null;
 
   protected readonly statusLabels = DOC_STATUS_LABELS;
   protected readonly typeLabels = DOC_TYPE_LABELS;
@@ -135,6 +143,7 @@ export class ArtifactPage {
   }
 
   private async openDocument(key: string, type: DocType): Promise<void> {
+    this.stopEditing();
     this.mode.set('read');
     this.oldVersion.set(null);
     this.reopening.set(false);
@@ -242,6 +251,37 @@ export class ArtifactPage {
     this.location.back();
   }
 
+  /** Troca de aba: com alterações não salvas, pergunta antes (#82). */
+  protected goTab(event: Event, type: DocType | null): void {
+    event.preventDefault();
+    if (type === this.docType()) {
+      return;
+    }
+    if (!this.canLeave() && !window.confirm(LEAVE_MESSAGE)) {
+      return;
+    }
+    this.stopEditing();
+    void this.router.navigate([], { queryParams: { tab: type } });
+  }
+
+  /** Sair sem perguntar: fora da edição ou sem alterações (#82). */
+  canLeave(): boolean {
+    return this.mode() !== 'edit' || !this.dirty();
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  protected beforeUnload(event: BeforeUnloadEvent): void {
+    if (!this.canLeave()) {
+      this.flushDraft();
+      event.preventDefault();
+    }
+  }
+
+  private draftId(): string | null {
+    const doc = this.document();
+    return doc ? draftKey('doc', `${doc.artifactKey}.${doc.type}`) : null;
+  }
+
   protected summaryOf(type: DocType): ArtifactDocSummary | undefined {
     return this.summaries().find((s) => s.type === type);
   }
@@ -255,11 +295,101 @@ export class ArtifactPage {
     this.draftSummary.set('');
     this.conflict.set(false);
     this.error.set(null);
+    this.dirty.set(false);
+    this.draftSavedAt.set(null);
+    this.draftFound.set(null);
+    const id = this.draftId();
+    const stored = id ? this.drafts.read(id) : null;
+    const match = draftMatch(stored, doc.currentVersion);
+    if (stored && match) {
+      this.draftFound.set({ match, savedAt: new Date(stored.savedAt), version: stored.baseVersion });
+      if (match === 'same') {
+        this.applyStoredDraft();
+      }
+    }
     this.mode.set('edit');
+  }
+
+  /** Repõe no editor o rascunho guardado; o de versão anterior só quando a pessoa pede. */
+  protected applyStoredDraft(): void {
+    const id = this.draftId();
+    const stored = id ? this.drafts.read(id) : null;
+    if (!stored) {
+      return;
+    }
+    this.draft.set(
+      this.draft().map((s) => {
+        const blocks = draftBlocks(stored, s.key);
+        return blocks ? { ...s, doc: blocksToDoc(blocks) } : s;
+      }),
+    );
+    const found = this.draftFound();
+    this.draftFound.set(found ? { ...found, match: 'same' } : null);
+    this.dirty.set(true);
+    this.draftSavedAt.set(new Date(stored.savedAt));
+  }
+
+  protected discardStoredDraft(): void {
+    const id = this.draftId();
+    if (id) {
+      this.drafts.clear(id);
+    }
+    this.startEdit();
+  }
+
+  protected cancelEdit(): void {
+    if (this.dirty() && !window.confirm('Descartar as alterações? O rascunho guardado neste navegador também será apagado.')) {
+      return;
+    }
+    const id = this.draftId();
+    if (id) {
+      this.drafts.clear(id);
+    }
+    this.stopEditing();
+  }
+
+  private stopEditing(): void {
+    if (this.draftTimer) {
+      clearTimeout(this.draftTimer);
+      this.draftTimer = null;
+    }
+    this.dirty.set(false);
+    this.draftFound.set(null);
+    this.draftSavedAt.set(null);
+    if (this.mode() === 'edit') {
+      this.mode.set('read');
+    }
+  }
+
+  private touch(): void {
+    this.dirty.set(true);
+    if (this.draftTimer) {
+      clearTimeout(this.draftTimer);
+    }
+    this.draftTimer = setTimeout(() => this.flushDraft(), 800);
+  }
+
+  private flushDraft(): void {
+    this.draftTimer = null;
+    const doc = this.document();
+    const id = this.draftId();
+    if (!doc || !id || this.mode() !== 'edit' || !this.dirty()) {
+      return;
+    }
+    const savedAt = new Date();
+    const ok = this.drafts.write(id, {
+      baseVersion: doc.currentVersion,
+      sections: this.draft().map((s) => ({ key: s.key, blocks: docToBlocks(s.doc) })),
+      savedAt: savedAt.toISOString(),
+    });
+    if (ok) {
+      this.draftSavedAt.set(savedAt);
+    }
   }
 
   protected setDoc(index: number, doc: RichDoc): void {
     this.draft.set(this.draft().map((s, i) => (i === index ? { ...s, doc } : s)));
+    this.touch();
   }
 
   protected async save(): Promise<void> {
@@ -271,7 +401,8 @@ export class ArtifactPage {
       try {
         const sections = this.draft().map((s) => ({ key: s.key, blocks: docToBlocks(s.doc) }));
         this.document.set(await this.documents.save(doc.artifactKey, doc.type, doc.currentVersion, sections, this.draftSummary().trim()));
-        this.mode.set('read');
+        this.drafts.clear(draftKey('doc', `${doc.artifactKey}.${doc.type}`));
+        this.stopEditing();
         await this.reloadSummaries();
       } catch (error) {
         if (toApiError(error).code === 'VERSION_CONFLICT') {

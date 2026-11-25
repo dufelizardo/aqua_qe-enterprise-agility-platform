@@ -158,7 +158,7 @@
         <article class="card" data-testid="wiki-page">
           <header class="page-head">
             @if (mode() === 'edit') {
-              <input class="title-input" [value]="draftTitle()" (input)="draftTitle.set(value($event))" aria-label="Título da página" maxlength="200" data-testid="wiki-edit-title" />
+              <input class="title-input" [value]="draftTitle()" (input)="setDraftTitle(value($event))" aria-label="Título da página" maxlength="200" data-testid="wiki-edit-title" />
             } @else {
               <h2 data-testid="wiki-page-title">{{ p.title }}</h2>
             }
@@ -270,6 +270,20 @@
           }
 
           @if (mode() === 'edit') {
+            @if (draftFound(); as found) {
+              @if (found.match === 'same') {
+                <p class="banner" role="status" data-testid="wiki-draft-restored">
+                  Rascunho recuperado ({{ found.savedAt | date: 'dd/MM/yyyy HH:mm' }}).
+                  <button type="button" class="link" (click)="discardStoredDraft()" data-testid="wiki-draft-discard">Descartar rascunho</button>
+                </p>
+              } @else {
+                <p class="banner warn" role="status" data-testid="wiki-draft-older">
+                  Há um rascunho de {{ found.savedAt | date: 'dd/MM/yyyy HH:mm' }}, feito sobre a versão {{ found.version }}. A página mudou depois disso.
+                  <button type="button" class="link" (click)="applyStoredDraft()" data-testid="wiki-draft-apply">Recuperar mesmo assim</button>
+                  <button type="button" class="link" (click)="discardStoredDraft()">Descartar</button>
+                </p>
+              }
+            }
             @if (conflict()) {
               <p class="banner warn" role="alert" data-testid="wiki-conflict">
                 Esta página foi alterada por outra pessoa enquanto você editava. Copie o que precisar e recarregue para ver a versão nova.
@@ -287,7 +301,10 @@
             <div class="save-bar">
               <input class="summary-input" placeholder="Resumo da alteração (opcional)" [value]="draftSummary()" (input)="draftSummary.set(value($event))" maxlength="300" data-testid="wiki-summary" />
               <button type="button" class="btn primary" (click)="save()" [disabled]="busy() || conflict()" data-testid="wiki-save">Salvar</button>
-              <button type="button" class="btn" (click)="mode.set('read')">Cancelar</button>
+              <button type="button" class="btn" (click)="cancelEdit()" data-testid="wiki-cancel">Cancelar</button>
+              @if (draftSavedAt(); as at) {
+                <span class="draft-status" role="status" data-testid="wiki-draft-status">Rascunho guardado neste navegador às {{ at | date: 'HH:mm' }}</span>
+              }
             </div>
           } @else {
             @for (section of shownDocs(); track section.key) {

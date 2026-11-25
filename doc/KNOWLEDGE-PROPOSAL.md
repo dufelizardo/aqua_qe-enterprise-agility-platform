@@ -93,8 +93,8 @@ O usuário comparou o Wiki com o Confluence (home, árvore do espaço, página e
 
 | Ordem | Entrega | Issue | Situação |
 |---|---|---|---|
-| 1 | Menu ⋯ completo: renomear, copiar link, fazer uma cópia, organizar e arquivar | #81 | Implementada (2026-11-25). |
-| 2 | Rascunho automático e aviso ao sair sem salvar (Wiki e documentos) | #82 | Backlog. |
+| 1 | Menu ⋯ completo: renomear, copiar link, fazer uma cópia, organizar e arquivar | #81 | Concluída (validada em dev, 2026-11-25). |
+| 2 | Rascunho automático e aviso ao sair sem salvar (Wiki e documentos) | #82 | Implementada (2026-11-25): rascunho neste navegador. |
 | 3 | Home: Recentes e Novidades | #83 | Backlog. |
 | 4 | Busca em páginas, documentos e artefatos (`GET /search`, Fase C) | #84 | Backlog. |
 | 5 | Comentários com @menção, notificações e favoritos (Fase D) | #85 | Backlog. |

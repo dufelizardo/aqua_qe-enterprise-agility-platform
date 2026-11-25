@@ -25,9 +25,9 @@
     }
     <p class="meta"><span class="chip" data-testid="artifact-status">{{ a.status.name }}</span></p>
     <nav class="tabs" aria-label="Abas do artefato" data-testid="artifact-tabs">
-      <a [routerLink]="[]" [queryParams]="{ tab: null }" [class.on]="!docType()" data-testid="artifact-tab-overview">Visão geral</a>
+      <a href="?" (click)="goTab($event, null)" [class.on]="!docType()" data-testid="artifact-tab-overview">Visão geral</a>
       @for (type of tabs(); track type) {
-        <a [routerLink]="[]" [queryParams]="{ tab: type }" [class.on]="docType() === type" [attr.data-testid]="'artifact-tab-' + type">{{
+        <a [attr.href]="'?tab=' + type" (click)="goTab($event, type)" [class.on]="docType() === type" [attr.data-testid]="'artifact-tab-' + type">{{
           typeLabels[type]
         }}</a>
       }
@@ -244,6 +244,20 @@
             }
 
             @if (mode() === 'edit') {
+              @if (draftFound(); as found) {
+                @if (found.match === 'same') {
+                  <p class="banner" role="status" data-testid="doc-draft-restored">
+                    Rascunho recuperado ({{ found.savedAt | date: 'dd/MM/yyyy HH:mm' }}).
+                    <button type="button" class="link" (click)="discardStoredDraft()" data-testid="doc-draft-discard">Descartar rascunho</button>
+                  </p>
+                } @else {
+                  <p class="banner" role="status" data-testid="doc-draft-older">
+                    Há um rascunho de {{ found.savedAt | date: 'dd/MM/yyyy HH:mm' }}, feito sobre a versão {{ found.version }}. O documento mudou depois disso.
+                    <button type="button" class="link" (click)="applyStoredDraft()" data-testid="doc-draft-apply">Recuperar mesmo assim</button>
+                    <button type="button" class="link" (click)="discardStoredDraft()">Descartar</button>
+                  </p>
+                }
+              }
               @if (conflict()) {
                 <p class="banner" role="alert" data-testid="doc-conflict">
                   Este documento foi alterado por outra pessoa enquanto você editava. Copie o que precisar e recarregue para ver a versão nova.
@@ -259,7 +273,10 @@
               <div class="save-bar">
                 <input class="summary-input" placeholder="Resumo da alteração (opcional)" [value]="draftSummary()" (input)="draftSummary.set(value($event))" maxlength="300" data-testid="doc-summary" />
                 <button type="button" class="btn primary" (click)="save()" [disabled]="busy() || conflict()" data-testid="doc-save">Salvar</button>
-                <button type="button" class="btn" (click)="mode.set('read')">Cancelar</button>
+                <button type="button" class="btn" (click)="cancelEdit()" data-testid="doc-cancel">Cancelar</button>
+                @if (draftSavedAt(); as at) {
+                  <span class="draft-status" role="status" data-testid="doc-draft-status">Rascunho guardado neste navegador às {{ at | date: 'HH:mm' }}</span>
+                }
               </div>
             } @else {
               @for (section of shownDocs(); track section.key) {
