@@ -25,6 +25,15 @@ ${WIKI_SUBMIT_REVIEW}       css=[data-testid="wiki-submit-review"]
 ${WIKI_APPROVE}             css=[data-testid="wiki-approve"]
 ${WIKI_BACK_DRAFT}          css=[data-testid="wiki-back-draft"]
 ${WIKI_ERROR}               css=[data-testid="wiki-error"]
+# Organizar a árvore (PROP-002).
+${WIKI_CURRENT_NODE_MENU}   css=[data-testid="wiki-tree"] li.current [data-testid="wiki-node-menu"]
+${WIKI_UP}                  css=[data-testid="wiki-up"]
+${WIKI_MOVE}                css=[data-testid="wiki-move"]
+${WIKI_MOVE_TARGET}         css=[data-testid="wiki-move-target"]
+${WIKI_MOVE_CONFIRM}        css=[data-testid="wiki-move-confirm"]
+${WIKI_TREE_TITLES}         css=[data-testid="wiki-tree"] [data-testid="wiki-page-link"] .title
+# Item da árvore pelo título exato: format com o título.
+${WIKI_TREE_ITEM_BY_TITLE}  css=[data-testid="wiki-tree"] li[role="treeitem"]:has(.title:text-is("{}"))
 ${WIKI_MISSING}             css=[data-testid="wiki-missing"]
 # Página da árvore pelo título exato: format com o título.
 ${WIKI_PAGE_LINK_BY_TITLE}  css=[data-testid="wiki-page-link"]:has(.title:text-is("{}"))

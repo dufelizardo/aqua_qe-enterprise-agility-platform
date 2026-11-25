@@ -30,3 +30,15 @@ CT-003 - KNOW-028: Validate Regimento - quem não é aprovador não vê Aprovar
     WIKI UI - SEM APROVACAO PARA O PM    ${wiki_admin_username}    ${wiki_admin_display_name}    ${wiki_root_name}
     ...    ${wiki_unit_base}    ${wiki_unit_label}    ${wiki_regimento_base}    ${wiki_pm_username}
     ...    ${wiki_pm_display_name}
+
+CT-004 - KNOW-006: Validate Wiki - reorganizar páginas (Subir e Mover para…)
+    [Documentation]    PROP-002: a segunda página sobe para antes da primeira e depois vai para dentro dela.
+    [Tags]    UI    Wiki    KNOW-006    PROP-002
+    WIKI UI - ORGANIZAR PAGINAS    ${wiki_pm_username}    ${wiki_pm_display_name}    ${wiki_root_name}
+    ...    ${wiki_page_base}
+
+CT-005 - KNOW-006: Validate Wiki - arrastar e soltar página na árvore
+    [Documentation]    PROP-002: a terceira página, arrastada sobre a primeira, fica antes dela.
+    [Tags]    UI    Wiki    KNOW-006    PROP-002
+    WIKI UI - ARRASTAR PAGINA    ${wiki_pm_username}    ${wiki_pm_display_name}    ${wiki_root_name}
+    ...    ${wiki_page_base}

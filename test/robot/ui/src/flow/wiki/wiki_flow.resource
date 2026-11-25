@@ -1,5 +1,6 @@
 *** Settings ***
 Documentation       Wiki da unidade (UX/UI 7.12; Proposta 07, Fase A): escolhe o caminho e faz as asserções.
+Library             Collections
 Resource            ../../pom/common/aquaqe_ui_common.resource
 Resource            ../../pom/wiki/wiki_pom.resource
 Resource            ../admin/admin_flow.resource
@@ -96,3 +97,45 @@ Regimento - Sem Aprovacao Para Quem Nao Aprova
     Wait For Wiki Status    Em revisão
     ${count}=    Get Approve Button Count
     Should Be Equal As Integers    ${count}    0
+
+Wiki - Organizar Paginas
+    [Documentation]    PROP-002: com duas páginas novas, "Subir" põe a segunda antes da primeira, e "Mover para…" a
+    ...    coloca dentro da primeira (nível 2 na árvore).
+    [Arguments]    ${title_base}
+    ${first}=    Unique Name    ${title_base} 1
+    ${second}=    Unique Name    ${title_base} 2
+    Create Wiki Page    ${first}
+    Wait For Wiki Page Link    ${first}
+    Create Wiki Page    ${second}
+    Wait For Wiki Page Title    ${second}
+    Click Wiki Up
+    Wait Until Keyword Succeeds    30s    1s    Wiki - Vem Antes    ${second}    ${first}
+    Move Wiki Page Into    ${first}
+    Wait For Wiki Tree Level    ${second}    2
+    ${level}=    Get Wiki Tree Level    ${first}
+    Should Be Equal    ${level}    1
+
+Wiki - Vem Antes
+    [Documentation]    Na árvore, o primeiro título aparece antes do segundo.
+    [Arguments]    ${earlier}    ${later}
+    ${titles}=    Get Wiki Tree Titles
+    ${i}=    Get Index From List    ${titles}    ${earlier}
+    ${j}=    Get Index From List    ${titles}    ${later}
+    Should Be True    0 <= ${i} < ${j}
+
+Wiki - Arrastar Pagina
+    [Documentation]    PROP-002: com três páginas novas, arrastar a terceira sobre a primeira a põe antes dela, na raiz.
+    [Arguments]    ${title_base}
+    ${first}=    Unique Name    ${title_base} A
+    ${second}=    Unique Name    ${title_base} B
+    ${third}=    Unique Name    ${title_base} C
+    Create Wiki Page    ${first}
+    Wait For Wiki Page Link    ${first}
+    Create Wiki Page    ${second}
+    Wait For Wiki Page Link    ${second}
+    Create Wiki Page    ${third}
+    Wait For Wiki Page Title    ${third}
+    Drag Wiki Page Onto    ${third}    ${first}
+    Wait Until Keyword Succeeds    30s    1s    Wiki - Vem Antes    ${third}    ${first}
+    ${level}=    Get Wiki Tree Level    ${third}
+    Should Be Equal    ${level}    1

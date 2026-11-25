@@ -1,6 +1,7 @@
 *** Settings ***
 Documentation       Ações na tela Wiki. Sem asserções: as esperas só sincronizam.
 Library             Browser
+Library             Collections
 Resource            ../../resource/locators/wiki/wiki_locator.resource
 
 *** Keywords ***
@@ -94,3 +95,52 @@ Get Wiki Missing Text
 Take Wiki Screenshot
     [Arguments]    ${name}
     Take Screenshot    filename=${name}
+
+Click Wiki Up
+    [Documentation]    Menu ⋯ da página aberta, na árvore: "↑ Subir".
+    Click    ${WIKI_CURRENT_NODE_MENU}
+    Click    ${WIKI_UP}
+
+Move Wiki Page Into
+    [Documentation]    Menu ⋯ da página aberta, "Mover para…", escolhendo uma página da raiz pelo título (na raiz, o
+    ...    rótulo é o próprio título; em níveis abaixo ele vem precedido de "— ").
+    [Arguments]    ${target_title}
+    Click    ${WIKI_CURRENT_NODE_MENU}
+    Click    ${WIKI_MOVE}
+    Select Options By    ${WIKI_MOVE_TARGET}    label    ${target_title}
+    Click    ${WIKI_MOVE_CONFIRM}
+
+Get Wiki Tree Titles
+    ${elements}=    Get Elements    ${WIKI_TREE_TITLES}
+    ${titles}=    Create List
+    FOR    ${element}    IN    @{elements}
+        ${text}=    Get Text    ${element}
+        Append To List    ${titles}    ${text}
+    END
+    RETURN    ${titles}
+
+Get Wiki Tree Level
+    [Arguments]    ${title}
+    ${locator}=    Evaluate    $WIKI_TREE_ITEM_BY_TITLE.replace('{}', $title)
+    ${level}=    Get Attribute    ${locator}    aria-level
+    RETURN    ${level}
+
+Wait For Wiki Tree Level
+    [Arguments]    ${title}    ${level}
+    ${locator}=    Evaluate    $WIKI_TREE_ITEM_BY_TITLE.replace('{}', $title)
+    Wait For Condition    Attribute    ${locator}    aria-level    ==    ${level}    timeout=30s
+
+Drag Wiki Page Onto
+    [Documentation]    Arrasta a página com o mouse, em passos (o CDK só começa a arrastar depois de alguns pixels), e
+    ...    solta sobre a linha de destino.
+    [Arguments]    ${title}    ${target_title}
+    ${source}=    Evaluate    $WIKI_PAGE_LINK_BY_TITLE.replace('{}', $title)
+    ${target}=    Evaluate    $WIKI_PAGE_LINK_BY_TITLE.replace('{}', $target_title)
+    Scroll To Element    ${target}
+    ${a}=    Get BoundingBox    ${source}
+    ${b}=    Get BoundingBox    ${target}
+    Mouse Move    ${{$a['x'] + 20}}    ${{$a['y'] + 10}}
+    Mouse Button    down
+    Mouse Move    ${{$a['x'] + 20}}    ${{$a['y'] + 2}}    steps=5
+    Mouse Move    ${{$b['x'] + 20}}    ${{$b['y'] + 3}}    steps=20
+    Mouse Button    up

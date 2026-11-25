@@ -569,9 +569,9 @@ Princípio adotado da [Proposta 03](ADMIN-PROPOSAL.md#1-princípio-adotado-três
 
 ### 7.12 Wiki da unidade
 
-- **Objetivo:** guardar o conhecimento da unidade (regimentos, políticas, processos, acordos, padrões) e ler o publicado pelas unidades acima ([Proposta 07](KNOWLEDGE-PROPOSAL.md), Fase A).
+- **Objetivo:** guardar o conhecimento da unidade: regimentos, políticas, processos, acordos e padrões ([Proposta 07](KNOWLEDGE-PROPOSAL.md), Fase A). **Cada unidade tem um Wiki exclusivo**, como o regimento: Empresa, Unidade de negócio, Portfólio, Cadeia de valor e Squad têm os seus, e o Wiki de uma unidade não mostra as páginas de outra (decisão do usuário em 2026-11-25).
 - **Rota:** `/wiki`, com `?page=<id>` para abrir uma página por link. O espaço é a unidade ativa.
-- **Layout:** à esquerda, as páginas em árvore (subpáginas indentadas, com o status do regimento quando não publicado), "Nova página", "Novo regimento", "Mostrar arquivadas" e, abaixo, **Das unidades acima**: as páginas publicadas de cada ancestral. À direita, a página.
+- **Layout:** à esquerda, as páginas em árvore (subpáginas indentadas, com o status do regimento quando não publicado), "Nova página", "Novo regimento", "Mostrar arquivadas". À direita, a página.
 - **Página:** título, tipo e status (no regimento), versão, autor e data; ações conforme a permissão: Editar, Nova subpágina, Histórico, Arquivar ou Restaurar; no regimento, Enviar para revisão, Aprovar, Voltar para rascunho, Publicar e Reabrir (com motivo). Aviso das seções obrigatórias vazias.
 - **Edição (bug #67):** título editável e, em cada seção, uma **área de texto contínua**, como no Confluence ou no Word. Escreve-se direto, e a formatação vem da barra e dos atalhos:
   - estilo (texto, título, subtítulo);
@@ -580,6 +580,7 @@ Princípio adotado da [Proposta 03](ADMIN-PROPOSAL.md#1-princípio-adotado-três
   - desfazer e refazer.
 
   Há também um resumo opcional da alteração. Na leitura, o mesmo editor mostra o conteúdo, sem a barra. O regimento usa o mesmo editor em cada seção obrigatória. Conflito de edição como na [6.8](#68-diálogo-de-conflito-de-edição): o rascunho fica na tela e a pessoa recarrega.
+- **Organizar a árvore ([PROP-002](propostas/PROP-002-organizacao-flexivel-da-wiki.md)):** para quem edita, cada página da árvore tem o menu **⋯** (aparece ao passar o mouse e na página aberta) com **↑ Subir**, **↓ Descer**, **← Promover** (vai para o nível do pai, logo depois dele), **Rebaixar →** (vira subpágina da página de cima) e **Mover para…** (escolhe a raiz ou qualquer página que não seja ela mesma nem uma subpágina dela). As subpáginas vão junto. Na árvore, **arrastar e soltar** põe a página onde ela foi solta, no nível da linha vizinha: soltar sobre uma subpágina a torna irmã dessa subpágina, e soltar logo abaixo de uma página que tem subpáginas a torna a primeira delas; não é possível soltar dentro dela mesma. O menu ⋯ faz tudo pelo teclado. Títulos longos são cortados com reticências, e o nome inteiro aparece ao passar o mouse. Organizar não cria versão, não muda o status e não muda o link da página (`?page=<id>`). A ordem é a mesma para todos da unidade.
 - **Histórico:** versões com autor, data, resumo e marcas de aprovada e publicada; abrir uma versão mostra o aviso "Você está vendo a versão N" e o retorno à atual.
 - **Quem lê pela regra 9** (SSD 2.1) vê só a versão publicada, com "Somente leitura (publicado)" e sem histórico.
 - **Dados:** `GET /org-units/{id}/pages`, `POST /org-units/{id}/pages`, `GET/PUT/PATCH /pages/{id}`, `GET /pages/{id}/versions[/{n}]`, `POST /pages/{id}/status`, `POST /pages/{id}/archive`, `POST /pages/{id}/restore` (SSD 3.7.1).

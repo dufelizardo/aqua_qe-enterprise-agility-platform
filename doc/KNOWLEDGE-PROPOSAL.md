@@ -92,7 +92,7 @@ Também acertou ao separar **proprietário, visibilidade, aplicabilidade, ediç�
 | Requisito | Situação |
 |---|---|
 | KNOW-001 a 005 espaços por unidade e institucional | **Implementado** (qualquer nível, sem nome fixo). |
-| KNOW-006 páginas e subpáginas | **Implementado**: criar, renomear, mover sem ciclo, arquivar e restaurar. |
+| KNOW-006 páginas e subpáginas | **Implementado**: criar, renomear, arquivar e restaurar; reorganizar a árvore (subir, descer, promover, rebaixar, mover para…, arrastar e soltar) desde a [PROP-002](propostas/PROP-002-organizacao-flexivel-da-wiki.md). |
 | KNOW-007 versões e histórico | **Implementado**: versão por gravação, histórico e leitura de versão antiga. |
 | KNOW-008 e 009 templates e regimento | **Parcial**: templates `PAGE` e `REGIMENTO`; a tela de configuração dos templates fica para a Fase B. |
 | KNOW-010 proprietário | **Implementado** (a unidade). |
@@ -108,7 +108,7 @@ Também acertou ao separar **proprietário, visibilidade, aplicabilidade, ediç�
 | KNOW-024, 025 | Fase D. |
 | KNOW-026 comparar versões | Parcial: abrir qualquer versão; comparação lado a lado depois. |
 | KNOW-027 e 028 responsáveis e política por tipo | Parcial: aprovador por template; o resto na Fase B. |
-| KNOW-030 conhecimento aplicável sem duplicar | **Parcial**: o Wiki mostra as páginas publicadas das unidades acima; aplicabilidade explícita na Fase C. |
+| KNOW-030 conhecimento aplicável sem duplicar | **Revisto em 2026-11-25**: por decisão do usuário, cada unidade tem um Wiki exclusivo, como o regimento, e o Wiki de uma unidade não mostra mais as páginas publicadas das unidades acima. Aplicabilidade explícita fica para a Fase C, se voltar a ser pedida. |
 
 ## 7. Testes
 
@@ -159,3 +159,23 @@ O primeiro editor obrigava a montar o documento bloco a bloco (escolher o tipo, 
 - JUnit `editorContinuoGravaRichtext`: grava e devolve o documento; recusa `richtext` sem `doc`; seção obrigatória preenchida pelo editor libera a aprovação.
 - Vitest: conversão de cada tipo antigo, ida e volta sem perda, seção vazia.
 - Robot UI: clicar na área, ligar o negrito pela barra, digitar e salvar; a leitura mostra o texto em negrito.
+
+## 10. Revisão (PROP-002): organização flexível da Wiki
+
+A [PROP-002](propostas/PROP-002-organizacao-flexivel-da-wiki.md) (2026-11-21) pediu que a unidade organize a árvore do Wiki como quiser: ordem manual, mover, promover e rebaixar, sem perder identidade, histórico ou links. Decidido em 2026-11-24: **alternativa A**. Páginas-pai funcionam como agrupador; pastas sem conteúdo ficam para depois, se a necessidade aparecer.
+
+- **API:** `POST /pages/{id}/rank` (SSD 3.7.1), no mesmo padrão da ordenação dos artefatos: posição entre as irmãs vizinhas e, opcionalmente, um novo pai. A página e as subpáginas mantêm o id, o conteúdo e as versões.
+- **Tela:** menu ⋯ em cada página da árvore (subir, descer, promover, rebaixar, mover para…) e arrastar e soltar, que põe a página onde foi solta, inclusive em outro nível (UX/UI 7.12).
+- **Auditoria:** `knowledge_page.moved`, com pai e posição antes e depois.
+- **Decisões da seção 14 da PROP-002:**
+  - agrupador = página-pai;
+  - a ordem manual é única e compartilhada pela unidade;
+  - quem organiza é quem edita (`EDIT_KNOWLEDGE`);
+  - sem limite de profundidade;
+  - a árvore do Wiki fica só na tela do Wiki, não no menu global;
+  - ordenações alternativas e pastas ficam para depois.
+- **Testes:**
+  - JUnit `reorganizarAWikiPreservaPaginaEHistorico`;
+  - Vitest das ações e dos destinos;
+  - Robot API `CT-004`;
+  - Robot UI `CT-004`.

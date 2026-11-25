@@ -33,3 +33,15 @@ WIKI UI - SEM APROVACAO PARA O PM
     ...    ${unit_label}
     ${title}=    Unique Name    ${title_base}
     Regimento - Sem Aprovacao Para Quem Nao Aprova    ${title}    ${unit}    ${pm_username}    ${pm_display_name}
+
+WIKI UI - ORGANIZAR PAGINAS
+    [Documentation]    Reorganizar a árvore do Wiki (PROP-002).
+    [Arguments]    ${username}    ${display_name}    ${root_name}    ${title_base}
+    Wiki - Abrir    ${username}    ${display_name}    ${root_name}
+    Wiki - Organizar Paginas    ${title_base}
+
+WIKI UI - ARRASTAR PAGINA
+    [Documentation]    Arrastar e soltar na árvore do Wiki (PROP-002).
+    [Arguments]    ${username}    ${display_name}    ${root_name}    ${title_base}
+    Wiki - Abrir    ${username}    ${display_name}    ${root_name}
+    Wiki - Arrastar Pagina    ${title_base}

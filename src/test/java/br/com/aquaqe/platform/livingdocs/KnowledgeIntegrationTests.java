@@ -232,6 +232,53 @@ class KnowledgeIntegrationTests {
 	}
 
 	@Test
+	void reorganizarAWikiPreservaPaginaEHistorico() throws Exception {
+		// PROP-002: reordenar, mover com subpáginas e promover, sem versão nova nem mudança de id.
+		String unidade = unit("Portfólio Organiza", "PORTFOLIO",
+			jdbc.queryForObject("select id from organization.org_unit where parent_id is null", UUID.class).toString());
+		grant("pedro", "PRODUCT_MANAGER", unidade);
+		String a = id(create("pedro", unidade, "{\"title\":\"A\"}"));
+		String b = id(create("pedro", unidade, "{\"title\":\"B\"}"));
+		String c = id(create("pedro", unidade, "{\"title\":\"C\"}"));
+		String d = id(create("pedro", unidade, "{\"title\":\"D\",\"parentId\":\"" + a + "\"}"));
+
+		rank(c, "{\"beforeId\":\"" + a + "\"}").andExpect(status().isOk());
+		rootOrder(unidade).andExpect(jsonPath("$.items[?(@.parentId == null)].id").value(contains(c, a, b)));
+		rank(a, "{\"afterId\":\"" + b + "\"}").andExpect(status().isOk());
+		rootOrder(unidade).andExpect(jsonPath("$.items[?(@.parentId == null)].id").value(contains(c, b, a)));
+
+		// Mover A para dentro de B leva D junto; não cria versão.
+		rank(a, "{\"parentId\":\"" + b + "\"}").andExpect(status().isOk())
+			.andExpect(jsonPath("$.parentId").value(b))
+			.andExpect(jsonPath("$.versionNumber").value(1));
+		mvc.perform(get("/api/v1/pages/{id}", d).with(user("pedro"))).andExpect(jsonPath("$.parentId").value(a));
+		// Promover A de volta para a raiz, logo depois de B.
+		rank(a, "{\"parentId\":null,\"afterId\":\"" + b + "\"}").andExpect(status().isOk())
+			.andExpect(jsonPath("$.parentId").doesNotExist());
+		rootOrder(unidade).andExpect(jsonPath("$.items[?(@.parentId == null)].id").value(contains(c, b, a)));
+
+		rank(a, "{\"parentId\":\"" + d + "\"}").andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.errors[0].field").value("parentId"));
+		rank(c, "{\"beforeId\":\"" + d + "\"}").andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.errors[0].field").value("beforeId"));
+		rank(c, "{}").andExpect(status().isBadRequest());
+		mvc.perform(json(post("/api/v1/pages/{id}/rank", c), user("vera"), "{\"beforeId\":\"" + b + "\"}"))
+			.andExpect(status().isNotFound());
+		Integer moved = jdbc.queryForObject(
+			"select count(*) from events.outbox_event where type = 'knowledge_page.moved' and envelope -> 'aggregate' ->> 'id' = ?",
+			Integer.class, a);
+		org.junit.jupiter.api.Assertions.assertEquals(3, moved);
+	}
+
+	private ResultActions rank(String page, String body) throws Exception {
+		return mvc.perform(json(post("/api/v1/pages/{id}/rank", page), user("pedro"), body));
+	}
+
+	private ResultActions rootOrder(String unit) throws Exception {
+		return mvc.perform(get("/api/v1/org-units/{u}/pages", unit).with(user("pedro")));
+	}
+
+	@Test
 	void operacoesVaoParaAOutboxDaAuditoria() throws Exception {
 		String page = id(create("pedro", portfolio, "{\"title\":\"Auditada\"}"));
 		save("pedro", page, 1, body("content", "Texto")).andExpect(status().isOk());

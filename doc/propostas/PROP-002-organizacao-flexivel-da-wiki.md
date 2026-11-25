@@ -6,12 +6,36 @@
 | Tipo | Proposta de evolução funcional e técnica |
 | Versão | 1.0 |
 | Data | 2026-11-21 |
-| Status | **Proposta em avaliação — não aprovada e não implementada** |
+| Status | **Aprovada em 2026-11-24 (alternativa A) e implementada.** Ver [Situação](#situação-2026-11-24). Pastas sem conteúdo ficam para depois. |
 | Documento relacionado | [Proposta 07 — Conhecimento organizacional, Wiki e documentação viva](../KNOWLEDGE-PROPOSAL.md) |
 | Proposta complementar | [PROP-001 — Evolução da Gestão do Conhecimento e Documentação Organizacional](PROP-001-gestao-do-conhecimento-e-documentacao-organizacional.md) |
 | Documentos de referência | [PRD](../PRD.md), [SAD](../SAD.md), [SSD](../SSD.md), [UX/UI](../UX-UI.md), [Proposta 06 — Navegação](../NAVIGATION-PROPOSAL.md) |
 
 > **Importante:** este documento apresenta uma proposta de evolução. Não altera por si só os requisitos KNOW da Proposta 07, os contratos do SSD, a arquitetura do SAD, o escopo do PRD ou o comportamento implementado. As recomendações dependem de decisão de produto, validação técnica e posterior incorporação nos documentos donos.
+
+## Situação (2026-11-24)
+
+Decisão do usuário: **mover e reordenar, alternativa A**. Páginas-pai funcionam como agrupador; sem pastas vazias por enquanto. Registrado na [Proposta 07, seção 10](../KNOWLEDGE-PROPOSAL.md#10-revisão-prop-002-organização-flexível-da-wiki).
+
+| Item | Situação |
+|---|---|
+| Reordenar, mover para outro nível, promover, rebaixar, mover para a raiz | **Implementado**: `POST /pages/{id}/rank` e o menu ⋯ de cada página na árvore. |
+| Movimentação de subárvore, sem ciclo | **Implementado.** |
+| Identidade, conteúdo, versões, status e links preservados | **Implementado**: organizar não cria versão; o link é pelo id. |
+| Auditoria da movimentação | **Implementado**: `knowledge_page.moved`, com pai e posição antes e depois. |
+| Arrastar e soltar, com alternativa por teclado | **Implementado**: arrastar põe a página onde foi solta, inclusive em outro nível; o menu ⋯ faz tudo pelo teclado. |
+| Ordem manual compartilhada pela unidade | **Implementado.** |
+| Agrupadores (pastas sem conteúdo) | Não implementado, conforme a decisão (alternativa B adiada). |
+| Ordenações alternativas (alfabética, por data) | Não implementado. |
+
+**Decisões da seção 14**
+1. Agrupadores: páginas-pai bastam na primeira evolução.
+2. Ordem manual compartilhada: sim.
+3. Ordenações alternativas: fora desta etapa.
+4. Permissão: quem edita a página (`EDIT_KNOWLEDGE`).
+5. Profundidade: sem limite.
+6. Exclusão de agrupador: não se aplica, sem pastas.
+7. Navegação global: a árvore do Wiki fica só na tela do Wiki.
 
 ---
 

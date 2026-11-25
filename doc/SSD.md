@@ -625,6 +625,7 @@ O mesmo motor de documentos tem **dono genérico**: um artefato (os cinco docume
 | GET | `/pages/{id}/versions` | Histórico (sem conteúdo), com `approved` e `published`. | ler pelas regras 1 a 7 |
 | GET | `/pages/{id}/versions/{n}` | Conteúdo de uma versão. | ler pelas regras 1 a 7 |
 | POST | `/pages/{id}/status` | Ciclo da página governada: `{"status": ..., "comment": ...}`. | ver abaixo |
+| POST | `/pages/{id}/rank` | Reorganiza no Wiki ([PROP-002](propostas/PROP-002-organizacao-flexivel-da-wiki.md)). `beforeId` ou `afterId`: irmã de referência no nível de destino. `parentId`, se presente, muda o nível (nulo = raiz) e leva as subpáginas junto; sem irmã de referência, vai para o fim do nível. Recusa ciclo, referência de outro nível e o regimento. Não cria versão nem mexe no status. Publica `knowledge_page.moved`, com pai e posição antes e depois. | `EDIT_KNOWLEDGE` |
 | POST | `/pages/{id}/archive` | Arquiva (`reason` opcional). Página com subpáginas ativas: `HAS_CHILDREN`. | `EDIT_KNOWLEDGE` |
 | POST | `/pages/{id}/restore` | Restaura; se o pai continua arquivado, volta para a raiz do espaço. | `EDIT_KNOWLEDGE` |
 

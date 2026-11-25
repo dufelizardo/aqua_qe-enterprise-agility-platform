@@ -122,6 +122,15 @@ class DocumentRepository {
 			.update();
 	}
 
+	/** Nova posição (e, ao mudar de nível, novo pai) sem criar versão nem mexer no status (PROP-002). */
+	void reposition(UUID id, UUID parentId, double position) {
+		jdbc.sql("update livingdocs.document set parent_id = :parent, position = :position, updated_at = now() where id = :id")
+			.param("id", id)
+			.param("parent", parentId)
+			.param("position", position)
+			.update();
+	}
+
 	void archive(UUID id, String reason) {
 		jdbc.sql("update livingdocs.document set archived_at = now(), archive_reason = :reason, updated_at = now() where id = :id")
 			.param("id", id)

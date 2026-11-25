@@ -10,14 +10,31 @@
           <button type="button" class="btn primary" (click)="startCreate('PAGE', null)" data-testid="wiki-new-page">Nova página</button>
         </div>
       }
-      <ul class="page-tree" role="tree" aria-label="Páginas da unidade" data-testid="wiki-tree">
+      <ul
+        class="page-tree"
+        role="tree"
+        aria-label="Páginas da unidade"
+        cdkDropList
+        [cdkDropListDisabled]="!l.canEdit || showArchived()"
+        (cdkDropListDropped)="dropped($event)"
+        data-testid="wiki-tree"
+      >
         @for (node of tree(); track node.id) {
-          <li role="treeitem" [attr.aria-level]="node.depth + 1" [attr.aria-selected]="node.id === page()?.id">
+          <li
+            cdkDrag
+            [cdkDragData]="node"
+            class="node"
+            [class.current]="node.id === page()?.id"
+            role="treeitem"
+            [attr.aria-level]="node.depth + 1"
+            [attr.aria-selected]="node.id === page()?.id"
+          >
             <button
               type="button"
               class="page-link"
               [class.current]="node.id === page()?.id"
               [style.padding-left.px]="8 + node.depth * 14"
+              [title]="node.title"
               (click)="select(node.id)"
               data-testid="wiki-page-link"
             >
@@ -26,6 +43,26 @@
                 <span class="chip" [attr.data-status]="node.status">{{ statusLabels[node.status] }}</span>
               }
             </button>
+            @if (l.canEdit && !showArchived() && node.type !== 'REGIMENTO') {
+              <!-- Organizar a árvore (PROP-002): menu ⋯ de cada página, sem mudar conteúdo, versão ou id. -->
+              <button
+                type="button"
+                class="more"
+                [matMenuTriggerFor]="organizeMenu"
+                [attr.aria-label]="'Organizar ' + node.title"
+                title="Organizar"
+                data-testid="wiki-node-menu"
+              >
+                ⋯
+              </button>
+              <mat-menu #organizeMenu="matMenu">
+                <button mat-menu-item (click)="organize(node.id, 'up')" [disabled]="busy() || !canOrganize(node.id, 'up')" data-testid="wiki-up">↑ Subir</button>
+                <button mat-menu-item (click)="organize(node.id, 'down')" [disabled]="busy() || !canOrganize(node.id, 'down')" data-testid="wiki-down">↓ Descer</button>
+                <button mat-menu-item (click)="organize(node.id, 'promote')" [disabled]="busy() || !canOrganize(node.id, 'promote')" data-testid="wiki-promote">← Promover</button>
+                <button mat-menu-item (click)="organize(node.id, 'demote')" [disabled]="busy() || !canOrganize(node.id, 'demote')" data-testid="wiki-demote">Rebaixar →</button>
+                <button mat-menu-item (click)="openMove(node)" [disabled]="busy()" data-testid="wiki-move">Mover para…</button>
+              </mat-menu>
+            }
           </li>
         } @empty {
           <li class="empty">{{ showArchived() ? 'Nenhuma página arquivada.' : 'Nenhuma página ainda.' }}</li>
@@ -39,24 +76,6 @@
       }
     } @else if (loadError()) {
       <p class="error" role="alert">{{ loadError() }}</p>
-    }
-
-    @if (ancestors().length > 0) {
-      <section class="inherited" aria-label="Conhecimento das unidades acima" data-testid="wiki-inherited">
-        <h2>Das unidades acima</h2>
-        @for (space of ancestors(); track space.id) {
-          <h3>{{ space.name }}</h3>
-          <ul class="page-tree">
-            @for (node of space.pages; track node.id) {
-              <li>
-                <button type="button" class="page-link" [style.padding-left.px]="8 + node.depth * 14" (click)="select(node.id)" data-testid="wiki-inherited-link">
-                  <span class="title">{{ node.title }}</span>
-                </button>
-              </li>
-            }
-          </ul>
-        }
-      </section>
     }
   </aside>
   }
@@ -76,6 +95,22 @@
           <button type="submit" class="btn primary" [disabled]="busy() || !newTitle().trim()" data-testid="wiki-create-submit">Criar</button>
           <button type="button" class="btn" (click)="creating.set(null)">Cancelar</button>
         </div>
+      </form>
+    }
+
+    @if (moving(); as m) {
+      <form class="ask" (submit)="confirmMove($event)" data-testid="wiki-move-form">
+        <label>
+          Mover "{{ m.title }}" (e as subpáginas) para
+          <select [value]="moveTarget()" (change)="moveTarget.set(value($event))" data-testid="wiki-move-target">
+            <option value="" [selected]="moveTarget() === ''">Raiz do Wiki</option>
+            @for (target of targets(); track target.id) {
+              <option [value]="target.id" [selected]="moveTarget() === target.id">{{ '— '.repeat(target.depth) }}{{ target.title }}</option>
+            }
+          </select>
+        </label>
+        <button type="submit" class="btn primary" [disabled]="busy()" data-testid="wiki-move-confirm">Mover</button>
+        <button type="button" class="btn" (click)="moving.set(null)">Cancelar</button>
       </form>
     }
 

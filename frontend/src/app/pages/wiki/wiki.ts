@@ -1,6 +1,8 @@
+import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { DatePipe } from '@angular/common';
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { MatMenuModule } from '@angular/material/menu';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
 
@@ -19,8 +21,14 @@ import {
   PageVersion,
   STATUS_LABELS,
   pageTree,
+  PageSummary,
+  RankOp,
+  RankRequest,
   RichDoc,
   blocksToDoc,
+  dropRank,
+  moveTargets,
+  rankFor,
   docHasText,
   docToBlocks,
 } from '../../knowledge/knowledge.service';
@@ -33,21 +41,14 @@ interface DraftSection {
   doc: RichDoc;
 }
 
-/** Conhecimento publicado de uma unidade acima da ativa (Proposta 07, KNOW-030; SSD 2.1, regra 9). */
-interface AncestorSpace {
-  id: string;
-  name: string;
-  pages: PageNode[];
-}
-
 /**
- * Wiki e Regimento da unidade ativa (Proposta 07, Fase A; UX/UI 7.12; bug #66). São independentes: no modo `wiki`, as
- * páginas da unidade e o conhecimento publicado das unidades acima, com a página à direita; no modo `regimento`, o
- * regimento da unidade (um por unidade), com o ciclo de revisão, aprovação e publicação.
+ * Wiki e Regimento da unidade ativa (Proposta 07, Fase A; UX/UI 7.12; bug #66). Cada unidade tem os seus, exclusivos:
+ * o Wiki de uma unidade não mostra o de outra. No modo `wiki`, as páginas da unidade, com a página à direita; no modo
+ * `regimento`, o regimento da unidade (um por unidade), com o ciclo de revisão, aprovação e publicação.
  */
 @Component({
   selector: 'app-wiki',
-  imports: [RichEditor, DatePipe, UnitHeader],
+  imports: [RichEditor, DatePipe, UnitHeader, CdkDropList, CdkDrag, MatMenuModule],
   templateUrl: './wiki.html',
   styleUrl: './wiki.scss',
 })
@@ -72,7 +73,6 @@ export class Wiki {
   protected readonly list = signal<PageList | null>(null);
   protected readonly tree = computed(() => pageTree(this.list()?.items ?? []));
   protected readonly showArchived = signal(false);
-  protected readonly ancestors = signal<AncestorSpace[]>([]);
   protected readonly loadError = signal<string | null>(null);
 
   protected readonly page = signal<Page | null>(null);
@@ -129,7 +129,6 @@ export class Wiki {
       this.list.set(null);
       this.loadError.set(messageOf(toApiError(error)));
     }
-    await this.loadAncestors(unitId);
   }
 
   private async loadRegimento(unitId: string): Promise<void> {
@@ -147,27 +146,6 @@ export class Wiki {
     } finally {
       this.regimentoLoaded.set(true);
     }
-  }
-
-  private async loadAncestors(unitId: string): Promise<void> {
-    const nodes = this.workspace.navigation();
-    const byId = new Map(nodes.map((n) => [n.id, n]));
-    const chain: { id: string; name: string }[] = [];
-    for (let id = byId.get(unitId)?.parentId; id; id = byId.get(id)?.parentId) {
-      chain.unshift({ id, name: byId.get(id)?.name ?? '' });
-    }
-    const spaces: AncestorSpace[] = [];
-    for (const unit of chain) {
-      try {
-        const list = await this.knowledge.pages(unit.id);
-        if (list.items.length > 0) {
-          spaces.push({ ...unit, pages: pageTree(list.items) });
-        }
-      } catch {
-        // Sem acesso ao conhecimento da unidade: ela não aparece.
-      }
-    }
-    this.ancestors.set(spaces);
   }
 
   protected toggleArchived(): void {
@@ -355,6 +333,64 @@ export class Wiki {
     await this.run(async () => {
       this.page.set(await this.knowledge.restore(page.id));
       await this.reloadList();
+    });
+  }
+
+  // ------------------------------------------------------------------------------------------ organizar (PROP-002)
+
+  /** Mover para…: a página escolhida no menu ⋯ e o destino ('' = raiz). */
+  protected readonly moving = signal<PageNode | null>(null);
+  protected readonly moveTarget = signal('');
+  protected readonly targets = computed(() => {
+    const node = this.moving();
+    return node ? moveTargets(this.list()?.items ?? [], node.id) : [];
+  });
+
+  protected canOrganize(id: string, op: RankOp): boolean {
+    return rankFor(this.list()?.items ?? [], id, op) !== null;
+  }
+
+  protected async organize(id: string, op: RankOp): Promise<void> {
+    const request = rankFor(this.list()?.items ?? [], id, op);
+    if (request) {
+      await this.applyRank(id, request);
+    }
+  }
+
+  protected openMove(node: PageNode): void {
+    this.moveTarget.set(node.parentId ?? '');
+    this.moving.set(node);
+  }
+
+  protected async confirmMove(event: Event): Promise<void> {
+    event.preventDefault();
+    const node = this.moving();
+    if (node) {
+      await this.applyRank(node.id, { parentId: this.moveTarget() || null });
+      this.moving.set(null);
+    }
+  }
+
+  /** Arrastar e soltar: a página vai para onde foi solta, no nível da linha vizinha (PROP-002). */
+  protected async dropped(event: CdkDragDrop<PageSummary[]>): Promise<void> {
+    if (event.previousIndex === event.currentIndex) {
+      return;
+    }
+    const move = dropRank(this.tree(), event.previousIndex, event.currentIndex);
+    if (move) {
+      await this.applyRank(move.id, move.request);
+    } else {
+      this.error.set('Uma página não pode ir para dentro dela mesma.');
+    }
+  }
+
+  private async applyRank(id: string, request: RankRequest): Promise<void> {
+    await this.run(async () => {
+      const moved = await this.knowledge.rank(id, request);
+      await this.reloadList();
+      if (this.page()?.id === moved.id) {
+        this.page.set(moved);
+      }
     });
   }
 
