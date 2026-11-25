@@ -1,0 +1,120 @@
+/* Página do artefato (#63). Botões, chips, cartões, seções e barra de salvar vêm de ../wiki/wiki.scss. */
+
+.artifact-header {
+  margin-bottom: 4px;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 12px 0 20px;
+  border-bottom: 1px solid var(--border-strong);
+
+  a {
+    padding: 8px 14px;
+    border-bottom: 3px solid transparent;
+    color: var(--text-secondary);
+    font-weight: 700;
+    text-decoration: none;
+
+    &:hover {
+      color: var(--text);
+    }
+
+    &.on {
+      border-bottom-color: var(--amber-500);
+      color: var(--text);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--blue-500);
+      outline-offset: 1px;
+    }
+  }
+}
+
+.chip[data-status='PENDING'] {
+  background: #eef2f6;
+}
+
+.chip[data-status='IN_PROGRESS'] {
+  background: #fff2d6;
+  color: #8a4b00;
+}
+
+.overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  align-items: start;
+
+  h2 {
+    margin: 0 0 12px;
+    font-size: 18px;
+  }
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 16px;
+  margin: 0;
+
+  dt {
+    color: var(--text-muted);
+    font-weight: 700;
+  }
+
+  dd {
+    margin: 0;
+    white-space: pre-wrap;
+  }
+}
+
+.doc-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+
+  a {
+    min-width: 56px;
+    color: var(--blue-700);
+    font-weight: 700;
+  }
+}
+
+.muted {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.sections-index {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--text-secondary);
+
+  li.filled {
+    color: var(--text);
+  }
+}
+
+.history ul {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}

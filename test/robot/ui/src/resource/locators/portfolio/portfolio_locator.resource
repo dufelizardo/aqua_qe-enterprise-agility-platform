@@ -14,7 +14,7 @@ ${PORTFOLIO_NEW_SUBMIT}             css=[data-testid="new-item-submit"]
 ${PORTFOLIO_MODE_LIST}              css=[data-testid="mode-list"]
 ${PORTFOLIO_LIST}                   css=[data-testid="board-list"]
 # Cartão pelo título exato, dentro da coluna do status: format com a chave do status e o título.
-${PORTFOLIO_CARD_IN_COLUMN}         css=[data-testid="column-{status}"] article:has(.title:text-is("{title}"))
+${PORTFOLIO_CARD_IN_COLUMN}         css=[data-testid="column-{status}"] article:has(.title a:text-is("{title}"))
 ${PORTFOLIO_CARD_MENU}              css=[data-testid="card-menu"]
 ${PORTFOLIO_MOVE_TO}                css=[data-testid="move-to-{status}"]
 ${PORTFOLIO_CONFIGURE_BOARD}        css=[data-testid="configure-board"]

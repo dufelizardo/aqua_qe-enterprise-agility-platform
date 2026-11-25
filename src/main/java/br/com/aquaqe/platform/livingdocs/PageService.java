@@ -53,10 +53,11 @@ class PageService {
 	private final UserDirectory users;
 	private final ObjectMapper json;
 	private final DomainEvents events;
+	private final DocumentSections documentSections;
 
 	PageService(DocumentRepository repository, DocumentTemplates templates, OrgUnits orgUnits,
 			Authorization authorization, CurrentUser currentUser, UserDirectory users, ObjectMapper json,
-			DomainEvents events) {
+			DomainEvents events, DocumentSections documentSections) {
 		this.repository = repository;
 		this.templates = templates;
 		this.orgUnits = orgUnits;
@@ -65,6 +66,7 @@ class PageService {
 		this.users = users;
 		this.json = json;
 		this.events = events;
+		this.documentSections = documentSections;
 	}
 
 	// ---------------------------------------------------------------------------------------------- leitura
@@ -506,47 +508,16 @@ class PageService {
 		return repository.version(page.id(), number).orElseThrow(ApiException::notFound);
 	}
 
-	/** Seções do corpo na ordem do template; não se acrescentam, removem nem renomeiam seções (SSD 6.1). */
 	private List<Map<String, Object>> sections(Template template, Object value) {
-		if (!(value instanceof List<?> list)) {
-			throw ApiException.validation("sections", "obrigatório");
-		}
-		Map<String, List<?>> byKey = new HashMap<>();
-		for (Object item : list) {
-			if (!(item instanceof Map<?, ?> map) || !(map.get("key") instanceof String key)) {
-				throw ApiException.validation("sections", "cada seção precisa de key");
-			}
-			if (!(map.get("blocks") instanceof List<?> blocks)) {
-				throw ApiException.validation("sections." + key, "blocks é obrigatório");
-			}
-			Blocks.validate(key, blocks);
-			byKey.put(key, blocks);
-		}
-		Set<String> expected = new java.util.HashSet<>(template.sections().stream().map(Section::key).toList());
-		if (!expected.equals(byKey.keySet())) {
-			throw ApiException.validation("sections", "as seções devem ser exatamente as do template");
-		}
-		return template.sections().stream()
-			.map(s -> Map.<String, Object>of("key", s.key(), "blocks", byKey.get(s.key())))
-			.toList();
+		return documentSections.fromBody(template, value);
 	}
 
 	private List<String> missing(Template template, VersionRow version) {
-		Map<String, List<?>> blocks = blocksByKey(version);
-		return template.sections().stream()
-			.filter(Section::required)
-			.filter(s -> !Blocks.filled(blocks.get(s.key())))
-			.map(Section::key)
-			.toList();
+		return documentSections.missing(template, version.sectionsJson());
 	}
 
-	@SuppressWarnings("unchecked")
 	private Map<String, List<?>> blocksByKey(VersionRow version) {
-		Map<String, List<?>> result = new HashMap<>();
-		for (Map<String, Object> section : (List<Map<String, Object>>) json.readValue(version.sectionsJson(), List.class)) {
-			result.put(String.valueOf(section.get("key")), (List<?>) section.get("blocks"));
-		}
-		return result;
+		return documentSections.blocksByKey(version.sectionsJson());
 	}
 
 	private Map<String, Object> view(PageRow page, Access access, UUID user, VersionRow version) {

@@ -184,7 +184,7 @@
           <tr data-testid="board-row">
             <td class="mono">{{ item.key }}</td>
             <td>{{ typeName(item.type) }}</td>
-            <td>{{ item.title }}</td>
+            <td><a [routerLink]="['/artefato', item.key]" data-testid="row-open">{{ item.title }}</a></td>
             <td>{{ item.owner?.name ?? '—' }}</td>
             <td><span class="status">{{ item.status.name }}</span></td>
             <td>{{ item.childCount }}</td>
@@ -263,7 +263,8 @@
                       ⋯
                     </button>
                   </header>
-                  <p class="title">{{ card.title }}</p>
+                  <!-- O título abre a página do artefato (#63). -->
+                  <p class="title"><a [routerLink]="['/artefato', card.key]" data-testid="card-open">{{ card.title }}</a></p>
                   <footer>
                     @if (card.blocked) {
                       <span class="blocked-badge" [title]="card.blockedReason ?? 'Bloqueada'" data-testid="card-blocked">

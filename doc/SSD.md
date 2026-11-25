@@ -570,6 +570,8 @@ A situação dos gates (`GET /artifacts/{artifact}/gates`) usa o mesmo formato d
 
 Documentos existem apenas em Iniciativas e Features. Os tipos são `PRD`, `SAD`, `SSD`, `UX`, `QA`. Os cinco documentos são criados junto com o artefato, com status `PENDING`.
 
+**Situação (2026-11-25, #63):** implementado no motor comum do `livingdocs`, sem os anexos. O módulo `workitem` publica o evento em memória `ArtifactCreated` na transação da criação, e o `livingdocs` cria os cinco documentos. A migração V12 criou os documentos das Iniciativas e Features que já existiam. Feature de Sustentação não tem documentos (`404`). Ler segue a leitura do artefato; editar e reabrir, a edição do artefato no nível dele (SSD 2); aprovar, o papel aprovador do template na linhagem da unidade, ou `PLATFORM_ADMIN`. As respostas trazem `canEdit` e `canApprove`. Aprovar com seção obrigatória vazia: `DOCUMENT_INCOMPLETE` (com `missingSections`). Eventos: `document.saved`, `document.approved`, `document.reopened`. Os gates que exigem documento aprovado (`DOCUMENT_APPROVED`, `DOCUMENT_SECTION_FILLED`) entram com os gates (seção 5), em entrega própria.
+
 | Método | Caminho | Descrição | Permissão | RF |
 |---|---|---|---|---|
 | GET | `/artifacts/{artifact}/documents` | Os cinco documentos, com status e versão atual. | ler | 018, 019 |
@@ -643,7 +645,7 @@ Ciclo (Proposta 07, KNOW-D05):
 | | `APPROVED` | `DRAFT` (com `comment` obrigatório) | quem edita |
 | | `PUBLISHED` | `DRAFT`, automático ao salvar; a versão publicada continua valendo para quem lê pela regra 9 | quem edita |
 
-Outras passagens: `TRANSITION_NOT_ALLOWED`. Gravar em `IN_REVIEW` ou `APPROVED`: `DOCUMENT_NOT_EDITABLE`. Os documentos de Iniciativa e Feature passam a usar este motor na próxima entrega, com o ciclo da tabela anterior.
+Outras passagens: `TRANSITION_NOT_ALLOWED`. Gravar em `IN_REVIEW` ou `APPROVED`: `DOCUMENT_NOT_EDITABLE`. Os documentos de Iniciativa e Feature usam este motor desde a #63, com o ciclo da seção 3.7.
 
 ### 3.8 `portfolio`
 

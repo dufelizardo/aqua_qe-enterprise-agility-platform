@@ -165,7 +165,7 @@ flowchart TB
 | `workitem` | D02, D03 | Artefatos de todos os níveis, hierarquia, vínculos, RNs e CAs, contexto herdado. | Artefato, Vínculo, RN, CA |
 | `workflow` | D05 | Status atual e execução de transições; consulta os guardas antes de mudar o status. | Transição executada |
 | `governance` | D05 | Gates, validações e aprovações; implementa o guarda de transição. | Gate, Regra, Aprovação |
-| `livingdocs` | D04 | Motor de documentos com dono genérico: documentos do artefato (PRD, SAD, SSD, UX/UI, QA) e páginas de conhecimento por unidade ([Proposta 07](KNOWLEDGE-PROPOSAL.md)), versões e status. | Documento, Versão |
+| `livingdocs` | D04 | Motor de documentos com dono genérico: documentos do artefato (PRD, SAD, SSD, UX/UI, QA) e páginas de conhecimento por unidade ([Proposta 07](KNOWLEDGE-PROPOSAL.md)), versões e status. Cria os documentos da Iniciativa e da Feature ao receber o evento em memória `ArtifactCreated`, publicado pelo `workitem` na transação da criação; assim `workitem` não conhece documentos. | Documento, Versão |
 | `portfolio` | D01 | Dados próprios da Iniciativa: business case. | Business case |
 | `board` | D02, D03 | Quadros por nível, colunas Upstream e Downstream, sprints. | Quadro, Sprint |
 

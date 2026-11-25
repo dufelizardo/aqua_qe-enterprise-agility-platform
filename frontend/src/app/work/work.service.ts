@@ -157,6 +157,11 @@ export class WorkService {
   }
 
   /** Marca ou desmarca o bloqueio do item (SSD 3.4). */
+  /** Um artefato pela chave ou id (SSD 3.4). */
+  artifact(ref: string): Promise<Artifact> {
+    return firstValueFrom(this.http.get<Artifact>(`${API}/artifacts/${ref}`));
+  }
+
   setBlocked(artifact: string, blocked: boolean, reason: string | null, version: number): Promise<Artifact> {
     return firstValueFrom(
       this.http.patch<Artifact>(`${API}/artifacts/${artifact}`, { blocked, blockedReason: reason, version }),

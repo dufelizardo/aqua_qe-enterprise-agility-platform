@@ -13,6 +13,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,10 +62,11 @@ class ArtifactService {
 	private final UserDirectory users;
 	private final ObjectMapper json;
 	private final DomainEvents events;
+	private final ApplicationEventPublisher publisher;
 
 	ArtifactService(ArtifactRepository repository, ArtifactConfiguration configuration, OrgUnits orgUnits,
 			Authorization authorization, CurrentUser currentUser, UserDirectory users, ObjectMapper json,
-			DomainEvents events) {
+			DomainEvents events, ApplicationEventPublisher publisher) {
 		this.repository = repository;
 		this.configuration = configuration;
 		this.orgUnits = orgUnits;
@@ -73,6 +75,7 @@ class ArtifactService {
 		this.users = users;
 		this.json = json;
 		this.events = events;
+		this.publisher = publisher;
 	}
 
 	// ---------------------------------------------------------------------------------------------- leitura
@@ -179,6 +182,7 @@ class ArtifactService {
 		payload.put("parentId", row.parentId());
 		events.publish("artifact.created", caller.userId(), unitId, new Aggregate("ARTIFACT", id, key), payload, null,
 			auditable(row));
+		publisher.publishEvent(new ArtifactCreated(id, key, type.key(), unitId, caller.userId()));
 		return views(List.of(repository.find(id).orElseThrow())).getFirst();
 	}
 

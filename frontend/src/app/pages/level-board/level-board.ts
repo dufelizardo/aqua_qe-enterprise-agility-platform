@@ -3,7 +3,7 @@ import { Component, computed, effect, inject, input, signal, untracked } from '@
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 
 import { OrgUnit, OrgUnitDetail, OrganizationService } from '../../admin/organization.service';
@@ -39,6 +39,7 @@ import {
 @Component({
   selector: 'app-level-board',
   imports: [
+    RouterLink,
     CdkDropListGroup,
     CdkDropList,
     CdkDrag,

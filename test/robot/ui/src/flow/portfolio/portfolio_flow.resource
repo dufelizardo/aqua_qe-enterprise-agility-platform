@@ -4,6 +4,7 @@ Documentation       Portfolio (UX/UI 7.3 e 6.2): escolhe o caminho e faz as asse
 Resource            ../../pom/portfolio/portfolio_pom.resource
 Resource            ../admin/admin_flow.resource
 Resource            ../../pom/navigation/navigation_pom.resource
+Resource            ../../pom/artifact/artifact_pom.resource
 
 *** Keywords ***
 Portfolio - Preparar Portfólio
@@ -134,3 +135,24 @@ Squad - Ciclo Da Sprint
     Should Contain    ${text}    1 item(ns)
     Confirm Sprint Close
     Wait For Sprint State    ${sprint_name}    Encerrada
+
+Artefato - Documentar E Aprovar PRD
+    [Documentation]    #63: o título do cartão abre a página da Iniciativa; na aba PRD, preencher as seções
+    ...    obrigatórias e salvar cria a versão 1 (Em andamento); aprovar deixa o PRD Aprovado, também na Visão geral.
+    [Arguments]    ${status}    ${title}    ${text}
+    ${card}=    Card Locator    ${status}    ${title}
+    Open Card Page    ${card}
+    Wait For Artifact Title    ${title}
+    Click Artifact Tab    PRD
+    Wait For Document Title    PRD
+    Click Document Edit
+    FOR    ${key}    IN    context    objectives    scope    requirements
+        Write Document Section    ${key}    ${text}
+    END
+    Click Document Save
+    Wait For Document Version    1
+    Wait For Document Status    Em andamento
+    Click Document Approve
+    Wait For Document Status    Aprovado
+    Click Artifact Overview Tab
+    Wait For Overview Document Status    PRD    Aprovado
