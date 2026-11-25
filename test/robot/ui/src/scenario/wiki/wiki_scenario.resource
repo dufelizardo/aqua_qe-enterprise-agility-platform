@@ -45,3 +45,9 @@ WIKI UI - ARRASTAR PAGINA
     [Arguments]    ${username}    ${display_name}    ${root_name}    ${title_base}
     Wiki - Abrir    ${username}    ${display_name}    ${root_name}
     Wiki - Arrastar Pagina    ${title_base}
+
+WIKI UI - MENU DA PAGINA
+    [Documentation]    Menu ⋯ da página do Wiki: renomear, fazer uma cópia e arquivar.
+    [Arguments]    ${username}    ${display_name}    ${root_name}    ${title_base}    ${renamed_suffix}
+    Wiki - Abrir    ${username}    ${display_name}    ${root_name}
+    Wiki - Menu Da Pagina    ${title_base}    ${renamed_suffix}

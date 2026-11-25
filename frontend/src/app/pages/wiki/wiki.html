@@ -43,24 +43,37 @@
                 <span class="chip" [attr.data-status]="node.status">{{ statusLabels[node.status] }}</span>
               }
             </button>
-            @if (l.canEdit && !showArchived() && node.type !== 'REGIMENTO') {
-              <!-- Organizar a árvore (PROP-002): menu ⋯ de cada página, sem mudar conteúdo, versão ou id. -->
+            @if (node.type !== 'REGIMENTO') {
+              <!-- Menu ⋯ da página (PROP-002 e análise do Confluence): ações da página, organizar e arquivar. -->
               <button
                 type="button"
                 class="more"
-                [matMenuTriggerFor]="organizeMenu"
-                [attr.aria-label]="'Organizar ' + node.title"
-                title="Organizar"
+                [matMenuTriggerFor]="pageMenu"
+                [attr.aria-label]="'Ações de ' + node.title"
+                title="Ações da página"
                 data-testid="wiki-node-menu"
               >
                 ⋯
               </button>
-              <mat-menu #organizeMenu="matMenu">
-                <button mat-menu-item (click)="organize(node.id, 'up')" [disabled]="busy() || !canOrganize(node.id, 'up')" data-testid="wiki-up">↑ Subir</button>
-                <button mat-menu-item (click)="organize(node.id, 'down')" [disabled]="busy() || !canOrganize(node.id, 'down')" data-testid="wiki-down">↓ Descer</button>
-                <button mat-menu-item (click)="organize(node.id, 'promote')" [disabled]="busy() || !canOrganize(node.id, 'promote')" data-testid="wiki-promote">← Promover</button>
-                <button mat-menu-item (click)="organize(node.id, 'demote')" [disabled]="busy() || !canOrganize(node.id, 'demote')" data-testid="wiki-demote">Rebaixar →</button>
-                <button mat-menu-item (click)="openMove(node)" [disabled]="busy()" data-testid="wiki-move">Mover para…</button>
+              <mat-menu #pageMenu="matMenu">
+                @if (l.canEdit && !showArchived()) {
+                  <button mat-menu-item (click)="openRename(node)" [disabled]="busy()" data-testid="wiki-rename">Renomear</button>
+                }
+                <button mat-menu-item (click)="copyLink(node)" data-testid="wiki-copy-link">Copiar link</button>
+                @if (l.canEdit && !showArchived()) {
+                  <button mat-menu-item (click)="copyPage(node)" [disabled]="busy()" data-testid="wiki-copy">Fazer uma cópia</button>
+                  <mat-divider />
+                  <button mat-menu-item (click)="organize(node.id, 'up')" [disabled]="busy() || !canOrganize(node.id, 'up')" data-testid="wiki-up">↑ Subir</button>
+                  <button mat-menu-item (click)="organize(node.id, 'down')" [disabled]="busy() || !canOrganize(node.id, 'down')" data-testid="wiki-down">↓ Descer</button>
+                  <button mat-menu-item (click)="organize(node.id, 'promote')" [disabled]="busy() || !canOrganize(node.id, 'promote')" data-testid="wiki-promote">← Promover</button>
+                  <button mat-menu-item (click)="organize(node.id, 'demote')" [disabled]="busy() || !canOrganize(node.id, 'demote')" data-testid="wiki-demote">Rebaixar →</button>
+                  <button mat-menu-item (click)="openMove(node)" [disabled]="busy()" data-testid="wiki-move">Mover para…</button>
+                  <mat-divider />
+                  <button mat-menu-item (click)="openArchive(node)" [disabled]="busy()" data-testid="wiki-menu-archive">Arquivar</button>
+                }
+                @if (l.canEdit && showArchived()) {
+                  <button mat-menu-item (click)="restoreNode(node)" [disabled]="busy()" data-testid="wiki-menu-restore">Restaurar</button>
+                }
               </mat-menu>
             }
           </li>
@@ -95,6 +108,28 @@
           <button type="submit" class="btn primary" [disabled]="busy() || !newTitle().trim()" data-testid="wiki-create-submit">Criar</button>
           <button type="button" class="btn" (click)="creating.set(null)">Cancelar</button>
         </div>
+      </form>
+    }
+
+    @if (renaming(); as r) {
+      <form class="ask" (submit)="confirmRename($event)" data-testid="wiki-rename-form">
+        <label>
+          Novo nome de "{{ r.title }}"
+          <input [value]="menuText()" (input)="menuText.set(value($event))" (keydown.escape)="renaming.set(null)" maxlength="200" required data-testid="wiki-rename-title" />
+        </label>
+        <button type="submit" class="btn primary" [disabled]="busy() || !menuText().trim()" data-testid="wiki-rename-confirm">Salvar</button>
+        <button type="button" class="btn" (click)="renaming.set(null)">Cancelar</button>
+      </form>
+    }
+
+    @if (archiving(); as a) {
+      <form class="ask" (submit)="confirmArchive($event)" data-testid="wiki-archive-form">
+        <label>
+          Arquivar "{{ a.title }}"? Motivo (opcional)
+          <input [value]="menuText()" (input)="menuText.set(value($event))" (keydown.escape)="archiving.set(null)" maxlength="500" data-testid="wiki-archive-reason" />
+        </label>
+        <button type="submit" class="btn primary" [disabled]="busy()" data-testid="wiki-archive-confirm">Arquivar</button>
+        <button type="button" class="btn" (click)="archiving.set(null)">Cancelar</button>
       </form>
     }
 

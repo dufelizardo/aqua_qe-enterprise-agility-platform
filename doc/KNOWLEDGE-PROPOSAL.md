@@ -87,12 +87,27 @@ Também acertou ao separar **proprietário, visibilidade, aplicabilidade, ediç�
 | D | Comentários, menções, notificações e favoritos (KNOW-024, 025). | Em avaliação. |
 | — | Imagens e anexos (KNOW-021), com o MinIO. Comparação lado a lado (KNOW-026). | Em avaliação. |
 
+### 5.1 Sequência após a análise do Confluence (2026-11-25)
+
+O usuário comparou o Wiki com o Confluence (home, árvore do espaço, página e edição). As lacunas viraram seis entregas, nesta ordem, que adiantam partes das fases B a D:
+
+| Ordem | Entrega | Issue | Situação |
+|---|---|---|---|
+| 1 | Menu ⋯ completo: renomear, copiar link, fazer uma cópia, organizar e arquivar | #81 | Implementada (2026-11-25). |
+| 2 | Rascunho automático e aviso ao sair sem salvar (Wiki e documentos) | #82 | Backlog. |
+| 3 | Home: Recentes e Novidades | #83 | Backlog. |
+| 4 | Busca em páginas, documentos e artefatos (`GET /search`, Fase C) | #84 | Backlog. |
+| 5 | Comentários com @menção, notificações e favoritos (Fase D) | #85 | Backlog. |
+| 6 | Editor: lista de tarefas, cor, sumário e emoji | #86 | Backlog. |
+
+Fora da lista por decisão: "remover de vez" (aqui se arquiva, por causa da auditoria), "Automatizar" e "Ver visualizações".
+
 ## 6. Requisitos: situação
 
 | Requisito | Situação |
 |---|---|
 | KNOW-001 a 005 espaços por unidade e institucional | **Implementado** (qualquer nível, sem nome fixo). |
-| KNOW-006 páginas e subpáginas | **Implementado**: criar, renomear, arquivar e restaurar; reorganizar a árvore (subir, descer, promover, rebaixar, mover para…, arrastar e soltar) desde a [PROP-002](propostas/PROP-002-organizacao-flexivel-da-wiki.md). |
+| KNOW-006 páginas e subpáginas | **Implementado**: criar, renomear, arquivar e restaurar; reorganizar a árvore (subir, descer, promover, rebaixar, mover para…, arrastar e soltar) desde a [PROP-002](propostas/PROP-002-organizacao-flexivel-da-wiki.md); menu ⋯ com renomear, copiar link e fazer uma cópia (#81). |
 | KNOW-007 versões e histórico | **Implementado**: versão por gravação, histórico e leitura de versão antiga. |
 | KNOW-008 e 009 templates e regimento | **Parcial**: templates `PAGE` e `REGIMENTO`; a tela de configuração dos templates fica para a Fase B. |
 | KNOW-010 proprietário | **Implementado** (a unidade). |

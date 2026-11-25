@@ -4,6 +4,8 @@ import { Component, computed, effect, inject, input, signal, untracked } from '@
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatMenuModule } from '@angular/material/menu';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { map } from 'rxjs';
 
 import { ApiError, messageOf, toApiError } from '../../core/api-error';
@@ -31,6 +33,7 @@ import {
   rankFor,
   docHasText,
   docToBlocks,
+  pageLink,
 } from '../../knowledge/knowledge.service';
 
 /** Seção em edição: o documento do editor contínuo. */
@@ -48,13 +51,14 @@ interface DraftSection {
  */
 @Component({
   selector: 'app-wiki',
-  imports: [RichEditor, DatePipe, UnitHeader, CdkDropList, CdkDrag, MatMenuModule],
+  imports: [RichEditor, DatePipe, UnitHeader, CdkDropList, CdkDrag, MatMenuModule, MatDividerModule],
   templateUrl: './wiki.html',
   styleUrl: './wiki.scss',
 })
 export class Wiki {
   private readonly knowledge = inject(KnowledgeService);
   private readonly router = inject(Router);
+  private readonly snackBar = inject(MatSnackBar);
   protected readonly workspace = inject(WorkspaceService);
   protected readonly levels = inject(LevelsService);
 
@@ -358,6 +362,8 @@ export class Wiki {
   }
 
   protected openMove(node: PageNode): void {
+    this.renaming.set(null);
+    this.archiving.set(null);
     this.moveTarget.set(node.parentId ?? '');
     this.moving.set(node);
   }
@@ -390,6 +396,89 @@ export class Wiki {
       await this.reloadList();
       if (this.page()?.id === moved.id) {
         this.page.set(moved);
+      }
+    });
+  }
+
+  // ------------------------------------------------------------------------------------------ menu ⋯ da página
+
+  /** Renomear e Arquivar pelo menu ⋯: a página escolhida e o texto do formulário no topo do conteúdo. */
+  protected readonly renaming = signal<PageNode | null>(null);
+  protected readonly archiving = signal<PageNode | null>(null);
+  protected readonly menuText = signal('');
+
+  protected openRename(node: PageNode): void {
+    this.archiving.set(null);
+    this.moving.set(null);
+    this.menuText.set(node.title);
+    this.renaming.set(node);
+  }
+
+  protected async confirmRename(event: Event): Promise<void> {
+    event.preventDefault();
+    const node = this.renaming();
+    const title = this.menuText().trim();
+    if (!node || !title) {
+      return;
+    }
+    await this.run(async () => {
+      const renamed = await this.knowledge.update(node.id, { title });
+      this.renaming.set(null);
+      await this.reloadList();
+      if (this.page()?.id === renamed.id) {
+        this.page.set(renamed);
+      }
+    });
+  }
+
+  protected async copyLink(node: PageNode): Promise<void> {
+    const link = pageLink(window.location.href, node.id);
+    try {
+      await navigator.clipboard.writeText(link);
+      this.snackBar.open('Link copiado.', 'Fechar', { duration: 3000 });
+    } catch {
+      this.snackBar.open(`Copie o link: ${link}`, 'Fechar');
+    }
+  }
+
+  protected async copyPage(node: PageNode): Promise<void> {
+    await this.run(async () => {
+      const copy = await this.knowledge.copy(node.id);
+      await this.reloadList();
+      this.select(copy.id);
+      this.snackBar.open('Cópia criada.', 'Fechar', { duration: 3000 });
+    });
+  }
+
+  protected openArchive(node: PageNode): void {
+    this.renaming.set(null);
+    this.moving.set(null);
+    this.menuText.set('');
+    this.archiving.set(node);
+  }
+
+  protected async confirmArchive(event: Event): Promise<void> {
+    event.preventDefault();
+    const node = this.archiving();
+    if (!node) {
+      return;
+    }
+    await this.run(async () => {
+      const archived = await this.knowledge.archive(node.id, this.menuText().trim());
+      this.archiving.set(null);
+      await this.reloadList();
+      if (this.page()?.id === archived.id) {
+        this.page.set(archived);
+      }
+    });
+  }
+
+  protected async restoreNode(node: PageNode): Promise<void> {
+    await this.run(async () => {
+      const restored = await this.knowledge.restore(node.id);
+      await this.reloadList();
+      if (this.page()?.id === restored.id) {
+        this.page.set(restored);
       }
     });
   }

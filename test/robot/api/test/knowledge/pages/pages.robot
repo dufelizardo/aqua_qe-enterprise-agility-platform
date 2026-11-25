@@ -28,3 +28,8 @@ CT-004 - KNOW-006: Validate POST Page Rank - HTTP 200 OK (reordenar e mover sem 
     [Documentation]    PROP-002: reordenar irmãs, mover para dentro de outra página e recusar ciclo.
     [Tags]    POST    PageRank    HTTP200    KNOW-006    PROP-002
     KNOWLEDGE - ORGANIZE PAGES    ${knowledge_unit_name}    ${knowledge_page_title}
+
+CT-005 - KNOW-006: Validate POST Page Copy - HTTP 201 CREATED (Fazer uma cópia)
+    [Documentation]    Menu ⋯: a cópia fica logo depois da original com o conteúdo atual; quem só lê recebe 403.
+    [Tags]    POST    PageCopy    HTTP201    HTTP403    KNOW-006
+    KNOWLEDGE - COPY PAGE    ${knowledge_unit_name}    ${knowledge_page_title}    ${knowledge_text}

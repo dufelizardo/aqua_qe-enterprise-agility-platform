@@ -139,3 +139,21 @@ Wiki - Arrastar Pagina
     Wait Until Keyword Succeeds    30s    1s    Wiki - Vem Antes    ${third}    ${first}
     ${level}=    Get Wiki Tree Level    ${third}
     Should Be Equal    ${level}    1
+
+Wiki - Menu Da Pagina
+    [Documentation]    Menu ⋯: renomear troca o título na árvore e na página; "Fazer uma cópia" abre "Cópia de …"
+    ...    logo depois da original; "Arquivar" tira a cópia da árvore.
+    [Arguments]    ${title_base}    ${renamed_suffix}
+    ${title}=    Unique Name    ${title_base}
+    Create Wiki Page    ${title}
+    Wait For Wiki Page Title    ${title}
+    ${renamed}=    Set Variable    ${title} ${renamed_suffix}
+    Rename Current Wiki Page    ${renamed}
+    Wait For Wiki Page Title    ${renamed}
+    Wait For Wiki Page Link    ${renamed}
+    Copy Current Wiki Page
+    Wait For Wiki Page Title    Cópia de ${renamed}
+    Wait Until Keyword Succeeds    30s    1s    Wiki - Vem Antes    ${renamed}    Cópia de ${renamed}
+    Archive Current Wiki Page
+    Wait For Wiki Page Link Gone    Cópia de ${renamed}
+    Wait For Wiki Page Link    ${renamed}

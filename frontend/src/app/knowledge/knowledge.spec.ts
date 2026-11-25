@@ -1,5 +1,11 @@
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
+
 import {
   Block,
+  KnowledgeService,
+  pageLink,
   PageSummary,
   blocksToDoc,
   docHasText,
@@ -166,5 +172,33 @@ describe('organizar a árvore (PROP-002)', () => {
     const tree = pageTree(items);
     expect(dropRank(tree, 0, 2)).toBeNull();
     expect(dropRank(tree, 1, 2)).toBeNull();
+  });
+});
+
+describe('menu ⋯ da página do Wiki', () => {
+  it('o link da página troca só o ?page= do endereço atual', () => {
+    expect(pageLink('http://aquaqe-dev.local/unidades/u1/wiki?page=a&x=1#topo', 'b')).toBe(
+      'http://aquaqe-dev.local/unidades/u1/wiki?page=b&x=1',
+    );
+    expect(pageLink('http://aquaqe-dev.local/wiki', 'c')).toBe('http://aquaqe-dev.local/wiki?page=c');
+  });
+
+  it('Fazer uma cópia manda o título só quando informado', async () => {
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    const knowledge = TestBed.inject(KnowledgeService);
+    const http = TestBed.inject(HttpTestingController);
+
+    const plain = knowledge.copy('p1');
+    const first = http.expectOne((r) => r.url.endsWith('/pages/p1/copy'));
+    expect(first.request.method).toBe('POST');
+    expect(first.request.body).toEqual({});
+    first.flush({ id: 'p2' });
+    await plain;
+
+    const named = knowledge.copy('p1', '  Outro nome ');
+    const second = http.expectOne((r) => r.url.endsWith('/pages/p1/copy'));
+    expect(second.request.body).toEqual({ title: 'Outro nome' });
+    second.flush({ id: 'p3' });
+    await named;
   });
 });

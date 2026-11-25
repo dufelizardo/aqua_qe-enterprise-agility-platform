@@ -144,3 +144,27 @@ Drag Wiki Page Onto
     Mouse Move    ${{$a['x'] + 20}}    ${{$a['y'] + 2}}    steps=5
     Mouse Move    ${{$b['x'] + 20}}    ${{$b['y'] + 3}}    steps=20
     Mouse Button    up
+
+Rename Current Wiki Page
+    [Documentation]    Menu ⋯ da página aberta, "Renomear": troca o nome e salva.
+    [Arguments]    ${new_title}
+    Click    ${WIKI_CURRENT_NODE_MENU}
+    Click    ${WIKI_RENAME}
+    Fill Text    ${WIKI_RENAME_TITLE}    ${new_title}
+    Click    ${WIKI_RENAME_CONFIRM}
+
+Copy Current Wiki Page
+    [Documentation]    Menu ⋯ da página aberta, "Fazer uma cópia".
+    Click    ${WIKI_CURRENT_NODE_MENU}
+    Click    ${WIKI_COPY}
+
+Archive Current Wiki Page
+    [Documentation]    Menu ⋯ da página aberta, "Arquivar", e confirma sem motivo.
+    Click    ${WIKI_CURRENT_NODE_MENU}
+    Click    ${WIKI_MENU_ARCHIVE}
+    Click    ${WIKI_ARCHIVE_CONFIRM}
+
+Wait For Wiki Page Link Gone
+    [Arguments]    ${title}
+    ${locator}=    Evaluate    $WIKI_PAGE_LINK_BY_TITLE.replace('{}', $title)
+    Wait For Elements State    ${locator}    detached    timeout=30s
