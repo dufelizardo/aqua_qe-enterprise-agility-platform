@@ -221,26 +221,6 @@ h1 {
   font-size: 13px;
 }
 
-.inherited {
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-
-  h2 {
-    margin: 0 0 6px;
-    font-size: 12px;
-    font-weight: 800;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-
-  h3 {
-    margin: 8px 0 2px;
-    font-size: 13px;
-    color: var(--text-secondary);
-  }
-}
-
 .card {
   padding: 20px 24px;
   border: 1px solid var(--border);

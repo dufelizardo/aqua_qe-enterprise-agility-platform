@@ -30,7 +30,7 @@ type Style = 'paragraph' | 'h2' | 'h3';
   template: `
     <div class="rich-editor" [class.editing]="editable()">
       @if (editable()) {
-        <div class="rt-toolbar" role="toolbar" [attr.aria-label]="'Formatação de ' + label()" data-testid="rt-toolbar">
+        <div class="rt-toolbar" role="toolbar" [attr.aria-label]="'Formatação de ' + label()" (mousedown)="keepFocus($event)" data-testid="rt-toolbar">
           <select aria-label="Estilo do texto" [value]="style()" (change)="setStyle($any($event.target).value)" data-testid="rt-style">
             <option value="paragraph">Texto</option>
             <option value="h2">Título</option>
@@ -139,6 +139,17 @@ export class RichEditor implements AfterViewInit, OnDestroy {
       }
     });
     effect(() => this.editor?.setEditable(this.editable(), false));
+  }
+
+  /**
+   * Botões da barra não tiram o foco do texto: sem isso, o foco volta ao editor só no quadro seguinte, e o que se
+   * digita logo depois do clique se perde. A lista de estilo e o campo do link continuam recebendo o foco.
+   */
+  protected keepFocus(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('select, input')) {
+      event.preventDefault();
+    }
   }
 
   ngAfterViewInit(): void {

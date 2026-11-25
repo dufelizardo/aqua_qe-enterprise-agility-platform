@@ -77,24 +77,6 @@
     } @else if (loadError()) {
       <p class="error" role="alert">{{ loadError() }}</p>
     }
-
-    @if (ancestors().length > 0) {
-      <section class="inherited" aria-label="Conhecimento das unidades acima" data-testid="wiki-inherited">
-        <h2>Das unidades acima</h2>
-        @for (space of ancestors(); track space.id) {
-          <h3>{{ space.name }}</h3>
-          <ul class="page-tree">
-            @for (node of space.pages; track node.id) {
-              <li>
-                <button type="button" class="page-link" [style.padding-left.px]="8 + node.depth * 14" (click)="select(node.id)" data-testid="wiki-inherited-link">
-                  <span class="title">{{ node.title }}</span>
-                </button>
-              </li>
-            }
-          </ul>
-        }
-      </section>
-    }
   </aside>
   }
 

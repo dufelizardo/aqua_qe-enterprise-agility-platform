@@ -41,17 +41,10 @@ interface DraftSection {
   doc: RichDoc;
 }
 
-/** Conhecimento publicado de uma unidade acima da ativa (Proposta 07, KNOW-030; SSD 2.1, regra 9). */
-interface AncestorSpace {
-  id: string;
-  name: string;
-  pages: PageNode[];
-}
-
 /**
- * Wiki e Regimento da unidade ativa (Proposta 07, Fase A; UX/UI 7.12; bug #66). São independentes: no modo `wiki`, as
- * páginas da unidade e o conhecimento publicado das unidades acima, com a página à direita; no modo `regimento`, o
- * regimento da unidade (um por unidade), com o ciclo de revisão, aprovação e publicação.
+ * Wiki e Regimento da unidade ativa (Proposta 07, Fase A; UX/UI 7.12; bug #66). Cada unidade tem os seus, exclusivos:
+ * o Wiki de uma unidade não mostra o de outra. No modo `wiki`, as páginas da unidade, com a página à direita; no modo
+ * `regimento`, o regimento da unidade (um por unidade), com o ciclo de revisão, aprovação e publicação.
  */
 @Component({
   selector: 'app-wiki',
@@ -80,7 +73,6 @@ export class Wiki {
   protected readonly list = signal<PageList | null>(null);
   protected readonly tree = computed(() => pageTree(this.list()?.items ?? []));
   protected readonly showArchived = signal(false);
-  protected readonly ancestors = signal<AncestorSpace[]>([]);
   protected readonly loadError = signal<string | null>(null);
 
   protected readonly page = signal<Page | null>(null);
@@ -137,7 +129,6 @@ export class Wiki {
       this.list.set(null);
       this.loadError.set(messageOf(toApiError(error)));
     }
-    await this.loadAncestors(unitId);
   }
 
   private async loadRegimento(unitId: string): Promise<void> {
@@ -155,27 +146,6 @@ export class Wiki {
     } finally {
       this.regimentoLoaded.set(true);
     }
-  }
-
-  private async loadAncestors(unitId: string): Promise<void> {
-    const nodes = this.workspace.navigation();
-    const byId = new Map(nodes.map((n) => [n.id, n]));
-    const chain: { id: string; name: string }[] = [];
-    for (let id = byId.get(unitId)?.parentId; id; id = byId.get(id)?.parentId) {
-      chain.unshift({ id, name: byId.get(id)?.name ?? '' });
-    }
-    const spaces: AncestorSpace[] = [];
-    for (const unit of chain) {
-      try {
-        const list = await this.knowledge.pages(unit.id);
-        if (list.items.length > 0) {
-          spaces.push({ ...unit, pages: pageTree(list.items) });
-        }
-      } catch {
-        // Sem acesso ao conhecimento da unidade: ela não aparece.
-      }
-    }
-    this.ancestors.set(spaces);
   }
 
   protected toggleArchived(): void {

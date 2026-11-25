@@ -108,7 +108,7 @@ Também acertou ao separar **proprietário, visibilidade, aplicabilidade, ediç�
 | KNOW-024, 025 | Fase D. |
 | KNOW-026 comparar versões | Parcial: abrir qualquer versão; comparação lado a lado depois. |
 | KNOW-027 e 028 responsáveis e política por tipo | Parcial: aprovador por template; o resto na Fase B. |
-| KNOW-030 conhecimento aplicável sem duplicar | **Parcial**: o Wiki mostra as páginas publicadas das unidades acima; aplicabilidade explícita na Fase C. |
+| KNOW-030 conhecimento aplicável sem duplicar | **Revisto em 2026-11-25**: por decisão do usuário, cada unidade tem um Wiki exclusivo, como o regimento, e o Wiki de uma unidade não mostra mais as páginas publicadas das unidades acima. Aplicabilidade explícita fica para a Fase C, se voltar a ser pedida. |
 
 ## 7. Testes
 
