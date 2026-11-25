@@ -348,6 +348,7 @@ Regra ao publicar uma versão de template: documentos existentes mantêm a vers�
 | DELETE | `/artifacts/{artifact}` | Arquiva (não apaga). | editar no nível | — |
 | GET | `/artifacts/{artifact}/children` | Filhos diretos. | ler | 010, 031 |
 | GET | `/artifacts/{artifact}/context` | Resumo dos ancestrais. | ler | 017 |
+| GET | `/artifacts/{artifact}/people` | Pessoas que podem ser escolhidas nos campos de pessoa (filtro `q` pelo nome, até 20): quem tem papel vigente na unidade do artefato, nas de cima e nas de baixo. | editar no nível | 010 |
 | GET | `/artifacts/{artifact}/links` | Vínculos não hierárquicos. | ler | 031 |
 | POST | `/artifacts/{artifact}/links` | Cria vínculo. | editar no nível | 031 |
 | DELETE | `/artifacts/{artifact}/links/{linkId}` | Remove vínculo. | editar no nível | 031 |
@@ -480,6 +481,8 @@ Como as regras de escopo foram aplicadas (2026-11-20):
 
 Vínculos: `type` é um de `RELATES_TO`, `ORIGINATES_FROM`, `DUPLICATES`. `ORIGINATES_FROM` é o vínculo de um Bug ou Problema de Produção com o artefato de origem.
 
+Página do artefato (2026-11-25): `GET /artifacts/{artifact}` e o `PATCH` devolvem também `canEdit`, que diz se quem pediu tem a permissão de edição do nível; nas listagens o campo vem nulo. A tela usa o `PATCH` campo a campo, sempre com a `version` lida, e o `GET .../people` para Responsável, Technical Lead e QA.
+
 Ordenação (`POST /artifacts/{artifact}/rank`): o corpo traz `beforeId` ou `afterId`; a API recalcula a posição do artefato em relação ao vizinho informado. Implementada em 2026-11-20: a ordem é **global** (um número por artefato, novos itens entram no fim), então qualquer lista ordenada por ela respeita a mesma prioridade. `GET /artifacts?sort=rank` lista nessa ordem, e as colunas dos quadros também a usam. Exige a permissão de edição do nível; o vizinho precisa ser legível.
 
 ### 3.5 `workflow`
@@ -570,6 +573,8 @@ A situação dos gates (`GET /artifacts/{artifact}/gates`) usa o mesmo formato d
 
 Documentos existem apenas em Iniciativas e Features. Os tipos são `PRD`, `SAD`, `SSD`, `UX`, `QA`. Os cinco documentos são criados junto com o artefato, com status `PENDING`.
 
+**Situação (2026-11-25, #63):** implementado no motor comum do `livingdocs`, sem os anexos. O módulo `workitem` publica o evento em memória `ArtifactCreated` na transação da criação, e o `livingdocs` cria os cinco documentos. A migração V12 criou os documentos das Iniciativas e Features que já existiam. Feature de Sustentação não tem documentos (`404`). Ler segue a leitura do artefato; editar e reabrir, a edição do artefato no nível dele (SSD 2); aprovar, o papel aprovador do template na linhagem da unidade, ou `PLATFORM_ADMIN`. As respostas trazem `canEdit` e `canApprove`. Aprovar com seção obrigatória vazia: `DOCUMENT_INCOMPLETE` (com `missingSections`). Eventos: `document.saved`, `document.approved`, `document.reopened`. Os gates que exigem documento aprovado (`DOCUMENT_APPROVED`, `DOCUMENT_SECTION_FILLED`) entram com os gates (seção 5), em entrega própria.
+
 | Método | Caminho | Descrição | Permissão | RF |
 |---|---|---|---|---|
 | GET | `/artifacts/{artifact}/documents` | Os cinco documentos, com status e versão atual. | ler | 018, 019 |
@@ -643,7 +648,7 @@ Ciclo (Proposta 07, KNOW-D05):
 | | `APPROVED` | `DRAFT` (com `comment` obrigatório) | quem edita |
 | | `PUBLISHED` | `DRAFT`, automático ao salvar; a versão publicada continua valendo para quem lê pela regra 9 | quem edita |
 
-Outras passagens: `TRANSITION_NOT_ALLOWED`. Gravar em `IN_REVIEW` ou `APPROVED`: `DOCUMENT_NOT_EDITABLE`. Os documentos de Iniciativa e Feature passam a usar este motor na próxima entrega, com o ciclo da tabela anterior.
+Outras passagens: `TRANSITION_NOT_ALLOWED`. Gravar em `IN_REVIEW` ou `APPROVED`: `DOCUMENT_NOT_EDITABLE`. Os documentos de Iniciativa e Feature usam este motor desde a #63, com o ciclo da seção 3.7.
 
 ### 3.8 `portfolio`
 

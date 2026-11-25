@@ -8,3 +8,6 @@ ${post_artifact_initiative_title}       Robot Iniciativa
 ${post_artifact_initiative_summary}     Iniciativa criada pela suíte Robot de artefatos.
 ${post_artifact_feature_title}          Robot Feature
 ${post_artifact_unknown_key}            INIT-999999
+
+# patch_artifact (PATCH /api/v1/artifacts/{artifact})
+${patch_artifact_new_title}             Robot Iniciativa Renomeada

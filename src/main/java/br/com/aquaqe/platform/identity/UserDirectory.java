@@ -32,6 +32,22 @@ public class UserDirectory {
 			.collect(Collectors.toMap(UserRef::id, Function.identity()));
 	}
 
+	/** Contas ativas entre as informadas cujo nome contém {@code query} (sem diferenciar maiúsculas), em ordem de nome. */
+	public java.util.List<UserRef> search(Collection<UUID> ids, String query, int limit) {
+		if (ids.isEmpty()) {
+			return java.util.List.of();
+		}
+		String term = query == null ? "" : query.strip();
+		return jdbc.sql("select id, name, active from (select id, coalesce(name, username, subject) as name, active"
+				+ " from identity.user_account where id in (:ids) and active) u"
+				+ " where cast(:term as text) = '' or u.name ilike '%' || cast(:term as text) || '%' order by u.name, u.id limit :limit")
+			.param("ids", ids)
+			.param("term", term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_"))
+			.param("limit", limit)
+			.query((rs, n) -> new UserRef(rs.getObject("id", UUID.class), rs.getString("name"), rs.getBoolean("active")))
+			.list();
+	}
+
 	public record UserRef(UUID id, String name, boolean active) {
 	}
 }

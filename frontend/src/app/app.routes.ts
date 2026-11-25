@@ -65,6 +65,12 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/wiki/wiki').then((m) => m.Wiki),
         data: { mode: 'regimento' },
       },
+      // Página do artefato: Visão geral e, na Iniciativa e na Feature, os documentos PRD, SAD, SSD, UX/UI e QA (#63).
+      {
+        path: 'artefato/:key',
+        title: 'Artefato · AQuA-QE',
+        loadComponent: () => import('./pages/artifact/artifact-page').then((m) => m.ArtifactPage),
+      },
       {
         path: 'admin',
         canActivate: [adminGuard],

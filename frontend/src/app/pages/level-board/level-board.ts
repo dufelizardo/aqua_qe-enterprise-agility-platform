@@ -3,7 +3,7 @@ import { Component, computed, effect, inject, input, signal, untracked } from '@
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 
 import { OrgUnit, OrgUnitDetail, OrganizationService } from '../../admin/organization.service';
@@ -39,6 +39,7 @@ import {
 @Component({
   selector: 'app-level-board',
   imports: [
+    RouterLink,
     CdkDropListGroup,
     CdkDropList,
     CdkDrag,
@@ -61,6 +62,10 @@ export class LevelBoard {
   private readonly router = inject(Router);
   /** Aba pedida no endereço (?tab=backlog|sprints): o menu da Squad leva direto a ela (bug #66). */
   private readonly tabParam = toSignal(inject(ActivatedRoute).queryParamMap.pipe(map((q) => q.get('tab'))), {
+    initialValue: null,
+  });
+  /** Nível do quadro da Squad no endereço (?nivel=), para o "Voltar" da página do artefato manter o nível. */
+  private readonly levelParam = toSignal(inject(ActivatedRoute).queryParamMap.pipe(map((q) => q.get('nivel'))), {
     initialValue: null,
   });
 
@@ -161,7 +166,9 @@ export class LevelBoard {
     effect(() => {
       const screen = this.screen();
       untracked(() => {
-        this.boardScreen.set(screen);
+        const asked = this.levelParam();
+        const kept = this.routeSetup().level === 'FL1' && this.boardLevels.some((l) => l.key === asked);
+        this.boardScreen.set(kept ? (asked as keyof typeof LEVEL_SETUPS) : screen);
         this.creating.set(false);
         this.configuring.set(false);
         this.board.set(null);
@@ -188,6 +195,7 @@ export class LevelBoard {
       return;
     }
     this.boardScreen.set(key);
+    void this.router.navigate([], { queryParams: { nivel: key }, queryParamsHandling: 'merge', replaceUrl: true });
     this.creating.set(false);
     this.configuring.set(false);
     this.board.set(null);

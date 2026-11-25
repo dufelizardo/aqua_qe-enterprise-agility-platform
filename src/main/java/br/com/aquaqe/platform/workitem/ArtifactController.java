@@ -76,6 +76,12 @@ class ArtifactController {
 		return new Items<>(service.children(artifact, archived));
 	}
 
+	/** Pessoas que podem ser escolhidas nos campos de pessoa do artefato, filtradas pelo nome ({@code q}). */
+	@GetMapping("/{artifact}/people")
+	Items<ArtifactViews.Person> people(@PathVariable String artifact, @RequestParam(required = false) String q) {
+		return new Items<>(service.people(artifact, q));
+	}
+
 	@GetMapping("/{artifact}/context")
 	ContextView context(@PathVariable String artifact) {
 		return service.context(artifact);

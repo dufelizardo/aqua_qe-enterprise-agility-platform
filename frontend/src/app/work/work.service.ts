@@ -26,12 +26,29 @@ export interface Artifact {
   orgUnit: { id: string; name: string; level: string };
   status: StatusRef;
   owner: PersonRef | null;
+  technicalLead?: PersonRef | null;
+  qaOwner?: PersonRef | null;
   size: string | null;
   childCount: number;
   version: number;
   blocked: boolean;
   blockedReason: string | null;
+  /** Vem só na leitura de um artefato e no PATCH: quem pediu pode editá-lo. */
+  canEdit?: boolean | null;
 }
+
+/** Campos editáveis na página do artefato (SSD 3.4, PATCH com semântica de merge). */
+export interface ArtifactPatch {
+  title?: string;
+  description?: string | null;
+  size?: string | null;
+  ownerId?: string | null;
+  technicalLeadId?: string | null;
+  qaOwnerId?: string | null;
+}
+
+/** Estimativas aceitas pela API. */
+export const SIZES = ['XS', 'S', 'M', 'L', 'XL'] as const;
 
 /** Sprint de uma squad (SSD 3.9). */
 export interface Sprint {
@@ -157,6 +174,22 @@ export class WorkService {
   }
 
   /** Marca ou desmarca o bloqueio do item (SSD 3.4). */
+  /** Um artefato pela chave ou id (SSD 3.4). */
+  artifact(ref: string): Promise<Artifact> {
+    return firstValueFrom(this.http.get<Artifact>(`${API}/artifacts/${ref}`));
+  }
+
+  /** Altera campos do artefato; {@code version} é a que a tela leu (lock otimista). */
+  updateArtifact(ref: string, patch: ArtifactPatch, version: number): Promise<Artifact> {
+    return firstValueFrom(this.http.patch<Artifact>(`${API}/artifacts/${ref}`, { ...patch, version }));
+  }
+
+  /** Pessoas que podem ser escolhidas nos campos de pessoa do artefato. */
+  async people(ref: string, q: string): Promise<PersonRef[]> {
+    const params: Record<string, string> = q.trim() ? { q: q.trim() } : {};
+    return (await firstValueFrom(this.http.get<{ items: PersonRef[] }>(`${API}/artifacts/${ref}/people`, { params }))).items;
+  }
+
   setBlocked(artifact: string, blocked: boolean, reason: string | null, version: number): Promise<Artifact> {
     return firstValueFrom(
       this.http.patch<Artifact>(`${API}/artifacts/${artifact}`, { blocked, blockedReason: reason, version }),

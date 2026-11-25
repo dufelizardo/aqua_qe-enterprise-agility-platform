@@ -6,3 +6,4 @@ ${knowledge_unit_name}          Robot Portfólio Wiki
 ${knowledge_page_title}         Robot Estratégia do Portfólio
 ${knowledge_regimento_title}    Robot Regimento do Portfólio
 ${knowledge_text}               Crescer em **canais digitais** com governança.
+${documents_initiative_title}    Robot Iniciativa com Documentos

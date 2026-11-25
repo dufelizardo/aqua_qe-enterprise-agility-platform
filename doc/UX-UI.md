@@ -323,6 +323,7 @@ Abre quando a transição devolve `GATE_BLOCKED`. Título: "Ainda não é possí
 - **Aprovar** aparece para quem tem o papel aprovador do template e fica desabilitado, com a explicação ao lado, enquanto houver seção obrigatória vazia. Usa `POST /artifacts/{artifact}/documents/{type}/status`.
 - Documento aprovado abre em modo de leitura, com o botão **Reabrir para edição**, que pede um comentário e usa o mesmo endpoint.
 - Anexos: `POST /artifacts/{artifact}/attachments`, exibidos por `GET /attachments/{id}/content`.
+- **Situação (2026-11-25, #63):** implementado na página do artefato (`/artefato/<chave>?tab=PRD`), com o índice de seções, Editar e Salvar, Aprovar (desabilitado, com as seções que faltam), Reabrir para edição (com comentário) e Histórico (abre qualquer versão). Ainda faltam: anexos, aviso ao sair sem salvar e a comparação lado a lado (6.7).
 - Sem permissão de edição para aquele tipo de documento, a tela abre em modo de leitura, sem os botões.
 
 ### 6.7 Histórico e comparação de versões
@@ -432,6 +433,8 @@ Documentação                         Gates
 - **Botão Avançar:** lista as transições de `GET /artifacts/{artifact}/transitions`; a principal é a de avanço. Executa `POST /artifacts/{artifact}/transitions`.
 - **Business case validado:** editar um campo avisa que a validação será perdida antes de salvar.
 - **Requisitos:** PRD-RF-001, 003, 010, 018, 019, 020, 022 a 024.
+- **Situação (2026-11-25, #63):** o título do cartão (ou da linha, na lista) abre `/artefato/<chave>`, com as abas Visão geral, PRD, SAD, SSD, UX/UI e QA. A Visão geral mostra responsável, estimativa, descrição e o status de cada documento, com link para a aba. Ainda faltam Business case, Features, History, o botão Avançar e o painel de gates (os gates vêm em entrega própria).
+- **Situação (2026-11-25, edição, #79):** quem pode editar o item clica no campo para alterá-lo: título (no cabeçalho), Responsável, Tech Lead, QA (busca pelo nome entre as pessoas da unidade, das de cima e das de baixo; "Ninguém" limpa), Estimativa e Descrição. Cada campo salva sozinho; se outra pessoa alterou o item antes, a tela recarrega e pede para refazer. O Quadro da Squad guarda o nível em `?nivel=`, então o "← Voltar" retorna ao mesmo nível.
 
 ### 7.5 Tactical Board (UI-07)
 
@@ -472,6 +475,7 @@ Documentação                    Gates — Pronto para Construir    4 de 6
 
 - Cada linha de documento no Overview é um link para a aba correspondente.
 - Alterar uma regra de negócio mostra quantas Histórias a referenciam, antes de salvar.
+- **Situação (2026-11-25, #63):** mesma página do artefato da 7.4 (Visão geral, com os campos editáveis ao clicar, e as abas dos cinco documentos). Ainda faltam Histórias, History, regras de negócio, o botão Avançar e o painel de gates.
 - **Requisitos:** PRD-RF-010, 012, 014, 016, 018, 019, 020, 022 a 024.
 
 ### 7.7 Squad Workspace (UI-15)

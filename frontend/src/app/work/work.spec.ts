@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { LevelsService } from '../core/levels.service';
 import { WorkspaceService, navigationTree, selectableTree } from '../core/workspace.service';
-import { BoardColumn, ColumnConfig, TransitionOption, configProblems, executable, transitionInto } from './work.service';
+import { BoardColumn, ColumnConfig, SIZES, TransitionOption, WorkService, configProblems, executable, transitionInto } from './work.service';
 
 const status = (key: string) => ({ key, name: key, phase: 'UPSTREAM' as const, category: 'TODO' as const });
 const option = (id: string, to: string): TransitionOption => ({ id, to: status(to), canExecute: true, failedRules: [] });
@@ -175,5 +175,43 @@ describe('navigationTree (PROPOSAL-07)', () => {
     ]);
     expect(tree.find((n) => n.id === 'c12')?.hasChildren).toBe(true);
     expect(tree.find((n) => n.id === 's121')?.flightLevel).toBe('FL1');
+  });
+});
+
+describe('WorkService — edição na página do artefato', () => {
+  let work: WorkService;
+  let http: HttpTestingController;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    work = TestBed.inject(WorkService);
+    http = TestBed.inject(HttpTestingController);
+  });
+
+  it('o PATCH leva só o campo alterado e a versão lida', async () => {
+    const saved = work.updateArtifact('INIT-1', { ownerId: null }, 3);
+    const req = http.expectOne((r) => r.url.endsWith('/artifacts/INIT-1'));
+    expect(req.request.method).toBe('PATCH');
+    expect(req.request.body).toEqual({ ownerId: null, version: 3 });
+    req.flush({ key: 'INIT-1' });
+    await saved;
+  });
+
+  it('a busca de pessoas só manda q quando há texto', async () => {
+    const all = work.people('INIT-1', '  ');
+    const first = http.expectOne((r) => r.url.endsWith('/artifacts/INIT-1/people'));
+    expect(first.request.params.has('q')).toBe(false);
+    first.flush({ items: [{ id: '1', name: 'Ana' }] });
+    expect(await all).toEqual([{ id: '1', name: 'Ana' }]);
+
+    const some = work.people('INIT-1', ' an ');
+    const second = http.expectOne((r) => r.url.endsWith('/artifacts/INIT-1/people'));
+    expect(second.request.params.get('q')).toBe('an');
+    second.flush({ items: [] });
+    expect(await some).toEqual([]);
+  });
+
+  it('as estimativas são as aceitas pela API', () => {
+    expect([...SIZES]).toEqual(['XS', 'S', 'M', 'L', 'XL']);
   });
 });

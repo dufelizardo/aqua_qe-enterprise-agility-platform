@@ -98,6 +98,20 @@ class AuditIntegrationTests {
 		jdbc.update("update audit.audit_event set action = 'org_unit.created' where sequence = ?", target);
 	}
 
+	/** A chave do alvo de uma página é o título (até 200): com 40, a página longa travava a entrega (V13). */
+	@Test
+	void paginaComTituloLongoEntraNaTrilha() throws Exception {
+		String unit = createUnit("Portfólio Título Longo", null);
+		String title = "Central de estratégia e Governança Corporativa da Unidade de Negócio Digital";
+		String page = JsonPath.read(mvc.perform(json(post("/api/v1/org-units/{u}/pages", unit), admin(),
+				"{\"title\":\"" + title + "\"}"))
+			.andExpect(status().isCreated()).andReturn().getResponse().getContentAsString(), "$.id");
+		relay.drain();
+		mvc.perform(get("/api/v1/audit-events").param("targetId", page).with(admin()))
+			.andExpect(jsonPath("$.items[0].action").value("knowledge_page.created"))
+			.andExpect(jsonPath("$.items[0].target.key").value(title));
+	}
+
 	@Test
 	void reentregaNaoDuplicaRegistro() throws Exception {
 		createUnit("Portfólio Reentregue", null);

@@ -48,3 +48,14 @@ CT-007 - PRD-RF-010: Validate DELETE Artifact - HTTP 409 HAS_CHILDREN
     [Tags]    DELETE    DeleteArtifact    HTTP409    PRD-RF-010
     WORKITEM - DELETE ARTIFACT - DELETE - Filhos Ativos    ${post_artifact_initiative_title}
     ...    ${post_artifact_feature_title}
+
+CT-008 - PRD-RF-010: Validate PATCH Artifact - HTTP 200 OK (título e responsável na página)
+    [Documentation]    Quem edita vê canEdit, busca as pessoas e troca o título e o responsável.
+    [Tags]    PATCH    PatchArtifact    GetArtifactPeople    HTTP200    PRD-RF-010    smoke
+    WORKITEM - PATCH ARTIFACT - PATCH - Titulo E Responsavel    ${post_artifact_initiative_title}
+    ...    ${patch_artifact_new_title}
+
+CT-009 - PRD-RF-010: Validate PATCH Artifact - HTTP 409 VERSION_CONFLICT e 403 do leitor
+    [Documentation]    A versão velha é recusada; o leitor não edita nem busca pessoas.
+    [Tags]    PATCH    PatchArtifact    GetArtifactPeople    HTTP409    HTTP403    PRD-RF-010    security    ASVS-V4
+    WORKITEM - PATCH ARTIFACT - PATCH - Versao Velha E Leitor    ${post_artifact_initiative_title}

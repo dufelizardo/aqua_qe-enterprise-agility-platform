@@ -121,3 +121,37 @@ Workitem - Post Artifact - POST - By HTTP Status Code
     ELSE
         Fail    Status HTTP '${meuHTTP}' não previsto para POST /artifacts.
     END
+
+PATCH Artifact - Status Code 200 - Titulo E Responsavel
+    [Documentation]    Na página do artefato, quem edita vê canEdit, busca pessoas e troca o título e o responsável.
+    [Arguments]    ${initiative_title}    ${new_title}
+    ${portfolio}    ${cadeia}=    Create Portfolio And Cadeia
+    ${init}=    Create Artifact    pm    INITIATIVE    ${initiative_title}    ${portfolio}
+    ${read}=    GET Artifact As Persona    pm    ${init}[key]
+    Should Be True    ${read.json()}[canEdit]
+    ${people}=    GET Artifact People As Persona    pm    ${init}[key]
+    Should Be Equal As Integers    ${people.status_code}    200
+    Should Not Be Empty    ${people.json()}[items]
+    ${person}=    Set Variable    ${people.json()}[items][0]
+    ${payload}=    Create Dictionary    title=${new_title}    ownerId=${person}[id]    version=${init}[version]
+    ${response}=    PATCH Artifact As Persona    pm    ${init}[key]    ${payload}
+    Should Be Equal As Integers    ${response.status_code}    200
+    Validate Object Schema    ${response.json()}    ${WORKITEM_ARTIFACT_SCHEMA}
+    Should Be Equal    ${response.json()}[title]    ${new_title}
+    Should Be Equal    ${response.json()}[owner][id]    ${person}[id]
+
+PATCH Artifact - Status Code 409 - Versao Velha E Leitor
+    [Documentation]    A versão velha é recusada com VERSION_CONFLICT; o leitor não edita nem busca pessoas.
+    [Arguments]    ${initiative_title}
+    ${portfolio}    ${cadeia}=    Create Portfolio And Cadeia
+    ${init}=    Create Artifact    pm    INITIATIVE    ${initiative_title}    ${portfolio}
+    ${first}=    Create Dictionary    title=${initiative_title} 2    version=${init}[version]
+    ${response}=    PATCH Artifact As Persona    pm    ${init}[key]    ${first}
+    Should Be Equal As Integers    ${response.status_code}    200
+    ${stale}=    Create Dictionary    title=${initiative_title} 3    version=${init}[version]
+    ${response}=    PATCH Artifact As Persona    pm    ${init}[key]    ${stale}
+    Validate Error Body    ${response}    409    VERSION_CONFLICT
+    ${read}=    GET Artifact As Persona    viewer    ${init}[key]
+    Should Not Be True    ${read.json()}[canEdit]
+    ${people}=    GET Artifact People As Persona    viewer    ${init}[key]
+    Should Be Equal As Integers    ${people.status_code}    403

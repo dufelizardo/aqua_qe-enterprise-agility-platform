@@ -26,3 +26,13 @@ WORKITEM - DELETE ARTIFACT - DELETE - Filhos Ativos
     [Documentation]    Cenário de DELETE /api/v1/artifacts/{artifact} com filhos ativos.
     [Arguments]    ${initiative_title}    ${feature_title}
     DELETE Artifact - Status Code 409 - Filhos Ativos    ${initiative_title}    ${feature_title}
+
+WORKITEM - PATCH ARTIFACT - PATCH - Titulo E Responsavel
+    [Documentation]    Cenário de PATCH /api/v1/artifacts/{artifact} e GET .../people na página do artefato.
+    [Arguments]    ${initiative_title}    ${new_title}
+    PATCH Artifact - Status Code 200 - Titulo E Responsavel    ${initiative_title}    ${new_title}
+
+WORKITEM - PATCH ARTIFACT - PATCH - Versao Velha E Leitor
+    [Documentation]    Cenário de PATCH /api/v1/artifacts/{artifact} com versão velha e de leitura sem edição.
+    [Arguments]    ${initiative_title}
+    PATCH Artifact - Status Code 409 - Versao Velha E Leitor    ${initiative_title}

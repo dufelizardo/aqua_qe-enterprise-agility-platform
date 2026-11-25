@@ -43,3 +43,20 @@ CT-004 - PRD-RF-015: Validate Squad - sprint criada, com item, iniciada e encerr
     ...    ${portfolio_root_name}    ${portfolio_unit_base}    ${portfolio_unit_label}    ${tactical_cadeia_base}
     ...    ${tactical_cadeia_label}    ${squad_unit_base}    ${squad_unit_label}    ${squad_level_name}
     ...    ${squad_task_base}    ${squad_sprint_base}
+
+CT-005 - PRD-RF-018: Validate Iniciativa - abrir pelo cartão, documentar e aprovar o PRD
+    [Documentation]    #63: a página do artefato tem as abas dos documentos; o PRD salvo fica Em andamento e, aprovado,
+    ...    aparece como Aprovado na Visão geral.
+    [Tags]    UI    Portfolio    ArtifactDocuments    PRD-RF-018    PRD-RF-019    PRD-RF-020
+    PORTFOLIO - DOCUMENTOS DA INICIATIVA    ${portfolio_admin_username}    ${portfolio_admin_display_name}
+    ...    ${portfolio_root_name}    ${portfolio_unit_base}    ${portfolio_unit_label}    ${tactical_cadeia_base}
+    ...    ${tactical_cadeia_label}    ${squad_unit_base}    ${squad_unit_label}    ${squad_level_name}
+    ...    ${portfolio_initiative_base}    ${portfolio_initiative_description}    ${portfolio_document_text}
+
+CT-006 - PRD-RF-010: Validate Iniciativa - editar título e Responsável na página do artefato
+    [Documentation]    Clicar no título e no Responsável edita cada campo; o quadro mostra o título novo.
+    [Tags]    UI    Portfolio    ArtifactEdit    PRD-RF-010
+    PORTFOLIO - EDITAR DADOS DA INICIATIVA    ${portfolio_admin_username}    ${portfolio_admin_display_name}
+    ...    ${portfolio_root_name}    ${portfolio_unit_base}    ${portfolio_unit_label}    ${tactical_cadeia_base}
+    ...    ${tactical_cadeia_label}    ${squad_unit_base}    ${squad_unit_label}    ${squad_level_name}
+    ...    ${portfolio_initiative_base}    ${portfolio_initiative_description}    ${portfolio_renamed_suffix}

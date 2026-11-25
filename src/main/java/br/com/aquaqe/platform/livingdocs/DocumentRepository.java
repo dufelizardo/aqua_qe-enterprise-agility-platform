@@ -12,8 +12,9 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 /**
- * Persistência do motor de documentos (SAD 7.6): documento com dono genérico e versões imutáveis. Nesta entrega, só as
- * páginas de conhecimento (dono = unidade organizacional) usam o repositório; os documentos dos artefatos vêm a seguir.
+ * Persistência do motor de documentos (SAD 7.6): documento com dono genérico e versões imutáveis. Donos: a unidade
+ * organizacional (páginas de conhecimento, SSD 3.7.1) e o artefato (PRD, SAD, SSD, UX e QA da Iniciativa e da Feature,
+ * SSD 3.7).
  */
 @Repository
 class DocumentRepository {
@@ -155,6 +156,61 @@ class DocumentRepository {
 			.query(Boolean.class)
 			.single();
 	}
+
+	// --------------------------------------------------------------------------- documentos de artefato (SSD 3.7)
+
+	private static final String ARTIFACT_COLUMNS = """
+			id, artifact_id, type, status, template_id, current_version, approved_version, updated_at
+			""";
+
+	List<ArtifactDocRow> documentsOf(UUID artifactId) {
+		return jdbc.sql("select " + ARTIFACT_COLUMNS + """
+				  from livingdocs.document
+				 where owner_type = 'ARTIFACT' and artifact_id = :artifact
+				""")
+			.param("artifact", artifactId)
+			.query((rs, n) -> artifactDoc(rs))
+			.list();
+	}
+
+	Optional<ArtifactDocRow> documentOf(UUID artifactId, String type) {
+		return jdbc.sql("select " + ARTIFACT_COLUMNS + """
+				  from livingdocs.document
+				 where owner_type = 'ARTIFACT' and artifact_id = :artifact and type = :type
+				""")
+			.param("artifact", artifactId)
+			.param("type", type)
+			.query((rs, n) -> artifactDoc(rs))
+			.optional();
+	}
+
+	/** Cria o documento {@code PENDING}, sem versão; se já existir, não faz nada. */
+	void insertArtifactDocument(UUID artifactId, String type, UUID templateId, UUID createdBy) {
+		jdbc.sql("""
+				insert into livingdocs.document (owner_type, artifact_id, type, status, template_id, current_version,
+				                                 created_by)
+				values ('ARTIFACT', :artifact, :type, 'PENDING', :template, 0, :by)
+				on conflict (artifact_id, type) where owner_type = 'ARTIFACT' do nothing
+				""")
+			.param("artifact", artifactId)
+			.param("type", type)
+			.param("template", templateId)
+			.param("by", createdBy)
+			.update();
+	}
+
+	private static ArtifactDocRow artifactDoc(ResultSet rs) throws SQLException {
+		return new ArtifactDocRow(rs.getObject("id", UUID.class), rs.getObject("artifact_id", UUID.class),
+			rs.getString("type"), rs.getString("status"), rs.getObject("template_id", UUID.class),
+			rs.getInt("current_version"), (Integer) rs.getObject("approved_version"),
+			instant(rs.getTimestamp("updated_at")));
+	}
+
+	record ArtifactDocRow(UUID id, UUID artifactId, String type, String status, UUID templateId, int currentVersion,
+			Integer approvedVersion, Instant updatedAt) {
+	}
+
+	// ------------------------------------------------------------------------------------------------ versões
 
 	List<VersionRow> versions(UUID documentId) {
 		return jdbc.sql("""

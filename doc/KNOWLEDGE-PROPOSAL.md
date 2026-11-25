@@ -68,7 +68,7 @@ Também acertou ao separar **proprietário, visibilidade, aplicabilidade, ediç�
 | KNOW-D05 | Publicação | **Livre e governado.** Página comum publica ao salvar. Regimento: Rascunho → Em revisão → Aprovado → Publicado, com aprovação e publicação separadas. Editar um publicado abre rascunho novo, e quem lê pela regra 9 continua vendo a versão publicada. |
 | KNOW-D06 | Arquitetura | Um só motor no `livingdocs`, com dono genérico. |
 | KNOW-D07 | Knowledge Center | Fase C, com `GET /search`. |
-| KNOW-D08 | Faseamento | Motor comum + Fase A agora; documentos do artefato logo depois; o MVP vigente não muda. |
+| KNOW-D08 | Faseamento | Motor comum + Fase A agora; documentos do artefato logo depois; o MVP vigente não muda. **Documentos do artefato entregues em 2026-11-25 (#63)**, no mesmo motor (SSD 3.7). |
 | REV-05 | Editor | Primeiro, editor de blocos próprio. **Revisto no bug #67:** editor de texto contínuo (Tiptap/ProseMirror), ver [seção 9](#9-revisão-bug-67-editor-de-texto-contínuo). |
 
 **Padrões assumidos, a validar:**

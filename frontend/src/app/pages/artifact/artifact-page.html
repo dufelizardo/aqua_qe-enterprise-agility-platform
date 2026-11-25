@@ -1,0 +1,279 @@
+<!-- Página do artefato (UX/UI 7.4 e 7.6; #63): Visão geral e os documentos da Iniciativa e da Feature. -->
+@if (artifact(); as a) {
+  <header class="artifact-header" data-testid="artifact-header">
+    <button type="button" class="link" (click)="back()" data-testid="artifact-back">← Voltar</button>
+    <p class="eyebrow">{{ a.key }} · {{ a.orgUnit.name }}</p>
+    @if (editing() === 'title') {
+      <form class="field-edit title-edit" (submit)="saveTitle($event)">
+        <input
+          [value]="textDraft()"
+          (input)="textDraft.set(value($event))"
+          (keydown)="titleKey($event)"
+          maxlength="200"
+          aria-label="Título"
+          data-testid="artifact-title-input"
+        />
+        <button type="submit" class="btn primary" [disabled]="busy() || !textDraft().trim()" data-testid="artifact-title-save">Salvar</button>
+        <button type="button" class="btn" (click)="cancelField()">Cancelar</button>
+      </form>
+    } @else if (a.canEdit) {
+      <h1>
+        <button type="button" class="editable" (click)="startField('title')" title="Clique para editar" data-testid="artifact-title">{{ a.title }}</button>
+      </h1>
+    } @else {
+      <h1 data-testid="artifact-title">{{ a.title }}</h1>
+    }
+    <p class="meta"><span class="chip" data-testid="artifact-status">{{ a.status.name }}</span></p>
+    <nav class="tabs" aria-label="Abas do artefato" data-testid="artifact-tabs">
+      <a [routerLink]="[]" [queryParams]="{ tab: null }" [class.on]="!docType()" data-testid="artifact-tab-overview">Visão geral</a>
+      @for (type of tabs(); track type) {
+        <a [routerLink]="[]" [queryParams]="{ tab: type }" [class.on]="docType() === type" [attr.data-testid]="'artifact-tab-' + type">{{
+          typeLabels[type]
+        }}</a>
+      }
+    </nav>
+  </header>
+
+  @if (error()) {
+    <p class="error" role="alert" data-testid="artifact-error">{{ error() }}</p>
+  }
+
+  @if (!docType()) {
+    <section class="overview" data-testid="artifact-overview">
+      <div class="card">
+        <h2>Visão geral</h2>
+        @if (fieldNotice()) {
+          <p class="banner" role="status" data-testid="artifact-field-notice">{{ fieldNotice() }}</p>
+        }
+        @if (a.canEdit) {
+          <p class="hint">Clique em um campo para editar.</p>
+        }
+        <dl class="fields">
+          @for (p of personFields; track p.field) {
+            <dt>{{ p.label }}</dt>
+            <dd>
+              @if (editing() === p.field) {
+                <div class="field-edit person-edit" [attr.data-testid]="'artifact-person-edit-' + p.field">
+                  <input
+                    [value]="personQuery()"
+                    (input)="searchPeople(value($event))"
+                    (keydown.escape)="cancelField()"
+                    placeholder="Buscar pelo nome"
+                    [attr.aria-label]="'Buscar ' + p.label"
+                    data-testid="artifact-person-search"
+                  />
+                  <ul class="person-options" role="listbox" [attr.aria-label]="p.label">
+                    <li>
+                      <button type="button" class="link" (click)="choosePerson(p.field, null)" [disabled]="busy()" data-testid="artifact-person-none">Ninguém</button>
+                    </li>
+                    @for (person of personResults(); track person.id) {
+                      <li>
+                        <button type="button" class="link" (click)="choosePerson(p.field, person)" [disabled]="busy()" data-testid="artifact-person-option">{{ person.name }}</button>
+                      </li>
+                    } @empty {
+                      <li class="muted">Ninguém encontrado.</li>
+                    }
+                  </ul>
+                  <button type="button" class="btn" (click)="cancelField()">Cancelar</button>
+                </div>
+              } @else if (a.canEdit) {
+                <button type="button" class="editable" (click)="startField(p.field)" [attr.data-testid]="'artifact-field-' + p.field">{{ p.of(a)?.name ?? '—' }}</button>
+              } @else {
+                <span [attr.data-testid]="'artifact-field-' + p.field">{{ p.of(a)?.name ?? '—' }}</span>
+              }
+            </dd>
+          }
+          <dt>Estimativa</dt>
+          <dd>
+            @if (editing() === 'size') {
+              <span class="field-edit">
+                <select (change)="saveSize(value($event))" (keydown.escape)="cancelField()" [disabled]="busy()" aria-label="Estimativa" data-testid="artifact-size-select">
+                  <option value="" [selected]="!a.size">—</option>
+                  @for (s of sizes; track s) {
+                    <option [value]="s" [selected]="a.size === s">{{ s }}</option>
+                  }
+                </select>
+                <button type="button" class="btn" (click)="cancelField()">Cancelar</button>
+              </span>
+            } @else if (a.canEdit) {
+              <button type="button" class="editable" (click)="startField('size')" data-testid="artifact-field-size">{{ a.size ?? '—' }}</button>
+            } @else {
+              <span data-testid="artifact-field-size">{{ a.size ?? '—' }}</span>
+            }
+          </dd>
+          <dt>Descrição</dt>
+          <dd>
+            @if (editing() === 'description') {
+              <div class="field-edit description-edit">
+                <textarea
+                  rows="6"
+                  [value]="textDraft()"
+                  (input)="textDraft.set(value($event))"
+                  (keydown.escape)="cancelField()"
+                  aria-label="Descrição"
+                  data-testid="artifact-description-input"
+                ></textarea>
+                <div>
+                  <button type="button" class="btn primary" (click)="saveDescription()" [disabled]="busy()" data-testid="artifact-description-save">Salvar</button>
+                  <button type="button" class="btn" (click)="cancelField()">Cancelar</button>
+                </div>
+              </div>
+            } @else if (a.canEdit) {
+              <button type="button" class="editable multiline" (click)="startField('description')" data-testid="artifact-field-description">{{ a.description || 'Adicionar uma descrição…' }}</button>
+            } @else {
+              <span data-testid="artifact-field-description">{{ a.description || '—' }}</span>
+            }
+          </dd>
+        </dl>
+      </div>
+      @if (hasDocuments()) {
+        <div class="card">
+          <h2>Documentação</h2>
+          <ul class="doc-list" data-testid="artifact-doc-list">
+            @for (type of tabs(); track type) {
+              <li>
+                <a [routerLink]="[]" [queryParams]="{ tab: type }" [attr.data-testid]="'artifact-doc-' + type">{{ typeLabels[type] }}</a>
+                @if (summaryOf(type); as s) {
+                  <span class="chip" [attr.data-status]="s.status" [attr.data-testid]="'artifact-doc-status-' + type">{{ statusLabels[s.status] }}</span>
+                  @if (s.currentVersion > 0) {
+                    <span class="muted">versão {{ s.currentVersion }}</span>
+                  }
+                }
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    </section>
+  } @else if (document(); as current) {
+    <div class="layout">
+      <aside class="pages" aria-label="Seções">
+        <ul class="sections-index" data-testid="doc-index">
+          @for (item of index(); track item.key) {
+            <li [class.filled]="item.filled">
+              <span aria-hidden="true">{{ item.filled ? '●' : '○' }}</span>
+              {{ item.title }}@if (item.required) {<span class="req" title="Obrigatória para aprovar"> *</span>}
+            </li>
+          }
+        </ul>
+        <p class="hint">* obrigatória para aprovar</p>
+      </aside>
+
+      <section class="content" aria-live="polite">
+        @if (shown(); as d) {
+          <article class="card" data-testid="doc-page">
+            <header class="page-head">
+              <h2 data-testid="doc-title">{{ d.name }}</h2>
+              <div class="meta">
+                <span class="chip" [attr.data-status]="d.status" data-testid="doc-status">{{ statusLabels[d.status] }}</span>
+                <span data-testid="doc-version">Versão {{ d.versionNumber }}</span>
+                @if (d.author) {
+                  <span>· {{ d.author.name }}</span>
+                }
+                @if (d.savedAt) {
+                  <span>· {{ d.savedAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+                }
+              </div>
+            </header>
+
+            @if (oldVersion()) {
+              <p class="banner" data-testid="doc-old-version">
+                Você está vendo a versão {{ d.versionNumber }}.
+                <button type="button" class="link" (click)="oldVersion.set(null)">Voltar à versão atual</button>
+              </p>
+            }
+
+            @if (mode() !== 'edit' && !oldVersion()) {
+              <div class="toolbar" role="group" aria-label="Ações do documento">
+                @if (current.canEdit && current.status !== 'APPROVED') {
+                  <button type="button" class="btn primary" (click)="startEdit()" data-testid="doc-edit">Editar</button>
+                }
+                @if (current.canApprove && current.status === 'IN_PROGRESS') {
+                  <button
+                    type="button"
+                    class="btn primary"
+                    (click)="approve()"
+                    [disabled]="busy() || current.missingSections.length > 0"
+                    data-testid="doc-approve"
+                  >
+                    Aprovar
+                  </button>
+                }
+                @if (current.canEdit && current.status === 'APPROVED') {
+                  <button type="button" class="btn" (click)="reopening.set(true)" data-testid="doc-reopen">Reabrir para edição</button>
+                }
+                @if (current.currentVersion > 0) {
+                  <button type="button" class="btn" (click)="showHistory()" data-testid="doc-history">Histórico</button>
+                }
+              </div>
+              @if (current.canApprove && current.status === 'IN_PROGRESS' && current.missingSections.length > 0) {
+                <p class="hint" data-testid="doc-missing">Para aprovar, preencha: {{ missingTitles() }}.</p>
+              }
+            }
+
+            @if (reopening()) {
+              <form class="ask" (submit)="reopen($event)">
+                <label>
+                  Por que reabrir? (obrigatório)
+                  <input [value]="reopenComment()" (input)="reopenComment.set(value($event))" maxlength="500" data-testid="doc-reopen-comment" />
+                </label>
+                <button type="submit" class="btn primary" [disabled]="busy() || !reopenComment().trim()" data-testid="doc-reopen-confirm">Reabrir</button>
+                <button type="button" class="btn" (click)="reopening.set(false)">Cancelar</button>
+              </form>
+            }
+
+            @if (mode() === 'history') {
+              <section class="history" aria-label="Histórico de versões">
+                <h3>Histórico</h3>
+                <ul data-testid="doc-versions">
+                  @for (v of versions(); track v.number) {
+                    <li>
+                      <button type="button" class="link" (click)="openVersion(v.number)" data-testid="doc-version-link">Versão {{ v.number }}</button>
+                      · {{ v.author?.name ?? '—' }} · {{ v.savedAt | date: 'dd/MM/yyyy HH:mm' }}
+                      @if (v.approved) {
+                        <span class="chip" data-status="APPROVED">Aprovada</span>
+                      }
+                      @if (v.summary) {
+                        <span class="muted">— {{ v.summary }}</span>
+                      }
+                    </li>
+                  }
+                </ul>
+                <button type="button" class="btn" (click)="mode.set('read')">Fechar histórico</button>
+              </section>
+            }
+
+            @if (mode() === 'edit') {
+              @if (conflict()) {
+                <p class="banner" role="alert" data-testid="doc-conflict">
+                  Este documento foi alterado por outra pessoa enquanto você editava. Copie o que precisar e recarregue para ver a versão nova.
+                  <button type="button" class="link" (click)="reloadAfterConflict()">Recarregar</button>
+                </p>
+              }
+              @for (section of draft(); track section.key; let i = $index) {
+                <section class="section" [attr.data-section]="section.key">
+                  <h3>{{ section.title }}@if (section.required) {<span class="req" title="Obrigatória para aprovar"> *</span>}</h3>
+                  <app-rich-editor [doc]="section.doc" [editable]="true" [label]="section.title" (docChange)="setDoc(i, $event)" />
+                </section>
+              }
+              <div class="save-bar">
+                <input class="summary-input" placeholder="Resumo da alteração (opcional)" [value]="draftSummary()" (input)="draftSummary.set(value($event))" maxlength="300" data-testid="doc-summary" />
+                <button type="button" class="btn primary" (click)="save()" [disabled]="busy() || conflict()" data-testid="doc-save">Salvar</button>
+                <button type="button" class="btn" (click)="mode.set('read')">Cancelar</button>
+              </div>
+            } @else {
+              @for (section of shownDocs(); track section.key) {
+                <section class="section" [attr.data-section]="section.key">
+                  <h3>{{ section.title }}@if (section.required) {<span class="req" title="Obrigatória para aprovar"> *</span>}</h3>
+                  <app-rich-editor [doc]="section.doc" [label]="section.title" />
+                </section>
+              }
+            }
+          </article>
+        }
+      </section>
+    </div>
+  }
+} @else if (loadError()) {
+  <p class="error" role="alert" data-testid="artifact-load-error">{{ loadError() }}</p>
+}

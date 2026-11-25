@@ -13,6 +13,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +53,7 @@ class ArtifactService {
 	private static final Set<String> PATCHABLE = Set.of("title", "description", "ownerId", "technicalLeadId",
 		"qaOwnerId", "assigneeId", "size", "customFields", "parentId", "blocked", "blockedReason", "version");
 	static final int BLOCKED_REASON_MAX = 500;
+	private static final int PEOPLE_LIMIT = 20;
 
 	private final ArtifactRepository repository;
 	private final ArtifactConfiguration configuration;
@@ -61,10 +63,11 @@ class ArtifactService {
 	private final UserDirectory users;
 	private final ObjectMapper json;
 	private final DomainEvents events;
+	private final ApplicationEventPublisher publisher;
 
 	ArtifactService(ArtifactRepository repository, ArtifactConfiguration configuration, OrgUnits orgUnits,
 			Authorization authorization, CurrentUser currentUser, UserDirectory users, ObjectMapper json,
-			DomainEvents events) {
+			DomainEvents events, ApplicationEventPublisher publisher) {
 		this.repository = repository;
 		this.configuration = configuration;
 		this.orgUnits = orgUnits;
@@ -73,12 +76,30 @@ class ArtifactService {
 		this.users = users;
 		this.json = json;
 		this.events = events;
+		this.publisher = publisher;
 	}
 
 	// ---------------------------------------------------------------------------------------------- leitura
 
 	ArtifactView get(String ref) {
-		return views(List.of(readable(ref, caller()))).getFirst();
+		Caller caller = caller();
+		Row row = readable(ref, caller);
+		return views(List.of(row)).getFirst().withCanEdit(canEdit(caller, row, typeOf(row)));
+	}
+
+	/**
+	 * Pessoas que podem ser escolhidas como Responsável, Technical Lead, QA ou executor do artefato: as que têm papel
+	 * vigente na unidade dele, nas unidades acima e nas de baixo. Só quem edita o artefato consulta.
+	 */
+	List<ArtifactViews.Person> people(String ref, String query) {
+		Caller caller = caller();
+		Row row = readable(ref, caller);
+		requireEdit(caller, row, typeOf(row));
+		Set<UUID> units = new java.util.HashSet<>(orgUnits.lineage(row.orgUnitId()));
+		units.addAll(orgUnits.subtrees(List.of(row.orgUnitId())));
+		return users.search(authorization.peopleIn(units), query, PEOPLE_LIMIT).stream()
+			.map(ArtifactViews.Person::of)
+			.toList();
 	}
 
 	PageResponse<ArtifactView> list(UUID workspaceId, Map<String, String> query, PageRequest page) {
@@ -179,6 +200,7 @@ class ArtifactService {
 		payload.put("parentId", row.parentId());
 		events.publish("artifact.created", caller.userId(), unitId, new Aggregate("ARTIFACT", id, key), payload, null,
 			auditable(row));
+		publisher.publishEvent(new ArtifactCreated(id, key, type.key(), unitId, caller.userId()));
 		return views(List.of(repository.find(id).orElseThrow())).getFirst();
 	}
 
@@ -231,7 +253,7 @@ class ArtifactService {
 		after.keySet().retainAll(before.keySet());
 		events.publish("artifact.updated", caller.userId(), current.orgUnitId(),
 			new Aggregate("ARTIFACT", current.id(), current.key()), Map.of("key", current.key()), before, after);
-		return views(List.of(repository.find(current.id()).orElseThrow())).getFirst();
+		return views(List.of(repository.find(current.id()).orElseThrow())).getFirst().withCanEdit(true);
 	}
 
 	/**
@@ -339,9 +361,13 @@ class ArtifactService {
 	}
 
 	void requireEdit(Caller caller, Row row, ArtifactType type) {
-		if (!authorization.can(caller.userId(), Permission.editAt(type.level()), row.orgUnitId())) {
+		if (!canEdit(caller, row, type)) {
 			throw ApiException.forbidden();
 		}
+	}
+
+	private boolean canEdit(Caller caller, Row row, ArtifactType type) {
+		return authorization.can(caller.userId(), Permission.editAt(type.level()), row.orgUnitId());
 	}
 
 	/** Fora do escopo de leitura responde 404, igual a inexistente (SSD 2.1, regra 7). */
@@ -447,7 +473,7 @@ class ArtifactService {
 				person(names, r.ownerId()), person(names, r.technicalLeadId()),
 				person(names, r.qaOwnerId()), person(names, r.assigneeId()),
 				r.size(), parseCustomFields(r.customFields()), r.childCount(), r.archived(), r.version(), r.createdAt(),
-				r.updatedAt(), r.blocked(), r.blockedReason()));
+				r.updatedAt(), r.blocked(), r.blockedReason(), null));
 		}
 		return result;
 	}
