@@ -42,3 +42,9 @@ CT-005 - KNOW-006: Validate Wiki - arrastar e soltar página na árvore
     [Tags]    UI    Wiki    KNOW-006    PROP-002
     WIKI UI - ARRASTAR PAGINA    ${wiki_pm_username}    ${wiki_pm_display_name}    ${wiki_root_name}
     ...    ${wiki_page_base}
+
+CT-006 - KNOW-006: Validate Wiki - menu ⋯ renomeia, faz uma cópia e arquiva
+    [Documentation]    O menu ⋯ da página reúne as ações: renomear, fazer uma cópia (logo depois) e arquivar.
+    [Tags]    UI    Wiki    KNOW-006
+    WIKI UI - MENU DA PAGINA    ${wiki_pm_username}    ${wiki_pm_display_name}    ${wiki_root_name}
+    ...    ${wiki_page_base}    ${wiki_renamed_suffix}

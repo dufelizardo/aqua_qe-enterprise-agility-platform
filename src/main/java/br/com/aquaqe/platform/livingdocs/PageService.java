@@ -323,6 +323,45 @@ class PageService {
 	}
 
 	/**
+	 * Faz uma cópia da página do Wiki (menu ⋯, 2026-11-25): uma página nova na mesma unidade, com o mesmo pai, logo depois
+	 * da original e com o conteúdo da versão atual dela. As subpáginas não vêm. O regimento não se copia.
+	 */
+	@Transactional
+	Map<String, Object> copy(UUID id, Map<String, Object> body) {
+		UUID user = user();
+		PageRow page = editable(id, user);
+		if (REGIMENTO.equals(page.type())) {
+			throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, "NOT_COPYABLE", "O regimento não pode ser copiado.");
+		}
+		Object asked = body == null ? null : body.get("title");
+		String title = asked == null || String.valueOf(asked).isBlank() ? copyTitle(page.title()) : title(asked);
+		VersionRow source = version(page, page.currentVersion());
+		UUID copyId = repository.insertPage(page.orgUnitId(), page.parentId(), "PAGE", title, "PUBLISHED",
+			page.templateId(), 1, user);
+		repository.insertVersion(copyId, 1, source.sectionsJson(), null, user);
+		List<PageRow> siblings = repository.pagesOf(page.orgUnitId()).stream()
+			.filter(p -> !p.archived() && !REGIMENTO.equals(p.type()) && !p.id().equals(copyId))
+			.filter(p -> Objects.equals(p.parentId(), page.parentId()))
+			.toList();
+		double position = page.position() + 1000;
+		for (int i = 0; i < siblings.size(); i++) {
+			if (siblings.get(i).id().equals(page.id()) && i + 1 < siblings.size()) {
+				position = (page.position() + siblings.get(i + 1).position()) / 2;
+			}
+		}
+		repository.reposition(copyId, page.parentId(), position);
+		events.publish("knowledge_page.created", user, page.orgUnitId(), aggregate(copyId, title),
+			Map.of("type", "PAGE", "copiedFrom", page.id().toString()), null,
+			Map.of("title", title, "type", "PAGE", "parentId", String.valueOf(page.parentId())));
+		return get(copyId);
+	}
+
+	private static String copyTitle(String original) {
+		String title = "Cópia de " + original;
+		return title.length() <= TITLE_MAX ? title : title.substring(0, TITLE_MAX);
+	}
+
+	/**
 	 * Reordena e move uma página dentro do Wiki da unidade (PROP-002): {@code beforeId} ou {@code afterId} apontam a
 	 * irmã de referência; {@code parentId} (se presente, inclusive nulo = raiz) muda o nível, levando as subpáginas
 	 * junto. Só muda a posição: não cria versão, não mexe no status e mantém o id (os links continuam valendo).

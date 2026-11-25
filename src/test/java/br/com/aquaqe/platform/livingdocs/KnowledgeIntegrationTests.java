@@ -288,6 +288,42 @@ class KnowledgeIntegrationTests {
 			containsInAnyOrder("knowledge_page.created", "knowledge_page.updated"));
 	}
 
+	@Test
+	void fazerUmaCopiaFicaLogoDepoisComOConteudoAtualSemSubpaginas() throws Exception {
+		String unit = unit("Portfólio Cópia KN", "PORTFOLIO",
+			jdbc.queryForObject("select id from organization.org_unit where parent_id is null", UUID.class).toString());
+		grant("pedro", "PRODUCT_MANAGER", unit);
+		grant("vera", "VIEWER", unit);
+		String first = id(create("pedro", unit, "{\"title\":\"Primeira\"}"));
+		String original = id(create("pedro", unit, "{\"title\":\"Original\"}"));
+		String last = id(create("pedro", unit, "{\"title\":\"Última\"}"));
+		create("pedro", unit, "{\"title\":\"Filha\",\"parentId\":\"" + original + "\"}").andExpect(status().isCreated());
+		save("pedro", original, 1, body("content", "Texto atual")).andExpect(status().isOk());
+
+		String copy = id(mvc.perform(json(post("/api/v1/pages/{id}/copy", original), user("pedro"), "{}"))
+			.andExpect(jsonPath("$.title").value("Cópia de Original"))
+			.andExpect(jsonPath("$.parentId").doesNotExist())
+			.andExpect(jsonPath("$.versionNumber").value(1))
+			.andExpect(jsonPath("$.sections[0].blocks[0].text").value("Texto atual")));
+		mvc.perform(get("/api/v1/org-units/{u}/pages", unit).with(user("pedro")))
+			.andExpect(jsonPath("$.items[?(@.parentId == null)].id").value(contains(first, original, copy, last)))
+			.andExpect(jsonPath("$.items[?(@.parentId == '" + copy + "')]").isEmpty());
+		mvc.perform(json(post("/api/v1/pages/{id}/copy", original), user("pedro"), "{\"title\":\"Outro nome\"}"))
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath("$.title").value("Outro nome"));
+
+		mvc.perform(json(post("/api/v1/pages/{id}/copy", original), user("vera"), "{}")).andExpect(status().isForbidden());
+		String reg = id(mvc.perform(json(post("/api/v1/org-units/{u}/regimento", unit), user("pedro"),
+			"{\"title\":\"Regimento da cópia\"}")));
+		mvc.perform(json(post("/api/v1/pages/{id}/copy", reg), user("pedro"), "{}"))
+			.andExpect(status().isUnprocessableContent())
+			.andExpect(jsonPath("$.code").value("NOT_COPYABLE"));
+		String payload = jdbc.queryForObject(
+			"select envelope -> 'payload' ->> 'copiedFrom' from events.outbox_event where envelope -> 'aggregate' ->> 'id' = ?",
+			String.class, copy);
+		org.junit.jupiter.api.Assertions.assertEquals(original, payload);
+	}
+
 	// ------------------------------------------------------------------------------------------------ apoio
 
 	private ResultActions create(String username, String unit, String body) throws Exception {

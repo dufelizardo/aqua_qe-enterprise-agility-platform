@@ -141,6 +141,12 @@ export class KnowledgeService {
     );
   }
 
+  /** Faz uma cópia da página logo depois dela, com o conteúdo atual (sem título, a API usa "Cópia de …"). */
+  copy(id: string, title?: string): Promise<Page> {
+    const body = title?.trim() ? { title: title.trim() } : {};
+    return firstValueFrom(this.http.post<Page>(`${API}/pages/${id}/copy`, body));
+  }
+
   update(id: string, changes: { title?: string; parentId?: string | null }): Promise<Page> {
     return firstValueFrom(this.http.patch<Page>(`${API}/pages/${id}`, changes));
   }
@@ -428,4 +434,12 @@ export function dropRank(tree: PageNode[], from: number, to: number): { id: stri
     return { id: dragged.id, request: withParent(target.id, { beforeId: below.id }) };
   }
   return { id: dragged.id, request: withParent(target.parentId, { afterId: target.id }) };
+}
+
+/** Endereço da página no Wiki: o endereço atual com {@code ?page=<id>} (Copiar link do menu ⋯). */
+export function pageLink(currentHref: string, id: string): string {
+  const url = new URL(currentHref);
+  url.searchParams.set('page', id);
+  url.hash = '';
+  return url.toString();
 }

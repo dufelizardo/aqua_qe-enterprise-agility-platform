@@ -37,3 +37,10 @@ ${WIKI_TREE_ITEM_BY_TITLE}  css=[data-testid="wiki-tree"] li[role="treeitem"]:ha
 ${WIKI_MISSING}             css=[data-testid="wiki-missing"]
 # Página da árvore pelo título exato: format com o título.
 ${WIKI_PAGE_LINK_BY_TITLE}  css=[data-testid="wiki-page-link"]:has(.title:text-is("{}"))
+# Menu ⋯ da página: renomear, fazer uma cópia e arquivar.
+${WIKI_RENAME}              css=[data-testid="wiki-rename"]
+${WIKI_RENAME_TITLE}        css=[data-testid="wiki-rename-title"]
+${WIKI_RENAME_CONFIRM}      css=[data-testid="wiki-rename-confirm"]
+${WIKI_COPY}                css=[data-testid="wiki-copy"]
+${WIKI_MENU_ARCHIVE}        css=[data-testid="wiki-menu-archive"]
+${WIKI_ARCHIVE_CONFIRM}     css=[data-testid="wiki-archive-confirm"]

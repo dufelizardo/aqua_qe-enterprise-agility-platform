@@ -64,3 +64,11 @@ POST Page Rank As Persona
     ...    expected_status=ANY
     Log    ${response.status_code} ${response.text}
     RETURN    ${response}
+
+POST Page Copy As Persona
+    [Arguments]    ${persona}    ${page}    ${payload}
+    ${session}=    Get AQuA-QE Session For Persona    ${persona}
+    ${response}=    POST On Session    ${session}    ${API_BASE_PATH}/pages/${page}/copy    json=${payload}
+    ...    expected_status=ANY
+    Log    ${response.status_code} ${response.text}
+    RETURN    ${response}

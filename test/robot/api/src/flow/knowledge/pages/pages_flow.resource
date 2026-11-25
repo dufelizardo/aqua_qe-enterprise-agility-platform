@@ -136,3 +136,24 @@ Pages - Reorganizar
     ${payload}=    Create Dictionary    parentId=${a}[id]
     ${response}=    POST Page Rank As Persona    pm    ${a}[id]    ${payload}
     Validate Error Body    ${response}    400    VALIDATION_FAILED
+
+Pages - Fazer Uma Copia
+    [Documentation]    Menu ⋯: a cópia nasce logo depois da original, com "Cópia de …" e o conteúdo atual; quem só lê
+    ...    não copia.
+    [Arguments]    ${unit_name}    ${title}    ${text}
+    ${unit}=    Create Knowledge Unit    ${unit_name}
+    ${original}=    Create Page    pm    ${unit}    ${title}
+    ${last}=    Create Page    pm    ${unit}    ${title} fim
+    ${saved}=    Save Page    pm    ${original}    1    ${text}
+    Should Be Equal As Integers    ${saved.status_code}    200
+    ${empty}=    Create Dictionary
+    ${response}=    POST Page Copy As Persona    pm    ${original}[id]    ${empty}
+    Should Be Equal As Integers    ${response.status_code}    201
+    Should Be Equal    ${response.json()}[title]    Cópia de ${title}
+    Should Be Equal    ${response.json()}[sections][0][blocks][0][text]    ${text}
+    ${listing}=    GET Pages As Persona    pm    ${unit}
+    ${order}=    Evaluate    [p['id'] for p in $listing.json()['items']]
+    ${expected}=    Create List    ${original}[id]    ${response.json()}[id]    ${last}[id]
+    Lists Should Be Equal    ${order}    ${expected}
+    ${denied}=    POST Page Copy As Persona    viewer    ${original}[id]    ${empty}
+    Should Be Equal As Integers    ${denied.status_code}    403

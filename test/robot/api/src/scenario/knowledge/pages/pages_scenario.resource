@@ -11,3 +11,8 @@ KNOWLEDGE - ORGANIZE PAGES
     [Documentation]    Cenário de reorganização da árvore do Wiki (PROP-002).
     [Arguments]    ${unit_name}    ${title}
     Pages - Reorganizar    ${unit_name}    ${title}
+
+KNOWLEDGE - COPY PAGE
+    [Documentation]    Cenário de POST /api/v1/pages/{id}/copy (menu ⋯ do Wiki).
+    [Arguments]    ${unit_name}    ${title}    ${text}
+    Pages - Fazer Uma Copia    ${unit_name}    ${title}    ${text}

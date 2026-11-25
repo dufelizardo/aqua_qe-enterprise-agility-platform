@@ -632,6 +632,7 @@ O mesmo motor de documentos tem **dono genérico**: um artefato (os cinco docume
 | POST | `/pages/{id}/status` | Ciclo da página governada: `{"status": ..., "comment": ...}`. | ver abaixo |
 | POST | `/pages/{id}/rank` | Reorganiza no Wiki ([PROP-002](propostas/PROP-002-organizacao-flexivel-da-wiki.md)). `beforeId` ou `afterId`: irmã de referência no nível de destino. `parentId`, se presente, muda o nível (nulo = raiz) e leva as subpáginas junto; sem irmã de referência, vai para o fim do nível. Recusa ciclo, referência de outro nível e o regimento. Não cria versão nem mexe no status. Publica `knowledge_page.moved`, com pai e posição antes e depois. | `EDIT_KNOWLEDGE` |
 | POST | `/pages/{id}/archive` | Arquiva (`reason` opcional). Página com subpáginas ativas: `HAS_CHILDREN`. | `EDIT_KNOWLEDGE` |
+| POST | `/pages/{id}/copy` | Faz uma cópia (menu ⋯, #81): página nova na mesma unidade e no mesmo pai, logo depois da original, com o conteúdo da versão atual e sem as subpáginas. `title` opcional (padrão "Cópia de <título>"). Recusa o regimento (422 `NOT_COPYABLE`). Publica `knowledge_page.created` com `copiedFrom`. Responde 201. | `EDIT_KNOWLEDGE` |
 | POST | `/pages/{id}/restore` | Restaura; se o pai continua arquivado, volta para a raiz do espaço. | `EDIT_KNOWLEDGE` |
 
 `EDIT_KNOWLEDGE` **(a validar)**: todo papel na unidade ou acima, menos `VIEWER`. Quem só lê pela regra 9 recebe `403` ao editar e ao pedir o histórico de uma página publicada; o rascunho de outra unidade responde `404`.

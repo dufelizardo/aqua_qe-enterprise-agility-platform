@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /** Páginas de conhecimento por unidade (SSD 3.7.1; Proposta 07, Fase A). */
@@ -82,6 +83,12 @@ class PageController {
 	@PostMapping("/api/v1/pages/{id}/rank")
 	Map<String, Object> rank(@PathVariable UUID id, @RequestBody Map<String, Object> body) {
 		return service.rank(id, body);
+	}
+
+	@PostMapping("/api/v1/pages/{id}/copy")
+	@ResponseStatus(HttpStatus.CREATED)
+	Map<String, Object> copy(@PathVariable UUID id, @RequestBody(required = false) Map<String, Object> body) {
+		return service.copy(id, body);
 	}
 
 	@PostMapping("/api/v1/pages/{id}/archive")
