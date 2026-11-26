@@ -37,6 +37,7 @@ interface TransitionRow {
       <nav class="admin-tabs" aria-label="Seções da administração">
         <a routerLink="/admin/organizacao">Estrutura organizacional</a>
         <a routerLink="/admin/gates" class="on" aria-current="page">Gates</a>
+        <a routerLink="/admin/responsavel-padrao" data-testid="admin-tab-default-owner">Responsável padrão</a>
       </nav>
       <h1 data-testid="page-title">Gates</h1>
       <p class="lead">Regras que um item precisa cumprir para mudar de status. Cada transição do fluxo pode ter um gate.</p>
@@ -157,7 +158,7 @@ interface TransitionRow {
     .eyebrow { margin: 0; font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); }
     h1 { margin: 4px 0; font-size: 30px; font-weight: 800; }
     .lead { margin: 0; color: var(--text-secondary); }
-    .admin-tabs { display: flex; gap: 12px; margin: 6px 0; }
+    .admin-tabs { display: flex; flex-wrap: wrap; gap: 12px; margin: 6px 0; }
     .admin-tabs a { color: var(--text-secondary); text-decoration: none; font-weight: 600; }
     .admin-tabs a.on { color: var(--text); border-bottom: 2px solid var(--navy-900, currentColor); }
     .layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 16px; align-items: start; }

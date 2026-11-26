@@ -11,3 +11,6 @@ ${post_artifact_unknown_key}            INIT-999999
 
 # patch_artifact (PATCH /api/v1/artifacts/{artifact})
 ${patch_artifact_new_title}             Robot Iniciativa Renomeada
+
+# default_owner (#43: responsável padrão por unidade e tipo)
+${default_owner_initiative_title}        Robot Iniciativa com Owner Padrão

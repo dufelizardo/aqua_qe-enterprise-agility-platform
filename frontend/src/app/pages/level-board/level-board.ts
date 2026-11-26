@@ -10,6 +10,7 @@ import { OrgUnit, OrgUnitDetail, OrganizationService } from '../../admin/organiz
 import { LevelsService } from '../../core/levels.service';
 import { ApiError, fieldError, messageOf, toApiError } from '../../core/api-error';
 import { WorkspaceService } from '../../core/workspace.service';
+import { DefaultOwnerService, OwnerSuggestion, ownerIdToSend, ruleSummary } from '../../work/default-owner.service';
 import { BoardConfig } from '../../work/board-config';
 import { SquadBacklog } from '../../work/squad-backlog';
 import { SquadSprints } from '../../work/squad-sprints';
@@ -55,6 +56,7 @@ import {
 })
 export class LevelBoard {
   private readonly work = inject(WorkService);
+  private readonly defaultOwners = inject(DefaultOwnerService);
   private readonly organization = inject(OrganizationService);
   private readonly snackBar = inject(MatSnackBar);
   protected readonly workspace = inject(WorkspaceService);
@@ -127,6 +129,9 @@ export class LevelBoard {
   protected readonly newDescription = signal('');
   protected readonly newUnit = signal('');
   protected readonly newParent = signal('');
+  /** Owner sugerido pela regra da unidade para o tipo (#43); {@code newOwner} é a escolha: id, 'none' ou ''. */
+  protected readonly ownerSuggestion = signal<OwnerSuggestion | null>(null);
+  protected readonly newOwner = signal('');
   protected readonly createError = signal<ApiError | null>(null);
   protected readonly levelUnits = signal<OrgUnit[]>([]);
   /** Itens que podem ser pai do tipo escolhido e que o usuário lê. */
@@ -274,6 +279,38 @@ export class LevelBoard {
     this.newUnit.set(options[0]?.id ?? '');
     if (this.newType() === initial) {
       await this.chooseType(initial);
+    } else {
+      await this.loadOwnerSuggestion(); // o tipo mudou antes de as unidades chegarem
+    }
+  }
+
+  protected async chooseUnit(id: string): Promise<void> {
+    this.newUnit.set(id);
+    await this.loadOwnerSuggestion();
+  }
+
+  protected ownerRuleText(suggestion: OwnerSuggestion): string {
+    return ruleSummary(suggestion);
+  }
+
+  /** Busca o Owner sugerido para a unidade e o tipo escolhidos; ignora a resposta se a escolha mudou no caminho. */
+  private async loadOwnerSuggestion(): Promise<void> {
+    const unit = this.newUnit();
+    const type = this.newType();
+    this.ownerSuggestion.set(null);
+    this.newOwner.set('');
+    if (!unit || !type) {
+      return;
+    }
+    try {
+      const suggestion = await this.defaultOwners.suggestion(unit, type);
+      if (this.newUnit() !== unit || this.newType() !== type) {
+        return;
+      }
+      this.ownerSuggestion.set(suggestion);
+      this.newOwner.set(suggestion.suggestedId ?? '');
+    } catch {
+      // Sem sugestão, o formulário segue sem o campo e o servidor aplica a regra.
     }
   }
 
@@ -281,6 +318,7 @@ export class LevelBoard {
   protected async chooseType(key: string): Promise<void> {
     this.newType.set(key);
     this.newParent.set('');
+    void this.loadOwnerSuggestion();
     const type = this.selectedType();
     if (!type || type.parentTypes.length === 0) {
       this.parentCandidates.set([]);
@@ -308,6 +346,7 @@ export class LevelBoard {
         description: this.newDescription() || undefined,
         orgUnitId: this.newUnit(),
         parentId: this.newParent() || undefined,
+        ownerId: this.ownerSuggestion()?.candidates.length ? ownerIdToSend(this.newOwner()) : undefined,
       });
       this.creating.set(false);
       this.newTitle.set('');

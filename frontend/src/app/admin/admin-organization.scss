@@ -287,6 +287,6 @@ select:focus-visible {
 }
 
 // Abas da administração (#78).
-.admin-tabs { display: flex; gap: 12px; margin: 6px 0; }
+.admin-tabs { display: flex; flex-wrap: wrap; gap: 12px; margin: 6px 0; }
 .admin-tabs a { color: var(--text-secondary); text-decoration: none; font-weight: 600; }
 .admin-tabs a.on { color: var(--text); border-bottom: 2px solid var(--navy-900, currentColor); }

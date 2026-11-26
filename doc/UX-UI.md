@@ -562,6 +562,11 @@ Visível apenas para `PLATFORM_ADMIN`. Uma página com seções no menu interno.
   - papel e rótulo.
 - "Salvar gate" mostra o erro da API apontando a regra ("Regra 2: …"). "Remover gate" pede confirmação.
 
+**Responsável padrão (#43, 2026-11-26):** `/admin/responsavel-padrao`, terceira aba da Administração.
+- A pessoa escolhe a unidade (árvore indentada) e vê uma linha por tipo de artefato: a regra ("Sem responsável", "Quem criou" ou "Pessoa com o papel: …") e a origem ("Desta unidade", "Herdada de <unidade>" ou "Padrão").
+- "Alterar" abre a escolha do modo e, em "Pessoa com o papel", do papel, com a explicação de que vale a unidade acima mais próxima quando ninguém tem o papel na unidade do item. "Seguir a de cima" remove a regra própria.
+- **No formulário de novo item:** depois da unidade, o campo **Owner** já vem com a pessoa sugerida pela regra e a dica "Sugerido pela regra da unidade: …". Com mais de uma pessoa, começa em "Escolha…" e a dica pede a escolha. "Sem Owner" está sempre disponível. Sem regra (ou com "Sem responsável"), o campo não aparece.
+
 **Situação (2026-11-20):** a seção Estrutura organizacional está implementada em `/admin/organizacao`; quem não é `PLATFORM_ADMIN` não vê o item Admin e, se abrir o endereço, volta para a home. As demais seções entram junto com os endpoints delas e, até lá, não aparecem.
 
 ```text

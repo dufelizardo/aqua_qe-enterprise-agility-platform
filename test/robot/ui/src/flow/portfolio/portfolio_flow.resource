@@ -6,6 +6,7 @@ Resource            ../admin/admin_flow.resource
 Resource            ../../pom/navigation/navigation_pom.resource
 Resource            ../../pom/artifact/artifact_pom.resource
 Resource            ../../pom/gates/gates_pom.resource
+Resource            ../../pom/default_owner/default_owner_pom.resource
 
 *** Keywords ***
 Portfolio - Preparar Portfólio
@@ -202,6 +203,36 @@ Artefato - Gate Com Aprovacao
     FINALLY
         Run Keyword And Ignore Error    Remover Gate Da Transicao    ${path}
     END
+
+Responsavel Padrao - Quem Criou
+    [Documentation]    #43: em Admin › Responsável padrão, a Squad do teste passa a usar "Quem criou" para Iniciativa;
+    ...    o formulário de nova Iniciativa já traz o Owner sugerido; o item nasce com quem criou; "Seguir a de cima"
+    ...    devolve a regra herdada.
+    [Arguments]    ${squad}    ${squad_level_name}    ${title}    ${description}    ${display_name}
+    Go To AQuA-QE Path    /admin/responsavel-padrao
+    Choose Default Owner Unit    ${squad}
+    Set Default Owner Mode    INITIATIVE    CREATOR
+    Wait For Default Owner Summary    INITIATIVE    Quem criou
+    ${row}=    Get Default Owner Row Text    INITIATIVE
+    Should Contain    ${row}    Desta unidade
+    Squad - Abrir Quadro Do Nivel    ${squad}    ${squad_level_name}    portfolio
+    Fill New Initiative    ${title}    ${description}    ${squad}
+    Wait For New Item Owner
+    ${owner}=    Get New Item Owner Label
+    Should Contain    ${owner}    ${display_name}
+    ${hint}=    Get New Item Owner Hint
+    Should Contain    ${hint}    Quem criou
+    Submit New Initiative
+    Wait For Card In Column    IDEA    ${title}
+    ${card}=    Card Locator    IDEA    ${title}
+    Open Card Page    ${card}
+    Wait For Artifact Title    ${title}
+    Wait For Artifact Field    ownerId    ${display_name}
+    Go To AQuA-QE Path    /admin/responsavel-padrao
+    Choose Default Owner Unit    ${squad}
+    Wait For Default Owner Summary    INITIATIVE    Quem criou
+    Click Default Owner Inherit    INITIATIVE
+    Wait For Default Owner Summary    INITIATIVE    Sem responsável
 
 Remover Gate Da Transicao
     [Documentation]    Limpeza do teste: remove o gate da transição em Admin › Gates.

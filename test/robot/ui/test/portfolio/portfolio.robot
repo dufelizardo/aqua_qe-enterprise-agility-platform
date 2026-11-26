@@ -70,3 +70,12 @@ CT-007 - PRD-RF-023: Validate Gate - aprovação de Tech Lead libera o Mover nos
     ...    ${tactical_cadeia_label}    ${squad_unit_base}    ${squad_unit_label}    ${squad_level_name}
     ...    ${portfolio_initiative_base}    ${portfolio_initiative_description}    ${gate_ui_name}    ${gate_ui_message}
     ...    ${gate_ui_path}    ${gate_ui_to_key}    ${gate_ui_to_name}
+
+CT-008 - SSD-3.4: Validate Responsável padrão - "Quem criou" preenche o Owner da nova Iniciativa
+    [Documentation]    #43: a regra da Squad em Admin › Responsável padrão sugere o Owner no formulário; a Iniciativa
+    ...    nasce com quem criou; "Seguir a de cima" volta à regra herdada.
+    [Tags]    UI    Portfolio    DefaultOwner    SSD-3.4
+    PORTFOLIO - RESPONSAVEL PADRAO    ${portfolio_admin_username}    ${portfolio_admin_display_name}
+    ...    ${portfolio_root_name}    ${portfolio_unit_base}    ${portfolio_unit_label}    ${tactical_cadeia_base}
+    ...    ${tactical_cadeia_label}    ${squad_unit_base}    ${squad_unit_label}    ${squad_level_name}
+    ...    ${portfolio_initiative_base}    ${portfolio_initiative_description}
