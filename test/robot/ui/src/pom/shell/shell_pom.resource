@@ -63,3 +63,13 @@ Click Search Result
 Wait For Url To Contain
     [Arguments]    ${fragment}
     Wait For Condition    Url    contains    ${fragment}    timeout=30s
+
+Get Home Favorites Text
+    ${text}=    Get Text    ${HOME_FAVORITES}
+    RETURN    ${text}
+
+Wait For Home Cards Loaded
+    [Documentation]    Os três cartões da Home terminaram de carregar (itens ou estado vazio).
+    Wait For Elements State    ${HOME_RECENT_LOADED}    visible    timeout=30s
+    Wait For Elements State    ${HOME_NEWS_LOADED}    visible    timeout=30s
+    Wait For Elements State    ${HOME_FAVORITES_LOADED}    visible    timeout=30s

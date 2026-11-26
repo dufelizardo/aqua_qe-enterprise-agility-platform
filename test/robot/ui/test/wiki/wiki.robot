@@ -66,3 +66,9 @@ CT-009 - KNOW-014: Validate Busca - achar a página pela caixa do topo
     [Tags]    UI    Search    KNOW-014
     WIKI UI - BUSCAR PELO TOPO    ${wiki_pm_username}    ${wiki_pm_display_name}    ${wiki_root_name}
     ...    ${wiki_page_base}
+
+CT-010 - KNOW-024: Validate Wiki - comentar trecho com @menção e marcar com estrela
+    [Documentation]    #85: o trecho selecionado vira citação; @ abre as pessoas; a estrela leva a página aos Favoritos.
+    [Tags]    UI    Wiki    Comments    KNOW-024    KNOW-025
+    WIKI UI - COMENTAR TRECHO E FAVORITAR    ${wiki_pm_username}    ${wiki_pm_display_name}    ${wiki_root_name}
+    ...    ${wiki_page_base}    ${wiki_text}    ${wiki_summary}    ${wiki_comment_text}

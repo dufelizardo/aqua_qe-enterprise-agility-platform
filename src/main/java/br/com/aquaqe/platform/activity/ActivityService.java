@@ -45,6 +45,7 @@ class ActivityService {
 	static final int RECENT_KEPT = 30;
 	static final int NEWS_LIMIT = 20;
 	static final int NEWS_DAYS = 30;
+	static final int FAVORITES_LIMIT = 50;
 	static final Set<String> DOCUMENT_TYPES = Set.of("PRD", "SAD", "SSD", "UX", "QA");
 
 	private final JdbcClient jdbc;
@@ -163,6 +164,46 @@ class ActivityService {
 		return items;
 	}
 
+	/** Marca a página com estrela (#85). {@code 404} se a pessoa não lê a página. */
+	@Transactional
+	void favorite(UUID pageId) {
+		UUID user = currentUser.require().id();
+		pages.readable(pageId).orElseThrow(ApiException::notFound);
+		jdbc.sql("""
+				insert into activity.favorite (user_id, target_type, ref) values (:user, 'PAGE', :ref)
+				on conflict do nothing
+				""")
+			.param("user", user).param("ref", pageId.toString()).update();
+	}
+
+	/** Tira a estrela; sem efeito se a página não estava marcada. */
+	@Transactional
+	void unfavorite(UUID pageId) {
+		UUID user = currentUser.require().id();
+		jdbc.sql("delete from activity.favorite where user_id = :user and target_type = 'PAGE' and ref = :ref")
+			.param("user", user).param("ref", pageId.toString()).update();
+	}
+
+	/** Páginas com estrela que a pessoa ainda lê, das marcadas por último às mais antigas. */
+	@Transactional(readOnly = true)
+	List<FavoriteItem> favorites() {
+		UUID user = currentUser.require().id();
+		List<String> refs = jdbc.sql("""
+				select ref from activity.favorite where user_id = :user and target_type = 'PAGE'
+				 order by created_at desc limit :limit
+				""")
+			.param("user", user).param("limit", FAVORITES_LIMIT)
+			.query(String.class).list();
+		Map<UUID, Unit> units = new HashMap<>();
+		List<FavoriteItem> items = new ArrayList<>();
+		for (String ref : refs) {
+			pages.readable(UUID.fromString(ref))
+				.ifPresent(page -> items.add(new FavoriteItem("PAGE", page.id(), page.title(), page.type(),
+					unit(page.orgUnitId(), units))));
+		}
+		return items;
+	}
+
 	private Optional<RecentItem> resolve(Visit visit, Map<UUID, Unit> units) {
 		try {
 			if ("PAGE".equals(visit.type())) {
@@ -229,6 +270,10 @@ class ActivityService {
 	}
 
 	record Unit(UUID id, String name) {
+	}
+
+	/** Página com estrela: {@code pageType} é PAGE ou REGIMENTO. */
+	record FavoriteItem(String type, UUID pageId, String title, String pageType, Unit orgUnit) {
 	}
 
 	record Person(UUID id, String name) {

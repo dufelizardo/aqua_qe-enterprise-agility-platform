@@ -160,7 +160,15 @@
             @if (mode() === 'edit') {
               <input class="title-input" [value]="draftTitle()" (input)="setDraftTitle(value($event))" aria-label="Título da página" maxlength="200" data-testid="wiki-edit-title" />
             } @else {
-              <h2 data-testid="wiki-page-title">{{ p.title }}</h2>
+              <div class="title-row">
+                <h2 data-testid="wiki-page-title">{{ p.title }}</h2>
+                @if (!oldVersion()) {
+                  <button type="button" class="star" [class.on]="favorites().has(current.id)" [attr.aria-pressed]="favorites().has(current.id)"
+                    [attr.aria-label]="favorites().has(current.id) ? 'Tirar a estrela' : 'Marcar com estrela'"
+                    [title]="favorites().has(current.id) ? 'Tirar a estrela' : 'Marcar com estrela'"
+                    (click)="toggleFavorite(current.id)" data-testid="wiki-favorite">{{ favorites().has(current.id) ? '★' : '☆' }}</button>
+                }
+              </div>
             }
             <div class="meta">
               @if (p.governed) {
@@ -307,6 +315,7 @@
               }
             </div>
           } @else {
+            <div class="reading" (mouseup)="readSelection()" (keyup)="readSelection()">
             @for (section of shownDocs(); track section.key) {
               <section class="section" [attr.data-section]="section.key">
                 @if (shownDocs().length > 1) {
@@ -318,6 +327,14 @@
                   <app-rich-editor [doc]="section.doc" [label]="section.title" />
                 }
               </section>
+            }
+            </div>
+            @if (selection(); as sel) {
+              <button type="button" class="btn primary quote-button" [style.top.px]="sel.top" [style.left.px]="sel.left"
+                (mousedown)="$event.preventDefault()" (click)="commentSelection()" data-testid="wiki-comment-selection">Comentar trecho</button>
+            }
+            @if (mode() === 'read' && !oldVersion()) {
+              <app-page-comments [pageId]="current.id" />
             }
           }
         </article>

@@ -80,6 +80,7 @@ const ACTIONS: Record<string, string> = {
   'knowledge_page.moved': 'moveu a página',
   'knowledge_page.archived': 'arquivou a página',
   'knowledge_page.restored': 'restaurou a página',
+  'knowledge_page.commented': 'comentou a página',
 };
 
 /** Verbo da novidade ("alterou", "aprovou o"...); um evento novo, ainda sem texto, vira "alterou". */
@@ -92,6 +93,15 @@ export function actorLabel(item: NewsItem): string {
   return item.own ? 'Você' : (item.actor?.name ?? 'Alguém');
 }
 
+/** Página com estrela (GET /me/favorites; #85). */
+export interface FavoriteItem {
+  type: 'PAGE';
+  pageId: string;
+  title: string | null;
+  pageType: 'PAGE' | 'REGIMENTO';
+  orgUnit: UnitRef | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ActivityService {
   private readonly http = inject(HttpClient);
@@ -102,6 +112,15 @@ export class ActivityService {
 
   async news(): Promise<NewsItem[]> {
     return (await firstValueFrom(this.http.get<{ items: NewsItem[] }>('/api/v1/me/news'))).items;
+  }
+
+  async favorites(): Promise<FavoriteItem[]> {
+    return (await firstValueFrom(this.http.get<{ items: FavoriteItem[] }>('/api/v1/me/favorites'))).items;
+  }
+
+  favorite(pageId: string, on: boolean): Promise<void> {
+    const url = `/api/v1/me/favorites/pages/${pageId}`;
+    return firstValueFrom(on ? this.http.put<void>(url, null) : this.http.delete<void>(url));
   }
 
   /** Avisa que a pessoa abriu o item. Não atrapalha a tela: uma falha aqui só deixa de registrar a visita. */

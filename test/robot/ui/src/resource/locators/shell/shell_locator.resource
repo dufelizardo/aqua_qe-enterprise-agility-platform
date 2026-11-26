@@ -16,3 +16,7 @@ ${HOME_NEWS}                    css=[data-testid="home-news"]
 ${SHELL_SEARCH_INPUT}           css=[data-testid="search-input"]
 ${SEARCH_RESULT_LINK_BY_TEXT}   css=[data-testid="search-result-link"]:has-text("{}")
 ${SEARCH_GROUP_PAGE}            css=[data-testid="search-group-PAGE"]
+${HOME_FAVORITES}               css=[data-testid="home-favorites"]
+${HOME_RECENT_LOADED}           css=[data-testid="home-recent"] :is([data-testid="home-recent-item"], [data-testid="home-recent-empty"]) >> nth=0
+${HOME_NEWS_LOADED}             css=[data-testid="home-news"] :is([data-testid="home-news-item"], [data-testid="home-news-empty"]) >> nth=0
+${HOME_FAVORITES_LOADED}        css=[data-testid="home-favorites"] :is([data-testid="home-favorite-item"], [data-testid="home-favorites-empty"]) >> nth=0

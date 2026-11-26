@@ -438,3 +438,10 @@ input:focus-visible {
   color: var(--text-muted);
   font-size: 13px;
 }
+
+// Estrela e "Comentar trecho" (#85).
+.title-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.star { flex: none; border: none; background: none; cursor: pointer; font-size: 22px; line-height: 1; color: var(--text-secondary); padding: 2px 4px; border-radius: 6px; }
+.star.on { color: #d4a000; }
+.star:hover { background: var(--hover, rgba(0, 0, 0, .06)); }
+.quote-button { position: fixed; z-index: 20; box-shadow: 0 4px 14px rgba(0, 0, 0, .18); }

@@ -4,6 +4,7 @@ Documentation       Páginas de conhecimento (SSD 3.7.1; Proposta 07, Fase A): e
 ...                 publicado (regra 9) é coberta no JUnit KnowledgeIntegrationTests.
 Library             Collections
 Resource            ../../../pom/knowledge/pages/pages_pom.resource
+Resource            ../../../pom/identity/get_me/get_me_pom.resource
 Resource            ../../organization/org_units/org_units_flow.resource
 
 *** Keywords ***
@@ -157,3 +158,43 @@ Pages - Fazer Uma Copia
     Lists Should Be Equal    ${order}    ${expected}
     ${denied}=    POST Page Copy As Persona    viewer    ${original}[id]    ${empty}
     Should Be Equal As Integers    ${denied.status_code}    403
+
+Pages - Comentar Mencionar E Favoritar
+    [Documentation]    #85: o PM comenta citando um trecho e menciona o leitor (achado pela busca de pessoas); o leitor
+    ...    recebe a notificação de menção; marcar a página com estrela a põe nos favoritos.
+    [Arguments]    ${unit_name}    ${title}    ${comment_text}    ${quote}
+    ${unit}=    Create Knowledge Unit    ${unit_name}
+    ${page}=    Create Page    pm    ${unit}    ${title}
+    ${me}=    GET Me As Persona    viewer
+    ${viewer_id}=    Set Variable    ${me.json()}[id]
+    ${viewer_name}=    Set Variable    ${me.json()}[name]
+    ${people}=    GET Page People As Persona    pm    ${page}[id]    ${viewer_name}
+    Should Be Equal As Integers    ${people.status_code}    200
+    ${ids}=    Evaluate    [p['id'] for p in $people.json()['items']]
+    List Should Contain Value    ${ids}    ${viewer_id}
+    ${mentions}=    Create List    ${viewer_id}
+    ${payload}=    Create Dictionary    body=@${viewer_name} ${comment_text}    quote=${quote}    mentionIds=${mentions}
+    ${created}=    POST Page Comment As Persona    pm    ${page}[id]    ${payload}
+    Should Be Equal As Integers    ${created.status_code}    201
+    Should Be Equal    ${created.json()}[quote]    ${quote}
+    Should Be Equal    ${created.json()}[mentions][0][id]    ${viewer_id}
+    ${listing}=    GET Page Comments As Persona    viewer    ${page}[id]
+    Should Be Equal As Integers    ${listing.status_code}    200
+    Should Be Equal    ${listing.json()}[items][0][id]    ${created.json()}[id]
+    Wait Until Keyword Succeeds    30s    1s    Notification Should Include    viewer    ${page}[id]    MENTION
+    ${empty}=    Create Dictionary    body=${SPACE}
+    ${invalid}=    POST Page Comment As Persona    pm    ${page}[id]    ${empty}
+    Validate Error Body    ${invalid}    400    VALIDATION_FAILED
+    ${star}=    PUT Favorite Page As Persona    viewer    ${page}[id]
+    Should Be Equal As Integers    ${star.status_code}    204
+    ${favorites}=    GET Favorites As Persona    viewer
+    ${pages}=    Evaluate    [f['pageId'] for f in $favorites.json()['items']]
+    List Should Contain Value    ${pages}    ${page}[id]
+
+Notification Should Include
+    [Documentation]    A persona tem um aviso do tipo informado sobre a página (a outbox entrega em segundos).
+    [Arguments]    ${persona}    ${page_id}    ${kind}
+    ${inbox}=    GET Notifications As Persona    ${persona}
+    Should Be Equal As Integers    ${inbox.status_code}    200
+    ${matches}=    Evaluate    [n for n in $inbox.json()['items'] if n['targetId'] == $page_id and n['kind'] == $kind]
+    Should Not Be Empty    ${matches}

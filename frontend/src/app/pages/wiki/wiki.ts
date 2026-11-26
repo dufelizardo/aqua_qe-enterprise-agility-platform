@@ -1,6 +1,6 @@
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { DatePipe } from '@angular/common';
-import { Component, HostListener, computed, effect, inject, input, signal, untracked } from '@angular/core';
+import { Component, HostListener, computed, effect, inject, input, signal, untracked, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatMenuModule } from '@angular/material/menu';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -14,6 +14,7 @@ import { LevelsService } from '../../core/levels.service';
 import { WorkspaceService } from '../../core/workspace.service';
 import { UnitHeader } from '../../layout/unit-header';
 import { DraftMatch, DraftStore, LEAVE_MESSAGE, LeaveAware, draftBlocks, draftKey, draftMatch } from '../../knowledge/draft-store';
+import { PageComments } from '../../knowledge/page-comments';
 import { RichEditor } from '../../knowledge/rich-editor';
 import {
   KnowledgeService,
@@ -53,7 +54,7 @@ interface DraftSection {
  */
 @Component({
   selector: 'app-wiki',
-  imports: [RichEditor, DatePipe, UnitHeader, CdkDropList, CdkDrag, MatMenuModule, MatDividerModule],
+  imports: [RichEditor, DatePipe, UnitHeader, CdkDropList, CdkDrag, MatMenuModule, MatDividerModule, PageComments],
   templateUrl: './wiki.html',
   styleUrl: './wiki.scss',
 })
@@ -61,6 +62,10 @@ export class Wiki implements LeaveAware {
   private readonly knowledge = inject(KnowledgeService);
   private readonly router = inject(Router);
   private readonly activity = inject(ActivityService);
+  // Comentários, "Comentar trecho" e favoritos (#85).
+  private readonly comments = viewChild(PageComments);
+  protected readonly favorites = signal<Set<string>>(new Set());
+  protected readonly selection = signal<{ text: string; top: number; left: number } | null>(null);
   private readonly snackBar = inject(MatSnackBar);
   protected readonly workspace = inject(WorkspaceService);
   protected readonly levels = inject(LevelsService);
@@ -121,6 +126,7 @@ export class Wiki implements LeaveAware {
   protected readonly askText = signal('');
 
   constructor() {
+    void this.loadFavorites();
     effect(() => {
       const unit = this.workspace.current();
       const regimento = this.isRegimento();
@@ -195,7 +201,55 @@ export class Wiki implements LeaveAware {
     }
   }
 
+  /** Estrela da página: marca ou desmarca para a pessoa (#85). */
+  protected async toggleFavorite(id: string): Promise<void> {
+    const on = !this.favorites().has(id);
+    try {
+      await this.activity.favorite(id, on);
+      const next = new Set(this.favorites());
+      if (on) {
+        next.add(id);
+      } else {
+        next.delete(id);
+      }
+      this.favorites.set(next);
+      this.snackBar.open(on ? 'Página marcada com estrela.' : 'Estrela retirada.', undefined, { duration: 2500 });
+    } catch (error) {
+      this.error.set(messageOf(toApiError(error)));
+    }
+  }
+
+  private async loadFavorites(): Promise<void> {
+    try {
+      this.favorites.set(new Set((await this.activity.favorites()).map((f) => f.pageId)));
+    } catch {
+      // Sem a lista, a estrela começa apagada; marcar continua funcionando.
+    }
+  }
+
+  /** Texto selecionado na leitura da página: mostra o botão "Comentar trecho" perto da seleção. */
+  protected readSelection(): void {
+    const chosen = window.getSelection();
+    const text = chosen?.toString().replace(/\s+/g, ' ').trim() ?? '';
+    if (!chosen || chosen.rangeCount === 0 || text.length < 2) {
+      this.selection.set(null);
+      return;
+    }
+    const rect = chosen.getRangeAt(0).getBoundingClientRect();
+    this.selection.set({ text, top: Math.max(8, rect.top - 40), left: Math.max(8, rect.left) });
+  }
+
+  protected commentSelection(): void {
+    const chosen = this.selection();
+    if (chosen) {
+      this.comments()?.quoteText(chosen.text);
+      window.getSelection()?.removeAllRanges();
+      this.selection.set(null);
+    }
+  }
+
   private async open(id: string): Promise<void> {
+    this.selection.set(null);
     this.mode.set('read');
     this.oldVersion.set(null);
     this.error.set(null);

@@ -207,6 +207,7 @@ Home Should Show Page
     [Arguments]    ${title}
     Go To AQuA-QE Path    /home
     Wait For Home Page
+    Wait For Home Cards Loaded
     ${recent}=    Get Home Recent Text
     Should Contain    ${recent}    ${title}
     ${news}=    Get Home News Text
@@ -226,3 +227,40 @@ Wiki - Buscar Pelo Topo
     Should Contain    ${pages}    ${title}
     Click Search Result    ${title}
     Wait For Wiki Page Title    ${title}
+
+Wiki - Comentar Trecho E Favoritar
+    [Documentation]    #85: selecionar um trecho e "Comentar trecho" cita o texto; @ abre a lista de pessoas; o
+    ...    comentário aparece com a citação e a menção; a estrela leva a página aos Favoritos da Home.
+    [Arguments]    ${title_base}    ${text}    ${summary}    ${mention_prefix}    ${comment_text}
+    ${title}=    Unique Name    ${title_base}
+    Create Wiki Page    ${title}
+    Wait For Wiki Page Title    ${title}
+    Write Paragraph And Save    ${text}    ${summary}
+    Wait For Wiki Page Version    2
+    Select First Paragraph
+    Click Comment Selection
+    ${preview}=    Get Comment Quote Preview Text
+    Should Contain    ${preview}    ${text}
+    Type Comment    @${mention_prefix}
+    Choose First Mention
+    Continue Typing Comment    ${comment_text}
+    Click Comment Send
+    ${comment}=    Get First Comment Text
+    Should Contain    ${comment}    ${text}
+    Should Contain    ${comment}    @${mention_prefix}
+    Should Contain    ${comment}    ${comment_text}
+    Click Wiki Favorite
+    Wait Until Keyword Succeeds    10s    500ms    Wiki Favorite Should Be On
+    Go To AQuA-QE Path    /home
+    Wait For Home Page
+    Wait Until Keyword Succeeds    15s    500ms    Home Favorites Should Contain    ${title}
+
+Home Favorites Should Contain
+    [Arguments]    ${title}
+    Wait For Home Cards Loaded
+    ${favorites}=    Get Home Favorites Text
+    Should Contain    ${favorites}    ${title}
+
+Wiki Favorite Should Be On
+    ${star}=    Get Wiki Favorite Text
+    Should Be Equal    ${star}    ★

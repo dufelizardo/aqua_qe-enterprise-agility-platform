@@ -33,3 +33,9 @@ CT-005 - KNOW-006: Validate POST Page Copy - HTTP 201 CREATED (Fazer uma cópia)
     [Documentation]    Menu ⋯: a cópia fica logo depois da original com o conteúdo atual; quem só lê recebe 403.
     [Tags]    POST    PageCopy    HTTP201    HTTP403    KNOW-006
     KNOWLEDGE - COPY PAGE    ${knowledge_unit_name}    ${knowledge_page_title}    ${knowledge_text}
+
+CT-006 - KNOW-024: Validate POST Page Comments - HTTP 201 CREATED (@menção, notificação e favorito)
+    [Documentation]    #85: comentário com trecho e menção; o mencionado recebe a notificação; a estrela vai para os favoritos.
+    [Tags]    POST    PageComments    Notifications    Favorites    HTTP201    HTTP400    KNOW-024    KNOW-025
+    KNOWLEDGE - COMMENTS    ${knowledge_unit_name}    ${knowledge_page_title}    ${knowledge_comment_text}
+    ...    ${knowledge_comment_quote}
