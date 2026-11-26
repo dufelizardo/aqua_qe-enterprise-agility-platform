@@ -394,6 +394,11 @@ Meu trabalho
 - **Ações:** abrir o item; aprovar direto da lista abre o painel de gates do artefato.
 - **Estado vazio de cada bloco:** "Nada aguardando você aqui."
 - **Evolução:** os blocos são cartões numa grade. A direção é transformá-los em widgets que o usuário escolhe e organiza; o catálogo de widgets ainda não está definido (seção 13).
+- **Entregue (#83, 2026-11-25):** os dois primeiros cartões da grade.
+  - **Continuar de onde parou** (`home-recent`): até 10 artefatos, documentos do artefato e páginas do Wiki abertos por último, com a unidade e a hora. A página do artefato, a aba de documento e a página do Wiki avisam a visita (`POST /me/recent`). A página do Wiki abre na unidade dela: a Home ativa a unidade antes de navegar.
+  - **Novidades** (`home-news`): o que mudou nos últimos 30 dias nas unidades que a pessoa lê, um item por artefato, documento ou página: "Paula alterou INIT-1 · Checkout", "Você criou a página Guia". Quem fez aparece como "Você" quando foi a própria pessoa.
+  - Estados vazios: "Os artefatos, documentos e páginas que você abrir aparecem aqui." e "Nada mudou nos últimos 30 dias nas unidades que você acompanha."
+  - Os blocos de aprovação e de itens atribuídos continuam previstos acima.
 
 ### 7.3 Portfolio Management (UI-04)
 

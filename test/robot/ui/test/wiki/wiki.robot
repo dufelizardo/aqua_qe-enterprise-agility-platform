@@ -54,3 +54,9 @@ CT-007 - KNOW-020: Validate Wiki - rascunho automático e aviso ao sair sem salv
     [Tags]    UI    Wiki    KNOW-020
     WIKI UI - RASCUNHO AUTOMATICO    ${wiki_pm_username}    ${wiki_pm_display_name}    ${wiki_root_name}
     ...    ${wiki_page_base}    ${wiki_draft_text}
+
+CT-008 - HOME-001: Validate Home - continuar de onde parou e novidades
+    [Documentation]    #83: a página criada aparece nos recentes e nas novidades da Home; o link reabre a página.
+    [Tags]    UI    Home    HOME-001    HOME-002
+    WIKI UI - CONTINUAR PELA HOME    ${wiki_pm_username}    ${wiki_pm_display_name}    ${wiki_root_name}
+    ...    ${wiki_page_base}

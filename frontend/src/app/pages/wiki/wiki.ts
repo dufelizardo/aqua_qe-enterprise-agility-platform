@@ -8,6 +8,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { map } from 'rxjs';
 
+import { ActivityService } from '../../core/activity.service';
 import { ApiError, messageOf, toApiError } from '../../core/api-error';
 import { LevelsService } from '../../core/levels.service';
 import { WorkspaceService } from '../../core/workspace.service';
@@ -59,6 +60,7 @@ interface DraftSection {
 export class Wiki implements LeaveAware {
   private readonly knowledge = inject(KnowledgeService);
   private readonly router = inject(Router);
+  private readonly activity = inject(ActivityService);
   private readonly snackBar = inject(MatSnackBar);
   protected readonly workspace = inject(WorkspaceService);
   protected readonly levels = inject(LevelsService);
@@ -200,6 +202,7 @@ export class Wiki implements LeaveAware {
     this.conflict.set(false);
     try {
       this.page.set(await this.knowledge.page(id));
+      this.activity.visit('PAGE', id);
     } catch (error) {
       this.page.set(null);
       this.error.set(messageOf(toApiError(error)));

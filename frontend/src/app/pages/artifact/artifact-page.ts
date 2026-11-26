@@ -17,6 +17,7 @@ import {
   TYPES_WITH_DOCUMENTS,
   sectionIndex,
 } from '../../knowledge/artifact-documents.service';
+import { ActivityService } from '../../core/activity.service';
 import { DraftMatch, DraftStore, LEAVE_MESSAGE, LeaveAware, draftBlocks, draftKey, draftMatch } from '../../knowledge/draft-store';
 import { RichDoc, blocksToDoc, docToBlocks } from '../../knowledge/knowledge.service';
 import { RichEditor } from '../../knowledge/rich-editor';
@@ -57,6 +58,7 @@ export class ArtifactPage implements LeaveAware {
   private readonly documents = inject(ArtifactDocumentsService);
   private readonly location = inject(Location);
   private readonly router = inject(Router);
+  private readonly activity = inject(ActivityService);
   // Rascunho automático neste navegador (#82).
   private readonly drafts = inject(DraftStore);
   protected readonly dirty = signal(false);
@@ -135,6 +137,7 @@ export class ArtifactPage implements LeaveAware {
     try {
       const artifact = await this.work.artifact(key);
       this.artifact.set(artifact);
+      this.activity.visit('ARTIFACT', artifact.key);
       this.summaries.set(TYPES_WITH_DOCUMENTS.includes(artifact.type) ? (await this.documents.list(artifact.key)).items : []);
     } catch (error) {
       this.artifact.set(null);
@@ -151,6 +154,7 @@ export class ArtifactPage implements LeaveAware {
     this.error.set(null);
     try {
       this.document.set(await this.documents.get(key, type));
+      this.activity.visit('DOCUMENT', `${key}/${type}`);
     } catch (error) {
       this.document.set(null);
       this.error.set(messageOf(toApiError(error)));

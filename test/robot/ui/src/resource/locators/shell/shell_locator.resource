@@ -7,3 +7,8 @@ ${SHELL_WELCOME}            css=[data-testid="welcome"]
 ${SHELL_PROFILE_BUTTON}     css=[data-testid="profile-button"]
 ${SHELL_PROFILE_NAME}       css=[data-testid="profile-name"]
 ${SHELL_LOGOUT}             css=[data-testid="logout"]
+${SHELL_BRAND}              css=[data-testid="brand"]
+# Home: recentes e novidades (#83).
+${HOME_RECENT_ITEM_BY_TEXT}     css=[data-testid="home-recent-item"] a:text-is("{}")
+${HOME_RECENT}                  css=[data-testid="home-recent"]
+${HOME_NEWS}                    css=[data-testid="home-news"]
