@@ -25,3 +25,8 @@ ${squad_task_base}                  Robot UI Task
 ${squad_sprint_base}                Robot UI Sprint
 ${portfolio_document_text}           Texto escrito pela suíte de interface.
 ${portfolio_renamed_suffix}          (renomeada)
+${gate_ui_name}                 Robot Gate UI
+${gate_ui_message}              Aguardando a aprovação de arquitetura.
+${gate_ui_path}                 Ideia → Cancelado
+${gate_ui_to_key}               CANCELLED
+${gate_ui_to_name}              Cancelado

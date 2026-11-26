@@ -16,3 +16,5 @@ Resource            ../../data_driven/knowledge/knowledge_driven.resource
 Resource            ../../data_driven/inicio/inicio_driven.resource
 # BUSCA
 Resource            ../../data_driven/busca/busca_driven.resource
+# GOVERNANCE
+Resource            ../../data_driven/governance/governance_driven.resource

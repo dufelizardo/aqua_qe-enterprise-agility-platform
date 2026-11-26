@@ -19,6 +19,7 @@ import {
 } from '../../knowledge/artifact-documents.service';
 import { ActivityService } from '../../core/activity.service';
 import { DocOutline } from '../../knowledge/doc-outline';
+import { ArtifactGates } from './artifact-gates';
 import { DraftMatch, DraftStore, LEAVE_MESSAGE, LeaveAware, draftBlocks, draftKey, draftMatch } from '../../knowledge/draft-store';
 import { RichDoc, blocksToDoc, docToBlocks } from '../../knowledge/knowledge.service';
 import { RichEditor } from '../../knowledge/rich-editor';
@@ -49,7 +50,7 @@ interface DraftSection {
  */
 @Component({
   selector: 'app-artifact-page',
-  imports: [RouterLink, DatePipe, RichEditor, DocOutline],
+  imports: [RouterLink, DatePipe, RichEditor, DocOutline, ArtifactGates],
   templateUrl: './artifact-page.html',
   styleUrls: ['../wiki/wiki.scss', './artifact-page.scss'],
 })
@@ -133,6 +134,14 @@ export class ArtifactPage implements LeaveAware {
         untracked(() => void (type ? this.openDocument(artifact.key, type) : this.document.set(null)));
       }
     });
+  }
+
+  /** Recarrega o artefato depois de mudar de status pelos Próximos passos (#78). */
+  protected reload(): void {
+    const a = this.artifact();
+    if (a) {
+      void this.load(a.key);
+    }
   }
 
   private async load(key: string): Promise<void> {

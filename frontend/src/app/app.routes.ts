@@ -85,6 +85,12 @@ export const routes: Routes = [
             title: 'Estrutura organizacional · AQuA-QE',
             loadComponent: () => import('./admin/admin-organization').then((m) => m.AdminOrganization),
           },
+          // Gates por transição do workflow (SSD 5; #78).
+          {
+            path: 'gates',
+            title: 'Gates · AQuA-QE',
+            loadComponent: () => import('./admin/admin-gates').then((m) => m.AdminGates),
+          },
         ],
       },
       {

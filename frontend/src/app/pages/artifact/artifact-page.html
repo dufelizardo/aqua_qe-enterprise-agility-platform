@@ -126,6 +126,9 @@
           </dd>
         </dl>
       </div>
+      @if (artifact(); as current) {
+        <app-artifact-gates [artifact]="current" (moved)="reload()" />
+      }
       @if (hasDocuments()) {
         <div class="card">
           <h2>Documentação</h2>

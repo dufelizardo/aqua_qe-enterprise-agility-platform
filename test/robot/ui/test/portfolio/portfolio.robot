@@ -60,3 +60,13 @@ CT-006 - PRD-RF-010: Validate Iniciativa - editar título e Responsável na pág
     ...    ${portfolio_root_name}    ${portfolio_unit_base}    ${portfolio_unit_label}    ${tactical_cadeia_base}
     ...    ${tactical_cadeia_label}    ${squad_unit_base}    ${squad_unit_label}    ${squad_level_name}
     ...    ${portfolio_initiative_base}    ${portfolio_initiative_description}    ${portfolio_renamed_suffix}
+
+CT-007 - PRD-RF-023: Validate Gate - aprovação de Tech Lead libera o Mover nos Próximos passos
+    [Documentation]    #78: o gate criado em Admin › Gates bloqueia o Mover até a aprovação; aprovado, a Iniciativa muda
+    ...    de status. O gate é removido no fim.
+    [Tags]    UI    Portfolio    Gates    PRD-RF-022    PRD-RF-023    PRD-RF-024
+    PORTFOLIO - GATE COM APROVACAO    ${portfolio_admin_username}    ${portfolio_admin_display_name}
+    ...    ${portfolio_root_name}    ${portfolio_unit_base}    ${portfolio_unit_label}    ${tactical_cadeia_base}
+    ...    ${tactical_cadeia_label}    ${squad_unit_base}    ${squad_unit_label}    ${squad_level_name}
+    ...    ${portfolio_initiative_base}    ${portfolio_initiative_description}    ${gate_ui_name}    ${gate_ui_message}
+    ...    ${gate_ui_path}    ${gate_ui_to_key}    ${gate_ui_to_name}

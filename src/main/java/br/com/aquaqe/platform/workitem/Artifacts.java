@@ -93,6 +93,13 @@ public class Artifacts {
 		return service.views(repository.readableAmong(ids, service.caller().scope()));
 	}
 
+	/** Quantos filhos não arquivados do tipo informado o artefato tem (regra {@code MIN_CHILDREN}, SSD 5.2). */
+	public long activeChildren(UUID artifactId, String typeKey) {
+		return repository.children(artifactId, false).stream()
+			.filter(row -> service.typeOf(row).key().equals(typeKey))
+			.count();
+	}
+
 	/** O artefato no formato da API (SSD 3.4). */
 	public ArtifactView view(UUID artifactId) {
 		return service.views(List.of(repository.find(artifactId).orElseThrow(ApiException::notFound))).getFirst();

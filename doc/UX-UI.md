@@ -294,6 +294,13 @@ Gate: Pronto para Construir                                4 de 6 atendidas
 | `BUSINESS_CASE_VALIDATED` | Abre a aba de business case. |
 | `ROLE_APPROVAL` | Mostra "Aprovar" e "Rejeitar" a quem tem o papel; aos demais, o papel aguardado. |
 
+**Implementado (#78, 2026-11-26):** o painel é a seção **Próximos passos** da Visão geral do artefato.
+- Para cada transição que sai do status atual, mostra o status de destino e o nome do gate, com o contador de regras atendidas (por exemplo, 1/2). Cada regra aparece com ✓ ou ○, a mensagem e um resumo ("Campo: Estimativa", "PRD aprovado").
+- Nas regras de aprovação aparece a última decisão: quem decidiu, quando e o comentário. Quem tem o papel vê **Aprovar** e **Rejeitar**; a rejeição pede o motivo.
+- O botão **Mover** só fica habilitado com todas as regras atendidas e para quem pode editar o item. Ao mover, a página recarrega.
+- Nas regras de documento, o link "Abrir" leva à aba do documento.
+- Ainda não há atalho para o campo do artefato nem para os itens filhos.
+
 - Aprovar ou rejeitar usa `POST /artifacts/{artifact}/approvals`. Rejeitar exige comentário.
 - O link "Histórico de aprovações" lista todas as decisões já registradas, inclusive as substituídas (`GET /artifacts/{artifact}/approvals`).
 
@@ -543,6 +550,17 @@ Documentação                    Gates — Pronto para Construir    4 de 6
 ### 7.10 Administração
 
 Visível apenas para `PLATFORM_ADMIN`. Uma página com seções no menu interno.
+
+**Gates (#78, 2026-11-26):** `/admin/gates`, com abas Estrutura organizacional e Gates no topo.
+- À esquerda, a pessoa escolhe o fluxo (com os tipos de artefato dele) e vê as transições, cada uma com o gate e a quantidade de regras, ou "sem gate".
+- "Criar gate" ou "Editar" abre o formulário: nome do gate e regras em ordem.
+- Cada regra tem um tipo, com os parâmetros do tipo, e a mensagem. As regras podem subir, descer ou ser removidas, até 20. Os parâmetros por tipo são:
+  - campo do artefato;
+  - documento e seção;
+  - documento;
+  - tipo do filho e mínimo;
+  - papel e rótulo.
+- "Salvar gate" mostra o erro da API apontando a regra ("Regra 2: …"). "Remover gate" pede confirmação.
 
 **Situação (2026-11-20):** a seção Estrutura organizacional está implementada em `/admin/organizacao`; quem não é `PLATFORM_ADMIN` não vê o item Admin e, se abrir o endereço, volta para a home. As demais seções entram junto com os endpoints delas e, até lá, não aparecem.
 

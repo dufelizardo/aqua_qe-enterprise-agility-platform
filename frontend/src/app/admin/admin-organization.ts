@@ -1,5 +1,6 @@
 import { Component, WritableSignal, computed, inject, signal } from '@angular/core';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { RouterLink } from '@angular/router';
 
 import { ApiError, fieldError, messageOf, toApiError } from '../core/api-error';
 import {
@@ -17,7 +18,7 @@ import {
  */
 @Component({
   selector: 'app-admin-organization',
-  imports: [MatSnackBarModule],
+  imports: [MatSnackBarModule, RouterLink],
   templateUrl: './admin-organization.html',
   styleUrl: './admin-organization.scss',
 })
