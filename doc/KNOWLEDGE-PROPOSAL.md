@@ -97,7 +97,7 @@ O usuário comparou o Wiki com o Confluence (home, árvore do espaço, página e
 | 2 | Rascunho automático e aviso ao sair sem salvar (Wiki e documentos) | #82 | Concluída (validada em dev, 2026-11-25): rascunho neste navegador. |
 | 3 | Home: Recentes e Novidades | #83 | Concluída (validada em dev, 2026-11-26): módulo `activity`, `GET/POST /me/recent`, `GET /me/news`; UX/UI 7.2. |
 | 4 | Busca em páginas, documentos e artefatos (`GET /search`, Fase C) | #84 | Concluída (validada em dev, 2026-11-26): módulo `search`, `GET /search`; UX/UI 7.9. |
-| 5 | Comentários com @menção, notificações e favoritos (Fase D) | #85 | Backlog. |
+| 5 | Comentários com @menção, notificações e favoritos (Fase D) | #85 | Concluída (validada em dev, 2026-11-26): comentários e "Comentar trecho" no `livingdocs`, módulo `notification` e favoritos em `activity`; UX/UI 7.12. |
 | 6 | Editor: lista de tarefas, cor, sumário e emoji | #86 | Backlog. |
 
 Fora da lista por decisão: "remover de vez" (aqui se arquiva, por causa da auditoria), "Automatizar" e "Ver visualizações".
@@ -121,7 +121,7 @@ Fora da lista por decisão: "remover de vez" (aqui se arquiva, por causa da audi
 | KNOW-019 revisão periódica | Fase B. |
 | KNOW-020 editor rico | **Implementado**: texto contínuo com Tiptap (bug #67), sem imagens. |
 | KNOW-021 anexos e imagens | Com o MinIO. |
-| KNOW-024, 025 | Fase D. |
+| KNOW-024, 025 | **Implementado (#85)**: comentários com respostas, "Comentar trecho" (citação do texto selecionado), @menção, notificações (menção e resposta) e favoritos. O comentário ancorado no texto, que acompanha as edições, fica para depois. |
 | KNOW-026 comparar versões | Parcial: abrir qualquer versão; comparação lado a lado depois. |
 | KNOW-027 e 028 responsáveis e política por tipo | Parcial: aprovador por template; o resto na Fase B. |
 | KNOW-030 conhecimento aplicável sem duplicar | **Revisto em 2026-11-25**: por decisão do usuário, cada unidade tem um Wiki exclusivo, como o regimento, e o Wiki de uma unidade não mostra mais as páginas publicadas das unidades acima. Aplicabilidade explícita fica para a Fase C, se voltar a ser pedida. |

@@ -209,3 +209,45 @@ Click Wiki Save
 Get Wiki Draft Restored Count
     ${count}=    Get Element Count    ${WIKI_DRAFT_RESTORED}
     RETURN    ${count}
+
+Select First Paragraph
+    [Documentation]    Três cliques selecionam o parágrafo inteiro na leitura da página.
+    Click With Options    ${WIKI_READ_PARAGRAPH}    left    clickCount=3
+
+Click Comment Selection
+    Wait For Elements State    ${WIKI_COMMENT_SELECTION}    visible    timeout=10s
+    Click    ${WIKI_COMMENT_SELECTION}
+
+Get Comment Quote Preview Text
+    Wait For Elements State    ${COMMENT_QUOTE_PREVIEW}    visible    timeout=10s
+    ${text}=    Get Text    ${COMMENT_QUOTE_PREVIEW}
+    RETURN    ${text}
+
+Type Comment
+    [Arguments]    ${text}
+    Click    ${COMMENT_INPUT}
+    Keyboard Input    type    ${text}
+
+Choose First Mention
+    Wait For Elements State    ${COMMENT_MENTION_OPTION}    visible    timeout=10s
+    Click    ${COMMENT_MENTION_OPTION}
+
+Click Comment Send
+    Click    ${COMMENT_SEND}
+
+Get First Comment Text
+    Wait For Elements State    ${COMMENT_ITEM}    visible    timeout=30s
+    ${text}=    Get Text    ${COMMENT_ITEM}
+    RETURN    ${text}
+
+Click Wiki Favorite
+    Click    ${WIKI_FAVORITE}
+
+Get Wiki Favorite Text
+    ${text}=    Get Text    ${WIKI_FAVORITE}
+    RETURN    ${text}
+
+Continue Typing Comment
+    [Documentation]    Digita no comentário a partir do cursor (depois de escolher a menção).
+    [Arguments]    ${text}
+    Keyboard Input    type    ${text}

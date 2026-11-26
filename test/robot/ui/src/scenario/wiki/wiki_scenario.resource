@@ -69,3 +69,9 @@ WIKI UI - BUSCAR PELO TOPO
     [Arguments]    ${username}    ${display_name}    ${root_name}    ${title_base}
     Wiki - Abrir    ${username}    ${display_name}    ${root_name}
     Wiki - Buscar Pelo Topo    ${title_base}
+
+WIKI UI - COMENTAR TRECHO E FAVORITAR
+    [Documentation]    Comentários com trecho e @menção, e estrela nos favoritos (#85).
+    [Arguments]    ${username}    ${display_name}    ${root_name}    ${title_base}    ${text}    ${summary}    ${comment_text}
+    Wiki - Abrir    ${username}    ${display_name}    ${root_name}
+    Wiki - Comentar Trecho E Favoritar    ${title_base}    ${text}    ${summary}    ${display_name}    ${comment_text}

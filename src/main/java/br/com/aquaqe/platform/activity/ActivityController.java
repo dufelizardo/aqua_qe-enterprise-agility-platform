@@ -2,15 +2,20 @@ package br.com.aquaqe.platform.activity;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.aquaqe.platform.activity.ActivityService.FavoriteItem;
 import br.com.aquaqe.platform.activity.ActivityService.NewsItem;
 import br.com.aquaqe.platform.activity.ActivityService.RecentItem;
 
@@ -39,6 +44,23 @@ class ActivityController {
 	@GetMapping("/news")
 	Items<NewsItem> news() {
 		return new Items<>(service.news());
+	}
+
+	@GetMapping("/favorites")
+	Items<FavoriteItem> favorites() {
+		return new Items<>(service.favorites());
+	}
+
+	@PutMapping("/favorites/pages/{id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	void favorite(@PathVariable UUID id) {
+		service.favorite(id);
+	}
+
+	@DeleteMapping("/favorites/pages/{id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	void unfavorite(@PathVariable UUID id) {
+		service.unfavorite(id);
 	}
 
 	record Items<T>(List<T> items) {

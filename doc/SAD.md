@@ -168,6 +168,7 @@ flowchart TB
 | `livingdocs` | D04 | Motor de documentos com dono genérico: documentos do artefato (PRD, SAD, SSD, UX/UI, QA) e páginas de conhecimento por unidade ([Proposta 07](KNOWLEDGE-PROPOSAL.md)), versões e status. Cria os documentos da Iniciativa e da Feature ao receber o evento em memória `ArtifactCreated`, publicado pelo `workitem` na transação da criação; assim `workitem` não conhece documentos. | Documento, Versão |
 | `portfolio` | D01 | Dados próprios da Iniciativa: business case. | Business case |
 | `board` | D02, D03 | Quadros por nível, colunas Upstream e Downstream, sprints. | Quadro, Sprint |
+| `notification` | — | Avisos de cada pessoa (#85): consome `knowledge_page.commented` da outbox e cria os avisos de menção e de resposta; `/me/notifications`. | Notificação |
 | `search` | — | Busca textual (ADR-11; #84): compõe as buscas públicas de `workitem` (`Artifacts.search`) e `livingdocs` (`DocumentSearch`), cada uma com as próprias regras de leitura. Sem tabelas; a comparação sem acento usa `translate` do PostgreSQL, sem extensão. | — |
 | `activity` | — | Home (#83): itens abertos por último por pessoa e, como consumidor da outbox, os eventos de artefatos, documentos e páginas guardados com a unidade, base das "Novidades". Usa as APIs públicas de `workitem` (`Artifacts`) e `livingdocs` (`Pages`) para conferir a leitura. | Visita recente, Evento da unidade |
 

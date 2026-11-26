@@ -47,3 +47,12 @@ ${WIKI_ARCHIVE_CONFIRM}     css=[data-testid="wiki-archive-confirm"]
 # Rascunho automático (#82).
 ${WIKI_DRAFT_STATUS}        css=[data-testid="wiki-draft-status"]
 ${WIKI_DRAFT_RESTORED}      css=[data-testid="wiki-draft-restored"]
+# Comentários, @menção e favoritos (#85).
+${WIKI_READ_PARAGRAPH}      css=[data-testid="wiki-page"] .reading [data-testid="rich-content"] p >> nth=0
+${WIKI_COMMENT_SELECTION}   css=[data-testid="wiki-comment-selection"]
+${WIKI_FAVORITE}            css=[data-testid="wiki-favorite"]
+${COMMENT_QUOTE_PREVIEW}    css=[data-testid="comment-quote-preview"]
+${COMMENT_INPUT}            css=[data-testid="comment-input"]
+${COMMENT_MENTION_OPTION}   css=[data-testid="comment-mention-option"] >> nth=0
+${COMMENT_SEND}             css=[data-testid="comment-send"]
+${COMMENT_ITEM}             css=[data-testid="comment-item"] >> nth=0

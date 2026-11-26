@@ -2,13 +2,13 @@ import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { ActivityService, ItemLink, NewsItem, RecentItem, actionLabel, actorLabel, itemLabel, itemLink } from '../../core/activity.service';
+import { ActivityService, FavoriteItem, ItemLink, NewsItem, RecentItem, actionLabel, actorLabel, itemLabel, itemLink } from '../../core/activity.service';
 import { SessionService } from '../../core/session.service';
 import { WorkspaceService } from '../../core/workspace.service';
 
 /**
  * Home — Meu trabalho (UX/UI, seção 7.2). Grade de cartões: "Continuar de onde parou" (o que a pessoa abriu por
- * último) e "Novidades" (o que mudou nas unidades que ela lê), #83. Aprovações e itens sob responsabilidade entram com
+ * último), "Favoritos" (páginas com estrela, #85) e "Novidades" (o que mudou nas unidades que ela lê), #83. Aprovações e itens sob responsabilidade entram com
  * os módulos correspondentes.
  */
 @Component({
@@ -31,6 +31,24 @@ import { WorkspaceService } from '../../core/workspace.service';
               <li data-testid="home-recent-item">
                 <a [routerLink]="to.path" [queryParams]="to.queryParams" (click)="prepare(to)">{{ label(item) }}</a>
                 <span class="meta">{{ item.orgUnit?.name }} · {{ item.visitedAt | date: 'dd/MM HH:mm' }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </article>
+      <article class="card" data-testid="home-favorites">
+        <h2>Favoritos</h2>
+        @if (favorites() === null) {
+          <p class="muted">Carregando…</p>
+        } @else if (favorites()!.length === 0) {
+          <p class="muted" data-testid="home-favorites-empty">Marque páginas do Wiki com ☆ para encontrá-las aqui.</p>
+        } @else {
+          <ul>
+            @for (item of favorites(); track item.pageId) {
+              @let to = favoriteLink(item);
+              <li data-testid="home-favorite-item">
+                <a [routerLink]="to.path" [queryParams]="to.queryParams" (click)="prepare(to)">★ {{ item.title }}</a>
+                <span class="meta">{{ item.orgUnit?.name }}</span>
               </li>
             }
           </ul>
@@ -84,6 +102,7 @@ export class Home {
 
   protected readonly recent = signal<RecentItem[] | null>(null);
   protected readonly news = signal<NewsItem[] | null>(null);
+  protected readonly favorites = signal<FavoriteItem[] | null>(null);
   protected readonly error = signal<string | null>(null);
 
   protected readonly label = itemLabel;
@@ -96,12 +115,23 @@ export class Home {
   }
 
   private async load(): Promise<void> {
-    const [recent, news] = await Promise.allSettled([this.activity.recent(), this.activity.news()]);
+    const [recent, news, favorites] = await Promise.allSettled([
+      this.activity.recent(),
+      this.activity.news(),
+      this.activity.favorites(),
+    ]);
     this.recent.set(recent.status === 'fulfilled' ? recent.value : []);
     this.news.set(news.status === 'fulfilled' ? news.value : []);
-    if (recent.status === 'rejected' || news.status === 'rejected') {
+    this.favorites.set(favorites.status === 'fulfilled' ? favorites.value : []);
+    if (recent.status === 'rejected' || news.status === 'rejected' || favorites.status === 'rejected') {
       this.error.set('Não foi possível carregar tudo agora. Recarregue a página para tentar de novo.');
     }
+  }
+
+  protected favoriteLink(item: FavoriteItem): ItemLink {
+    return item.pageType === 'REGIMENTO'
+      ? { path: ['/regimento'], queryParams: null, unitId: item.orgUnit?.id ?? null }
+      : { path: ['/wiki'], queryParams: { page: item.pageId }, unitId: item.orgUnit?.id ?? null };
   }
 
   /** A página do Wiki abre na unidade dela: ativa a unidade antes de navegar, quando a pessoa pode escolhê-la. */

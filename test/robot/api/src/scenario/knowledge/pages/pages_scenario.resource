@@ -16,3 +16,8 @@ KNOWLEDGE - COPY PAGE
     [Documentation]    Cenário de POST /api/v1/pages/{id}/copy (menu ⋯ do Wiki).
     [Arguments]    ${unit_name}    ${title}    ${text}
     Pages - Fazer Uma Copia    ${unit_name}    ${title}    ${text}
+
+KNOWLEDGE - COMMENTS
+    [Documentation]    Cenário de comentários, @menção, notificações e favoritos (#85).
+    [Arguments]    ${unit_name}    ${title}    ${comment_text}    ${quote}
+    Pages - Comentar Mencionar E Favoritar    ${unit_name}    ${title}    ${comment_text}    ${quote}

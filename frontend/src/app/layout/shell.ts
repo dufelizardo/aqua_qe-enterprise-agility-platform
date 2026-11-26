@@ -6,6 +6,7 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 import { SessionService } from '../core/session.service';
 import { LevelsService } from '../core/levels.service';
 import { WorkspaceService } from '../core/workspace.service';
+import { NotificationBell } from './notification-bell';
 import { OrgTree } from './org-tree';
 
 /**
@@ -15,7 +16,7 @@ import { OrgTree } from './org-tree';
  */
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatButtonModule, MatMenuModule, OrgTree],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatButtonModule, MatMenuModule, OrgTree, NotificationBell],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
 })
