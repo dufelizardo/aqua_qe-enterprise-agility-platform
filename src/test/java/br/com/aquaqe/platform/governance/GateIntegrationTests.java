@@ -105,6 +105,18 @@ class GateIntegrationTests {
 			.andExpect(status().isNotFound());
 	}
 
+	/** #95: o primeiro acesso de um usuário pode ser uma rota somente leitura; a conta é criada mesmo assim. */
+	@Test
+	void oPrimeiroAcessoNumaRotaSomenteLeituraCriaAConta() throws Exception {
+		String init = artifact("INITIATIVE", "Primeiro acesso", null);
+		mvc.perform(get("/api/v1/artifacts/{a}/gates", init).with(user("novato.gates")))
+			.andExpect(result -> org.assertj.core.api.Assertions.assertThat(result.getResponse().getStatus()).isLessThan(500));
+		mvc.perform(get("/api/v1/me/notifications").with(user("novato.notificacoes"))).andExpect(status().isOk());
+		org.assertj.core.api.Assertions.assertThat(jdbc.queryForObject(
+			"select count(*) from identity.user_account where subject in ('sub-novato.gates', 'sub-novato.notificacoes')",
+			Integer.class)).isEqualTo(2);
+	}
+
 	@Test
 	void oGateBloqueiaAteTodasAsRegrasEReabrirODocumentoVoltaABloquear() throws Exception {
 		gate("ga.admin", transition, """

@@ -246,6 +246,12 @@ O que a implementação precisa oferecer para que os testes acima sejam possíve
   | Job de aceitação inteiro | O [`retry-acceptance.yml`](../.github/workflows/retry-acceptance.yml) reexecuta o job até 2 vezes (3 tentativas), só quando ele é o único job com falha, e comenta no PR. |
   | Backend, frontend ou dry-run | Não há retentativa: é falha de código. |
 - **Teste instável não é aceito como estado normal.** A issue aberta automaticamente entra no backlog com prioridade do time; se o mesmo teste voltar a oscilar, a issue recebe um comentário com o link da execução.
+- **Instáveis já investigados:**
+
+  | Issue | Causa | Correção |
+  |---|---|---|
+  | #73 (Wiki `CT-001`) | Defeito real do editor. O clique em Negrito tirava o foco do texto, que só voltava no quadro seguinte; as primeiras letras digitadas logo depois se perdiam ("ítica" no lugar de "Política"). | Corrigido na #76: a barra do editor não tira o foco (`keepFocus` no `mousedown`). Confirmado com 10 execuções seguidas sem falha e sem nova oscilação no CI desde 2026-11-25. |
+  | #95 (gates `CT-001`) | Defeito real, não do teste. Se o primeiro acesso de um usuário era uma rota com transação somente leitura (painel de gates, comentários, notificações, Home), a criação da conta falhava com 500. Na reexecução a conta já existia. | `CurrentUser` grava a conta numa transação própria de escrita (`REQUIRES_NEW`), aberta só quando precisa criar ou atualizar. Regressão: JUnit `GateIntegrationTests.oPrimeiroAcessoNumaRotaSomenteLeituraCriaAConta`. |
 
 ## 10. Critérios de entrada e saída
 
