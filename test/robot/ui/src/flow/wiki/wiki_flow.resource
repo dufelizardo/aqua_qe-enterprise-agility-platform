@@ -185,3 +185,29 @@ Wiki - Rascunho Automatico
     Click Wiki Edit
     ${count}=    Get Wiki Draft Restored Count
     Should Be Equal As Integers    ${count}    0
+
+Wiki - Continuar Pela Home
+    [Documentation]    #83: a página aberta no Wiki aparece em "Continuar de onde parou" e nas "Novidades" da Home; o
+    ...    link reabre a página.
+    [Arguments]    ${title_base}
+    ${title}=    Unique Name    ${title_base}
+    Create Wiki Page    ${title}
+    Wait For Wiki Page Title    ${title}
+    Go Home By Brand
+    Wait For Home Page
+    # A visita e a novidade chegam em segundos (a outbox entrega a cada segundo): recarrega a Home até aparecerem.
+    Wait Until Keyword Succeeds    40s    2s    Home Should Show Page    ${title}
+    Click Home Recent Item    ${title}
+    Wait For Wiki Page Title    ${title}
+    ${url}=    Get Current Page Url
+    Should Contain    ${url}    /wiki?page=
+
+Home Should Show Page
+    [Documentation]    Recarrega a Home e confere a página nos recentes e nas novidades.
+    [Arguments]    ${title}
+    Go To AQuA-QE Path    /home
+    Wait For Home Page
+    ${recent}=    Get Home Recent Text
+    Should Contain    ${recent}    ${title}
+    ${news}=    Get Home News Text
+    Should Contain    ${news}    Você criou a página ${title}

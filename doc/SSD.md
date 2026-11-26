@@ -195,6 +195,9 @@ Em cada tabela, a coluna **RF** indica o requisito do PRD atendido.
 | GET | `/me` | Usuário corrente e seus papéis. | autenticado | 036 |
 | GET | `/me/workspaces` | Unidades em que o usuário tem papel; base da seleção de workspace. | autenticado | 038 |
 | GET | `/me/pending-approvals` | Aprovações de gate que aguardam um papel do usuário. | autenticado | 024 |
+| GET | `/me/recent` | Home, "Continuar de onde parou" (#83): até 10 itens abertos por último (artefato, documento do artefato, página do Wiki), do mais novo para o mais antigo, com o título atual. Cada item é conferido de novo com as regras de leitura; o que deixou de ser legível ou foi arquivado não aparece. Módulo `activity`. | autenticado | — |
+| POST | `/me/recent` | Registra que o usuário abriu o item: `{type: ARTIFACT\|DOCUMENT\|PAGE, ref}`, com `ref` = chave (`INIT-1`), chave/tipo (`INIT-1/PRD`) ou id da página. 204; 404 se o usuário não lê o item; 400 se o tipo ou o documento é inválido. Guarda as 30 últimas por pessoa. | autenticado | — |
+| GET | `/me/news` | Home, "Novidades" (#83): o último evento de cada artefato, documento ou página nas unidades em que o usuário lê tudo (SSD 2.1, regra 1), nos últimos 30 dias, até 20. Cada item traz `action` (tipo do evento, SSD 7.2), quem fez (`actor`), a unidade e `own` quando foi o próprio usuário. Base: o consumidor `activity` da outbox, que guarda os eventos com a unidade (a trilha de auditoria não guarda a unidade e só o administrador a consulta). | autenticado | — |
 | GET | `/users` | Lista usuários (filtro `q`). | gerir papéis | — |
 | GET | `/roles` | Lista papéis. | autenticado | — |
 | GET | `/org-units/{id}/role-assignments` | Atribuições em uma unidade. | gerir papéis | — |

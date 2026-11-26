@@ -57,3 +57,9 @@ WIKI UI - RASCUNHO AUTOMATICO
     [Arguments]    ${username}    ${display_name}    ${root_name}    ${title_base}    ${draft_text}
     Wiki - Abrir    ${username}    ${display_name}    ${root_name}
     Wiki - Rascunho Automatico    ${title_base}    ${draft_text}
+
+WIKI UI - CONTINUAR PELA HOME
+    [Documentation]    Home: recentes e novidades levam de volta à página do Wiki (#83).
+    [Arguments]    ${username}    ${display_name}    ${root_name}    ${title_base}
+    Wiki - Abrir    ${username}    ${display_name}    ${root_name}
+    Wiki - Continuar Pela Home    ${title_base}

@@ -24,3 +24,19 @@ Get Profile Name Text
 
 Click Logout
     Click    ${SHELL_LOGOUT}
+
+Go Home By Brand
+    Click    ${SHELL_BRAND}
+
+Get Home Recent Text
+    ${text}=    Get Text    ${HOME_RECENT}
+    RETURN    ${text}
+
+Click Home Recent Item
+    [Arguments]    ${text}
+    ${locator}=    Evaluate    $HOME_RECENT_ITEM_BY_TEXT.replace('{}', $text)
+    Click    ${locator}
+
+Get Home News Text
+    ${text}=    Get Text    ${HOME_NEWS}
+    RETURN    ${text}

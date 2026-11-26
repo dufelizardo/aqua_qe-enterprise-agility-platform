@@ -113,6 +113,12 @@ class PageService {
 		return view(page, access, user, version(page, shown));
 	}
 
+	/** Referência à página legível pelo usuário corrente (API pública {@link Pages}). */
+	Pages.PageRef ref(UUID id) {
+		PageRow page = readable(id, user());
+		return new Pages.PageRef(page.id(), page.title(), page.orgUnitId(), page.type());
+	}
+
 	List<Map<String, Object>> versions(UUID id) {
 		UUID user = user();
 		PageRow page = fullyReadable(id, user);

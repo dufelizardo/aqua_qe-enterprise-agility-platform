@@ -12,3 +12,5 @@ Resource            ../../data_driven/workflow/workflow_driven.resource
 Resource            ../../data_driven/audit/audit_driven.resource
 # KNOWLEDGE
 Resource            ../../data_driven/knowledge/knowledge_driven.resource
+# INÍCIO (HOME)
+Resource            ../../data_driven/inicio/inicio_driven.resource
