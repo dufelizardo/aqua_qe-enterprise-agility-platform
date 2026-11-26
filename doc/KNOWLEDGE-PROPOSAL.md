@@ -98,7 +98,7 @@ O usuário comparou o Wiki com o Confluence (home, árvore do espaço, página e
 | 3 | Home: Recentes e Novidades | #83 | Concluída (validada em dev, 2026-11-26): módulo `activity`, `GET/POST /me/recent`, `GET /me/news`; UX/UI 7.2. |
 | 4 | Busca em páginas, documentos e artefatos (`GET /search`, Fase C) | #84 | Concluída (validada em dev, 2026-11-26): módulo `search`, `GET /search`; UX/UI 7.9. |
 | 5 | Comentários com @menção, notificações e favoritos (Fase D) | #85 | Concluída (validada em dev, 2026-11-26): comentários e "Comentar trecho" no `livingdocs`, módulo `notification` e favoritos em `activity`; UX/UI 7.12. |
-| 6 | Editor: lista de tarefas, cor, sumário e emoji | #86 | Implementada (Tiptap: tarefas, cor e destaque; sumário automático; emoji no texto e ícone da página; UX/UI 7.12). |
+| 6 | Editor: lista de tarefas, cor, sumário e emoji | #86 | Concluída (validada em dev, 2026-11-26): tarefas, cor e destaque; sumário automático; emoji no texto e ícone da página; UX/UI 7.12. |
 
 Fora da lista por decisão: "remover de vez" (aqui se arquiva, por causa da auditoria), "Automatizar" e "Ver visualizações".
 
