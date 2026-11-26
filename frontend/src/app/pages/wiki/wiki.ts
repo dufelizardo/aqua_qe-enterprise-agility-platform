@@ -14,6 +14,8 @@ import { LevelsService } from '../../core/levels.service';
 import { WorkspaceService } from '../../core/workspace.service';
 import { UnitHeader } from '../../layout/unit-header';
 import { DraftMatch, DraftStore, LEAVE_MESSAGE, LeaveAware, draftBlocks, draftKey, draftMatch } from '../../knowledge/draft-store';
+import { DocOutline } from '../../knowledge/doc-outline';
+import { EMOJIS } from '../../knowledge/editor-palettes';
 import { PageComments } from '../../knowledge/page-comments';
 import { RichEditor } from '../../knowledge/rich-editor';
 import {
@@ -54,7 +56,7 @@ interface DraftSection {
  */
 @Component({
   selector: 'app-wiki',
-  imports: [RichEditor, DatePipe, UnitHeader, CdkDropList, CdkDrag, MatMenuModule, MatDividerModule, PageComments],
+  imports: [RichEditor, DatePipe, UnitHeader, CdkDropList, CdkDrag, MatMenuModule, MatDividerModule, PageComments, DocOutline],
   templateUrl: './wiki.html',
   styleUrl: './wiki.scss',
 })
@@ -66,6 +68,10 @@ export class Wiki implements LeaveAware {
   private readonly comments = viewChild(PageComments);
   protected readonly favorites = signal<Set<string>>(new Set());
   protected readonly selection = signal<{ text: string; top: number; left: number } | null>(null);
+  // Ícone da página e sumário (#86).
+  protected readonly emojis = EMOJIS;
+  protected readonly iconPicker = signal(false);
+  protected readonly readingDocs = computed(() => this.shownDocs().map((s) => s.doc));
   private readonly snackBar = inject(MatSnackBar);
   protected readonly workspace = inject(WorkspaceService);
   protected readonly levels = inject(LevelsService);
@@ -199,6 +205,20 @@ export class Wiki implements LeaveAware {
       this.flushDraft();
       event.preventDefault();
     }
+  }
+
+  /** Troca o ícone da página (#86); nulo tira. Não cria versão. */
+  protected async setIcon(icon: string | null): Promise<void> {
+    const page = this.page();
+    if (!page) {
+      return;
+    }
+    this.iconPicker.set(false);
+    await this.run(async () => {
+      const updated = await this.knowledge.update(page.id, { icon });
+      this.page.set(updated);
+      await this.reloadList();
+    });
   }
 
   /** Estrela da página: marca ou desmarca para a pessoa (#85). */

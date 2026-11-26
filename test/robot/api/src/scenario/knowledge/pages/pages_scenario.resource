@@ -21,3 +21,8 @@ KNOWLEDGE - COMMENTS
     [Documentation]    Cenário de comentários, @menção, notificações e favoritos (#85).
     [Arguments]    ${unit_name}    ${title}    ${comment_text}    ${quote}
     Pages - Comentar Mencionar E Favoritar    ${unit_name}    ${title}    ${comment_text}    ${quote}
+
+KNOWLEDGE - EDITOR EXTRAS
+    [Documentation]    Cenário do ícone da página, da lista de tarefas e das cores (#86).
+    [Arguments]    ${unit_name}    ${title}    ${icon}    ${color}
+    Pages - Icone Tarefas E Cores    ${unit_name}    ${title}    ${icon}    ${color}

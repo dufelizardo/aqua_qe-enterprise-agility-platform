@@ -39,3 +39,8 @@ CT-006 - KNOW-024: Validate POST Page Comments - HTTP 201 CREATED (@menção, no
     [Tags]    POST    PageComments    Notifications    Favorites    HTTP201    HTTP400    KNOW-024    KNOW-025
     KNOWLEDGE - COMMENTS    ${knowledge_unit_name}    ${knowledge_page_title}    ${knowledge_comment_text}
     ...    ${knowledge_comment_quote}
+
+CT-007 - KNOW-020: Validate PATCH Page Icon e PUT com tarefas e cores - HTTP 200 OK
+    [Documentation]    #86: ícone sem versão nova; lista de tarefas e cor #rrggbb gravadas; ícone e cor inválidos dão 400.
+    [Tags]    PATCH    PUT    Pages    HTTP200    HTTP400    KNOW-020
+    KNOWLEDGE - EDITOR EXTRAS    ${knowledge_unit_name}    ${knowledge_page_title}    ${knowledge_icon}    ${knowledge_color}

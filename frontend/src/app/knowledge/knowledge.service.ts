@@ -48,6 +48,8 @@ export interface PageSummary {
   id: string;
   parentId: string | null;
   title: string;
+  /** Emoji escolhido como ícone da página (#86). */
+  icon?: string | null;
   type: 'PAGE' | 'REGIMENTO';
   governed: boolean;
   status: PageStatus;
@@ -67,6 +69,8 @@ export interface PageList {
 export interface Page {
   id: string;
   orgUnitId: string;
+  /** Emoji escolhido como ícone da página (#86). */
+  icon?: string | null;
   parentId: string | null;
   title: string;
   type: 'PAGE' | 'REGIMENTO';
@@ -147,7 +151,7 @@ export class KnowledgeService {
     return firstValueFrom(this.http.post<Page>(`${API}/pages/${id}/copy`, body));
   }
 
-  update(id: string, changes: { title?: string; parentId?: string | null }): Promise<Page> {
+  update(id: string, changes: { title?: string; parentId?: string | null; icon?: string | null }): Promise<Page> {
     return firstValueFrom(this.http.patch<Page>(`${API}/pages/${id}`, changes));
   }
 

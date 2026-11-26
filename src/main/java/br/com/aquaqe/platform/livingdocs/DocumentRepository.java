@@ -21,7 +21,7 @@ class DocumentRepository {
 
 	private static final String COLUMNS = """
 			id, org_unit_id, parent_id, type, title, position, status, template_id, current_version, approved_version,
-			published_version, archived_at, archive_reason, created_by, created_at, updated_at
+			published_version, archived_at, archive_reason, created_by, created_at, updated_at, icon
 			""";
 
 	private final JdbcClient jdbc;
@@ -106,6 +106,14 @@ class DocumentRepository {
 			.param("status", status)
 			.param("approved", approvedVersion)
 			.param("published", publishedVersion)
+			.update();
+	}
+
+	/** Troca o ícone da página (#86); nulo tira o ícone. Não cria versão. */
+	void changeIcon(UUID id, String icon) {
+		jdbc.sql("update livingdocs.document set icon = :icon, updated_at = now() where id = :id")
+			.param("id", id)
+			.param("icon", icon)
 			.update();
 	}
 
@@ -239,7 +247,7 @@ class DocumentRepository {
 			rs.getString("status"), rs.getObject("template_id", UUID.class), rs.getInt("current_version"),
 			(Integer) rs.getObject("approved_version"), (Integer) rs.getObject("published_version"),
 			instant(rs.getTimestamp("archived_at")), rs.getString("archive_reason"), rs.getObject("created_by", UUID.class),
-			instant(rs.getTimestamp("created_at")), instant(rs.getTimestamp("updated_at")));
+			instant(rs.getTimestamp("created_at")), instant(rs.getTimestamp("updated_at")), rs.getString("icon"));
 	}
 
 	private static VersionRow version(ResultSet rs) throws SQLException {
@@ -253,7 +261,7 @@ class DocumentRepository {
 
 	record PageRow(UUID id, UUID orgUnitId, UUID parentId, String type, String title, double position, String status,
 			UUID templateId, int currentVersion, Integer approvedVersion, Integer publishedVersion, Instant archivedAt,
-			String archiveReason, UUID createdBy, Instant createdAt, Instant updatedAt) {
+			String archiveReason, UUID createdBy, Instant createdAt, Instant updatedAt, String icon) {
 
 		boolean archived() {
 			return archivedAt != null;

@@ -595,7 +595,8 @@ Princípio adotado da [Proposta 03](ADMIN-PROPOSAL.md#1-princípio-adotado-três
   - estilo (texto, título, subtítulo);
   - negrito (Ctrl+B), itálico (Ctrl+I), sublinhado (Ctrl+U), código no texto e link (Ctrl+K);
   - lista com marcadores, lista numerada, citação, bloco de código e tabela (inserir; com o cursor nela, incluir e remover linha e coluna);
-  - desfazer e refazer.
+  - desfazer e refazer;
+  - desde a #86 (2026-11-26): **lista de tarefas** (☑ Tarefas, com caixa de marcar na edição; na leitura, a tarefa feita aparece riscada), **cor do texto** (A, seis cores e "Sem cor"), **destaque** (ab, cinco tons claros e "Sem destaque") e **emoji** (😊, um conjunto de 40 emojis inserido no ponto do cursor).
 
   Há também um resumo opcional da alteração. Na leitura, o mesmo editor mostra o conteúdo, sem a barra. O regimento usa o mesmo editor em cada seção obrigatória. Conflito de edição como na [6.8](#68-diálogo-de-conflito-de-edição): o rascunho fica na tela e a pessoa recarrega.
 - **Organizar a árvore ([PROP-002](propostas/PROP-002-organizacao-flexivel-da-wiki.md)):** para quem edita, cada página da árvore tem o menu **⋯** (aparece ao passar o mouse e na página aberta) com **↑ Subir**, **↓ Descer**, **← Promover** (vai para o nível do pai, logo depois dele), **Rebaixar →** (vira subpágina da página de cima) e **Mover para…** (escolhe a raiz ou qualquer página que não seja ela mesma nem uma subpágina dela). As subpáginas vão junto. Na árvore, **arrastar e soltar** põe a página onde ela foi solta, no nível da linha vizinha: soltar sobre uma subpágina a torna irmã dessa subpágina, e soltar logo abaixo de uma página que tem subpáginas a torna a primeira delas; não é possível soltar dentro dela mesma. O menu ⋯ faz tudo pelo teclado. Títulos longos são cortados com reticências, e o nome inteiro aparece ao passar o mouse. Organizar não cria versão, não muda o status e não muda o link da página (`?page=<id>`). A ordem é a mesma para todos da unidade.
@@ -606,6 +607,9 @@ Princípio adotado da [Proposta 03](ADMIN-PROPOSAL.md#1-princípio-adotado-três
   - **Comentar trecho:** ao selecionar um texto da página, aparece o botão "Comentar trecho" perto da seleção. O trecho entra como citação no comentário novo ("Tirar o trecho" desfaz).
   - **@menção:** ao digitar @, a lista mostra as pessoas que leem a página, filtradas pelo que se digita. Setas, Enter ou clique escolhem. A pessoa mencionada recebe o aviso no sino; quem é respondido também.
   - **Estrela:** ☆ ao lado do título marca a página como favorita (★). As favoritas aparecem no cartão "Favoritos" da Home (7.2).
+- **Sumário e ícone da página (#86, 2026-11-26):**
+  - **Sumário automático:** com dois títulos ou mais no conteúdo, a leitura mostra "Sumário" no topo, com os títulos e subtítulos. O clique leva ao título. Vale também para os documentos do artefato.
+  - **Ícone da página:** quem edita clica no ☺ ao lado do título e escolhe um emoji, ou "Tirar o ícone". O ícone aparece ao lado do título e na árvore. Trocar o ícone não cria versão.
 - **Histórico:** versões com autor, data, resumo e marcas de aprovada e publicada; abrir uma versão mostra o aviso "Você está vendo a versão N" e o retorno à atual.
 - **Quem lê pela regra 9** (SSD 2.1) vê só a versão publicada, com "Somente leitura (publicado)" e sem histórico.
 - **Dados:** `GET /org-units/{id}/pages`, `POST /org-units/{id}/pages`, `GET/PUT/PATCH /pages/{id}`, `GET /pages/{id}/versions[/{n}]`, `POST /pages/{id}/status`, `POST /pages/{id}/archive`, `POST /pages/{id}/restore` (SSD 3.7.1).

@@ -202,6 +202,36 @@ class KnowledgeIntegrationTests {
 	}
 
 	@Test
+	void iconeTarefasECoresDoEditor() throws Exception {
+		// #86: ícone da página (emoji), lista de tarefas e cores (só #rrggbb).
+		String page = id(create("pedro", portfolio, "{\"title\":\"Editor 86\"}"));
+		mvc.perform(json(patch("/api/v1/pages/{id}", page), user("pedro"), "{\"icon\":\"🚀\"}"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.icon").value("🚀"))
+			.andExpect(jsonPath("$.title").value("Editor 86"))
+			.andExpect(jsonPath("$.versionNumber").value(1));
+		mvc.perform(get("/api/v1/org-units/{u}/pages", portfolio).with(user("pedro")))
+			.andExpect(jsonPath("$.items[?(@.id == '" + page + "')].icon").value(contains("🚀")));
+		mvc.perform(json(patch("/api/v1/pages/{id}", page), user("pedro"), "{\"icon\":\"<b>\"}"))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.errors[0].field").value("icon"));
+		mvc.perform(json(patch("/api/v1/pages/{id}", page), user("pedro"), "{\"icon\":null}"))
+			.andExpect(jsonPath("$.icon").value(org.hamcrest.Matchers.nullValue()));
+
+		String doc = "{\"type\":\"doc\",\"content\":[{\"type\":\"taskList\",\"content\":[{\"type\":\"taskItem\","
+				+ "\"attrs\":{\"checked\":true},\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\","
+				+ "\"text\":\"Feito\",\"marks\":[{\"type\":\"textStyle\",\"attrs\":{\"color\":\"#b42318\"}},"
+				+ "{\"type\":\"highlight\",\"attrs\":{\"color\":\"#fef08a\"}}]}]}]}]}]}";
+		save("pedro", page, 1, "{\"sections\":[{\"key\":\"content\",\"blocks\":[{\"type\":\"richtext\",\"doc\":" + doc + "}]}]}")
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.sections[0].blocks[0].doc.content[0].type").value("taskList"));
+		String evil = doc.replace("#b42318", "red; background: url(x)");
+		save("pedro", page, 2, "{\"sections\":[{\"key\":\"content\",\"blocks\":[{\"type\":\"richtext\",\"doc\":" + evil + "}]}]}")
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.errors[0].field").value("sections.content"));
+	}
+
+	@Test
 	void editorContinuoGravaRichtext() throws Exception {
 		// Bug #67: o editor contínuo (Tiptap/ProseMirror) grava a seção como um bloco richtext com o documento.
 		String page = id(create("pedro", portfolio, "{\"title\":\"Editor contínuo\"}"));

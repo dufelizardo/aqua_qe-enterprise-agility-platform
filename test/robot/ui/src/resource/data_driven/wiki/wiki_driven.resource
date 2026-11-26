@@ -21,3 +21,6 @@ ${wiki_screenshot_reg}      wiki-regimento
 ${wiki_renamed_suffix}               renomeada
 ${wiki_draft_text}                  Texto guardado como rascunho
 ${wiki_comment_text}        vale revisar este trecho.
+${wiki_heading_one}         Objetivo
+${wiki_heading_two}         Escopo
+${wiki_task}                Revisar a política

@@ -18,6 +18,7 @@ import {
   sectionIndex,
 } from '../../knowledge/artifact-documents.service';
 import { ActivityService } from '../../core/activity.service';
+import { DocOutline } from '../../knowledge/doc-outline';
 import { DraftMatch, DraftStore, LEAVE_MESSAGE, LeaveAware, draftBlocks, draftKey, draftMatch } from '../../knowledge/draft-store';
 import { RichDoc, blocksToDoc, docToBlocks } from '../../knowledge/knowledge.service';
 import { RichEditor } from '../../knowledge/rich-editor';
@@ -48,7 +49,7 @@ interface DraftSection {
  */
 @Component({
   selector: 'app-artifact-page',
-  imports: [RouterLink, DatePipe, RichEditor],
+  imports: [RouterLink, DatePipe, RichEditor, DocOutline],
   templateUrl: './artifact-page.html',
   styleUrls: ['../wiki/wiki.scss', './artifact-page.scss'],
 })
@@ -91,6 +92,8 @@ export class ArtifactPage implements LeaveAware {
   protected readonly shownDocs = computed(() =>
     (this.shown()?.sections ?? []).map((s) => ({ key: s.key, title: s.title, required: s.required, doc: blocksToDoc(s.blocks) })),
   );
+  /** Documentos da leitura, para o sumário automático (#86). */
+  protected readonly readingDocs = computed(() => this.shownDocs().map((s) => s.doc));
   protected readonly missingTitles = computed(() => {
     const doc = this.document();
     return (doc?.missingSections ?? []).map((k) => doc?.sections.find((s) => s.key === k)?.title ?? k).join(', ');

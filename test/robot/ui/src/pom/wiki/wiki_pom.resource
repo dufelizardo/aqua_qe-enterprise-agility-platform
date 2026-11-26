@@ -251,3 +251,50 @@ Continue Typing Comment
     [Documentation]    Digita no comentário a partir do cursor (depois de escolher a menção).
     [Arguments]    ${text}
     Keyboard Input    type    ${text}
+
+Start Editing
+    Click    ${WIKI_EDIT}
+    Wait For Elements State    ${WIKI_EDITOR}    visible    timeout=30s
+    Click    ${WIKI_EDITOR}
+
+Choose Editor Style
+    [Arguments]    ${style}
+    [Documentation]    A lista de estilo devolve o foco ao texto, no mesmo ponto.
+    Select Options By    ${RT_STYLE}    value    ${style}
+
+Type In Editor
+    [Arguments]    ${text}
+    Keyboard Input    type    ${text}
+
+Press Editor Key
+    [Arguments]    ${key}
+    Keyboard Key    press    ${key}
+
+Click Editor Task List
+    Click    ${RT_TASK}
+
+Insert First Emoji
+    Click    ${RT_EMOJI}
+    Click    ${RT_EMOJI_OPTION}
+
+Save Wiki Edit
+    [Arguments]    ${summary}
+    Fill Text    ${WIKI_SUMMARY}    ${summary}
+    Click    ${WIKI_SAVE}
+
+Get Outline Item Count
+    Wait For Elements State    ${DOC_OUTLINE}    visible    timeout=30s
+    ${count}=    Get Element Count    ${DOC_OUTLINE_ITEM}
+    RETURN    ${count}
+
+Get Read Task Item Count
+    ${count}=    Get Element Count    ${WIKI_READ_TASK_ITEM}
+    RETURN    ${count}
+
+Choose First Page Icon
+    Click    ${WIKI_ICON_BUTTON}
+    Click    ${WIKI_ICON_OPTION}
+
+Get Page Icon Text
+    ${text}=    Get Text    ${WIKI_ICON_BUTTON}
+    RETURN    ${text}

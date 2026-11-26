@@ -32,8 +32,31 @@ final class Blocks {
 			if ("richtext".equals(type) && !(map.get("doc") instanceof Map<?, ?> doc && "doc".equals(doc.get("type")))) {
 				throw ApiException.validation("sections." + sectionKey, "richtext precisa do documento do editor em doc");
 			}
+			if ("richtext".equals(type) && !colorsValid(map.get("doc"))) {
+				throw ApiException.validation("sections." + sectionKey, "cor do texto ou do destaque inválida");
+			}
 		}
 	}
+
+	/**
+	 * Cor do texto e do destaque (#86): só {@code #rrggbb}. O editor grava a cor no atributo {@code color} das marcas
+	 * {@code textStyle} e {@code highlight}; qualquer outro valor poderia levar CSS para dentro da página.
+	 */
+	static boolean colorsValid(Object value) {
+		return switch (value) {
+			case Map<?, ?> map -> {
+				if (map.get("attrs") instanceof Map<?, ?> attrs && attrs.get("color") != null
+						&& !(attrs.get("color") instanceof String color && COLOR.matcher(color).matches())) {
+					yield false;
+				}
+				yield map.values().stream().allMatch(Blocks::colorsValid);
+			}
+			case Collection<?> list -> list.stream().allMatch(Blocks::colorsValid);
+			case null, default -> true;
+		};
+	}
+
+	private static final java.util.regex.Pattern COLOR = java.util.regex.Pattern.compile("#[0-9a-fA-F]{6}");
 
 	/** Uma seção está preenchida quando algum bloco tem texto (critério de aprovação, SSD 6.3). */
 	static boolean filled(List<?> blocks) {
@@ -45,7 +68,8 @@ final class Blocks {
 			case String text -> !text.isBlank();
 			case Map<?, ?> map -> map.entrySet().stream()
 				.filter(e -> !"type".equals(e.getKey()) && !"id".equals(e.getKey()) && !"level".equals(e.getKey())
-					&& !"language".equals(e.getKey()) && !"tone".equals(e.getKey()))
+					&& !"language".equals(e.getKey()) && !"tone".equals(e.getKey()) && !"color".equals(e.getKey())
+					&& !"checked".equals(e.getKey()))
 				.anyMatch(e -> hasText(e.getValue()));
 			case Collection<?> list -> list.stream().anyMatch(Blocks::hasText);
 			case null, default -> false;

@@ -9,3 +9,5 @@ ${knowledge_text}               Crescer em **canais digitais** com governança.
 ${documents_initiative_title}    Robot Iniciativa com Documentos
 ${knowledge_comment_text}       pode revisar esta política?
 ${knowledge_comment_quote}      valor de negócio primeiro
+${knowledge_icon}               🚀
+${knowledge_color}              \#b42318

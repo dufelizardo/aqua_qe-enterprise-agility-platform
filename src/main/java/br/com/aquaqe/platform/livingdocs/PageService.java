@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -89,6 +90,7 @@ class PageService {
 			item.put("id", row.id());
 			item.put("parentId", row.parentId());
 			item.put("title", row.title());
+			item.put("icon", row.icon());
 			item.put("type", row.type());
 			item.put("governed", template.governed());
 			item.put("status", row.status());
@@ -317,6 +319,14 @@ class PageService {
 		UUID parentId = moving ? parent(body.get("parentId"), page.orgUnitId(), page.id()) : page.parentId();
 		moving = moving && !Objects.equals(parentId, page.parentId());
 		repository.changeMeta(page.id(), title, parentId, moving);
+		if (body.containsKey("icon")) {
+			String icon = icon(body.get("icon"));
+			if (!Objects.equals(icon, page.icon())) {
+				repository.changeIcon(page.id(), icon);
+				events.publish("knowledge_page.updated", user, page.orgUnitId(), aggregate(page.id(), title), Map.of(),
+					Collections.singletonMap("icon", page.icon()), Collections.singletonMap("icon", icon));
+			}
+		}
 		if (moving) {
 			events.publish("knowledge_page.moved", user, page.orgUnitId(), aggregate(page.id(), title), Map.of(),
 				Map.of("parentId", String.valueOf(page.parentId())), Map.of("parentId", String.valueOf(parentId)));
@@ -326,6 +336,20 @@ class PageService {
 				Map.of("title", page.title()), Map.of("title", title));
 		}
 		return get(page.id());
+	}
+
+	/**
+	 * Ícone da página (#86): um emoji, até 16 caracteres, sem letras, números nem símbolos do teclado (assim não vira
+	 * texto nem marcação). Vazio ou nulo tira o ícone.
+	 */
+	private static String icon(Object value) {
+		if (value == null || (value instanceof String s && s.isBlank())) {
+			return null;
+		}
+		if (!(value instanceof String s) || s.strip().length() > 16 || !s.strip().codePoints().allMatch(c -> c > 0x7F)) {
+			throw ApiException.validation("icon", "escolha um emoji");
+		}
+		return s.strip();
 	}
 
 	/**
@@ -584,6 +608,7 @@ class PageService {
 		view.put("orgUnitId", page.orgUnitId());
 		view.put("parentId", page.parentId());
 		view.put("title", page.title());
+		view.put("icon", page.icon());
 		view.put("type", page.type());
 		view.put("templateName", template.name());
 		view.put("governed", template.governed());

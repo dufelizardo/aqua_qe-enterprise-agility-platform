@@ -11,8 +11,13 @@ import {
   viewChild,
 } from '@angular/core';
 import { Editor } from '@tiptap/core';
+import { Highlight } from '@tiptap/extension-highlight';
+import { TaskItem, TaskList } from '@tiptap/extension-list';
 import { TableKit } from '@tiptap/extension-table';
+import { Color, TextStyle } from '@tiptap/extension-text-style';
 import StarterKit from '@tiptap/starter-kit';
+
+import { EMOJIS, HIGHLIGHTS, TEXT_COLORS } from './editor-palettes';
 
 import { RichDoc, emptyDoc } from './knowledge.service';
 
@@ -42,9 +47,13 @@ type Style = 'paragraph' | 'h2' | 'h3';
           <button type="button" [class.on]="is('underline')" (click)="run('toggleUnderline')" title="Sublinhado (Ctrl+U)" aria-label="Sublinhado" data-testid="rt-underline"><u>S</u></button>
           <button type="button" [class.on]="is('code')" (click)="run('toggleCode')" title="Código no texto" aria-label="Código no texto" data-testid="rt-code">&lt;/&gt;</button>
           <button type="button" [class.on]="is('link')" (click)="toggleLink()" title="Link (Ctrl+K)" aria-label="Link" data-testid="rt-link">🔗</button>
+          <button type="button" [class.on]="palette() === 'color'" (click)="togglePalette('color')" title="Cor do texto" aria-label="Cor do texto" [attr.aria-expanded]="palette() === 'color'" data-testid="rt-color"><span class="rt-a">A</span></button>
+          <button type="button" [class.on]="palette() === 'highlight'" (click)="togglePalette('highlight')" title="Destaque" aria-label="Destaque" [attr.aria-expanded]="palette() === 'highlight'" data-testid="rt-highlight"><span class="rt-hl">ab</span></button>
+          <button type="button" [class.on]="palette() === 'emoji'" (click)="togglePalette('emoji')" title="Emoji" aria-label="Inserir emoji" [attr.aria-expanded]="palette() === 'emoji'" data-testid="rt-emoji">😊</button>
           <span class="sep" aria-hidden="true"></span>
           <button type="button" [class.on]="is('bulletList')" (click)="run('toggleBulletList')" title="Lista com marcadores" aria-label="Lista com marcadores" data-testid="rt-bullet">• Lista</button>
           <button type="button" [class.on]="is('orderedList')" (click)="run('toggleOrderedList')" title="Lista numerada" aria-label="Lista numerada" data-testid="rt-ordered">1. Lista</button>
+          <button type="button" [class.on]="is('taskList')" (click)="run('toggleTaskList')" title="Lista de tarefas" aria-label="Lista de tarefas" data-testid="rt-task">☑ Tarefas</button>
           <button type="button" [class.on]="is('blockquote')" (click)="run('toggleBlockquote')" title="Citação" aria-label="Citação" data-testid="rt-quote">❝</button>
           <button type="button" [class.on]="is('codeBlock')" (click)="run('toggleCodeBlock')" title="Bloco de código" aria-label="Bloco de código" data-testid="rt-codeblock">{{ '{ }' }}</button>
           <span class="sep" aria-hidden="true"></span>
@@ -61,6 +70,25 @@ type Style = 'paragraph' | 'h2' | 'h3';
           <button type="button" (click)="run('undo')" title="Desfazer (Ctrl+Z)" aria-label="Desfazer">↶</button>
           <button type="button" (click)="run('redo')" title="Refazer (Ctrl+Shift+Z)" aria-label="Refazer">↷</button>
         </div>
+        @if (palette(); as open) {
+          <div class="rt-palette" role="group" [attr.aria-label]="open === 'color' ? 'Cores do texto' : open === 'highlight' ? 'Cores de destaque' : 'Emojis'" (mousedown)="keepFocus($event)" data-testid="rt-palette">
+            @if (open === 'color') {
+              @for (s of textColors; track s.color) {
+                <button type="button" class="swatch" [style.color]="s.color" (click)="setColor(s.color)" [title]="s.label" [attr.aria-label]="s.label" data-testid="rt-color-option">A</button>
+              }
+              <button type="button" (click)="setColor(null)" data-testid="rt-color-clear">Sem cor</button>
+            } @else if (open === 'highlight') {
+              @for (s of highlights; track s.color) {
+                <button type="button" class="swatch" [style.background]="s.color" (click)="setHighlight(s.color)" [title]="s.label" [attr.aria-label]="s.label" data-testid="rt-highlight-option">ab</button>
+              }
+              <button type="button" (click)="setHighlight(null)" data-testid="rt-highlight-clear">Sem destaque</button>
+            } @else {
+              @for (e of emojis; track e) {
+                <button type="button" class="emoji" (click)="insertEmoji(e)" [attr.aria-label]="'Inserir ' + e" data-testid="rt-emoji-option">{{ e }}</button>
+              }
+            }
+          </div>
+        }
         @if (linkOpen()) {
           <form class="rt-link" (submit)="applyLink($event)" data-testid="rt-link-form">
             <input
@@ -113,6 +141,19 @@ type Style = 'paragraph' | 'h2' | 'h3';
     .rich-content th p, .rich-content td p { margin: 0; }
     .rich-content .selectedCell::after { position: absolute; inset: 0; background: rgba(30, 155, 215, 0.15); content: ''; pointer-events: none; }
     .rich-content .tableWrapper { overflow-x: auto; }
+    .rt-palette { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px; border-bottom: 1px solid var(--border); }
+    .rt-palette button { min-height: 30px; min-width: 30px; padding: 0 8px; border: 1px solid var(--border-strong); border-radius: 6px; background: var(--surface); color: var(--text); font: inherit; font-size: 13px; cursor: pointer; }
+    .rt-palette .swatch { font-weight: 700; color: #1f2937; }
+    .rt-palette .emoji { border-color: transparent; font-size: 18px; padding: 0 4px; }
+    .rt-a { font-weight: 800; text-decoration: underline; text-decoration-color: #b42318; text-decoration-thickness: 3px; }
+    .rt-hl { padding: 0 3px; border-radius: 3px; background: #fef08a; color: #1f2937; }
+    .rich-content mark { padding: 0 2px; border-radius: 3px; color: #1f2937; }
+    .rich-content ul[data-type="taskList"] { padding-left: 2px; list-style: none; }
+    .rich-content ul[data-type="taskList"] li { display: flex; align-items: flex-start; gap: 8px; }
+    .rich-content ul[data-type="taskList"] li > label { flex: none; margin-top: 3px; }
+    .rich-content ul[data-type="taskList"] li > div { flex: 1 1 auto; min-width: 0; }
+    .rich-content ul[data-type="taskList"] li[data-checked="true"] > div { color: var(--text-secondary); text-decoration: line-through; }
+    .rich-content ul[data-type="taskList"] input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--navy-900); }
     .rich-content p.is-editor-empty:first-child::before { float: left; height: 0; color: var(--text-muted); content: attr(data-placeholder); pointer-events: none; }
   `,
 })
@@ -127,6 +168,11 @@ export class RichEditor implements AfterViewInit, OnDestroy {
   /** Muda a cada transação, para a barra recalcular o que está ativo. */
   private readonly tick = signal(0);
   protected readonly linkOpen = signal(false);
+  /** Paleta aberta na barra: cor do texto, destaque ou emoji (#86). */
+  protected readonly palette = signal<'color' | 'highlight' | 'emoji' | null>(null);
+  protected readonly textColors = TEXT_COLORS;
+  protected readonly highlights = HIGHLIGHTS;
+  protected readonly emojis = EMOJIS;
   protected readonly linkUrl = signal('');
 
   constructor() {
@@ -168,6 +214,11 @@ export class RichEditor implements AfterViewInit, OnDestroy {
           },
         }),
         TableKit.configure({ table: { resizable: false } }),
+        TaskList,
+        TaskItem.configure({ nested: true }),
+        TextStyle,
+        Color,
+        Highlight.configure({ multicolor: true }),
       ],
       editorProps: {
         attributes: {
@@ -228,9 +279,34 @@ export class RichEditor implements AfterViewInit, OnDestroy {
     this.editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
   }
 
+  protected togglePalette(name: 'color' | 'highlight' | 'emoji'): void {
+    this.palette.set(this.palette() === name ? null : name);
+    this.linkOpen.set(false);
+  }
+
+  /** Cor do texto selecionado; nulo tira a cor. */
+  protected setColor(color: string | null): void {
+    const chain = this.editor?.chain().focus();
+    (color ? chain?.setColor(color) : chain?.unsetColor())?.run();
+    this.palette.set(null);
+  }
+
+  /** Destaque do texto selecionado; nulo tira o destaque. */
+  protected setHighlight(color: string | null): void {
+    const chain = this.editor?.chain().focus();
+    (color ? chain?.setHighlight({ color }) : chain?.unsetHighlight())?.run();
+    this.palette.set(null);
+  }
+
+  protected insertEmoji(emoji: string): void {
+    this.editor?.chain().focus().insertContent(emoji).run();
+    this.palette.set(null);
+  }
+
   protected toggleLink(): void {
     const current = (this.editor?.getAttributes('link')['href'] as string | undefined) ?? '';
     this.linkUrl.set(current);
+    this.palette.set(null);
     this.linkOpen.set(!this.linkOpen());
   }
 

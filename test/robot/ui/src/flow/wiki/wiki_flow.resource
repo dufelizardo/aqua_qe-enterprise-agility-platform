@@ -264,3 +264,38 @@ Home Favorites Should Contain
 Wiki Favorite Should Be On
     ${star}=    Get Wiki Favorite Text
     Should Be Equal    ${star}    ★
+
+Wiki - Sumario Tarefas E Icone
+    [Documentation]    #86: dois títulos geram o sumário na leitura; a lista de tarefas aparece com caixas de marcar; o
+    ...    emoji entra no texto; o ícone escolhido aparece ao lado do título.
+    [Arguments]    ${title_base}    ${heading_one}    ${heading_two}    ${task}    ${summary}
+    ${title}=    Unique Name    ${title_base}
+    Create Wiki Page    ${title}
+    Wait For Wiki Page Title    ${title}
+    Start Editing
+    Choose Editor Style    h2
+    Type In Editor    ${heading_one}
+    Press Editor Key    End
+    Press Editor Key    Enter
+    Choose Editor Style    h2
+    Type In Editor    ${heading_two}
+    Press Editor Key    End
+    Press Editor Key    Enter
+    Click Editor Task List
+    Type In Editor    ${task}
+    Insert First Emoji
+    Save Wiki Edit    ${summary}
+    Wait For Wiki Page Version    2
+    ${outline}=    Get Outline Item Count
+    Should Be Equal As Integers    ${outline}    2
+    ${tasks}=    Get Read Task Item Count
+    Should Be Equal As Integers    ${tasks}    1
+    ${content}=    Get Wiki Page Text
+    Should Contain    ${content}    ${task}📄
+    Choose First Page Icon
+    Wait Until Keyword Succeeds    10s    500ms    Page Icon Should Be    📄
+
+Page Icon Should Be
+    [Arguments]    ${icon}
+    ${text}=    Get Page Icon Text
+    Should Be Equal    ${text}    ${icon}
