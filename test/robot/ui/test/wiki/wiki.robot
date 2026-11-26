@@ -60,3 +60,9 @@ CT-008 - HOME-001: Validate Home - continuar de onde parou e novidades
     [Tags]    UI    Home    HOME-001    HOME-002
     WIKI UI - CONTINUAR PELA HOME    ${wiki_pm_username}    ${wiki_pm_display_name}    ${wiki_root_name}
     ...    ${wiki_page_base}
+
+CT-009 - KNOW-014: Validate Busca - achar a página pela caixa do topo
+    [Documentation]    #84: a página criada aparece na busca, mesmo digitada sem acento e em maiúsculas; o link a reabre.
+    [Tags]    UI    Search    KNOW-014
+    WIKI UI - BUSCAR PELO TOPO    ${wiki_pm_username}    ${wiki_pm_display_name}    ${wiki_root_name}
+    ...    ${wiki_page_base}

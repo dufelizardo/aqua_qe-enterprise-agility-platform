@@ -97,6 +97,37 @@ class ArtifactRepository {
 		return spec.param("offset", offset).param("limit", limit).query((rs, n) -> row(rs)).list();
 	}
 
+	/**
+	 * Busca textual (#84): artefatos não arquivados que o usuário lê, com todos os termos na chave, no título ou na
+	 * descrição; primeiro os que têm os termos na chave ou no título, depois os mais recentes.
+	 */
+	List<Row> textSearch(List<String> terms, Collection<UUID> scope, int limit) {
+		br.com.aquaqe.platform.shared.TextSearch.Condition all = br.com.aquaqe.platform.shared.TextSearch
+			.allTerms("a.key || ' ' || a.title || ' ' || coalesce(a.description, '')", terms, "t");
+		br.com.aquaqe.platform.shared.TextSearch.Condition heading = br.com.aquaqe.platform.shared.TextSearch
+			.allTerms("a.key || ' ' || a.title", terms, "t");
+		return jdbc.sql("select " + COLUMNS + " from workitem.artifact a where " + READABLE + " and not a.archived and "
+				+ all.sql() + " order by " + heading.sql() + " desc, a.updated_at desc, a.key limit :limit")
+			.params(all.params())
+			.param("scope", array(scope))
+			.param("limit", limit)
+			.query((rs, n) -> row(rs))
+			.list();
+	}
+
+	/** Dos artefatos informados, os não arquivados que o usuário lê. */
+	List<Row> readableAmong(Collection<UUID> ids, Collection<UUID> scope) {
+		if (ids.isEmpty()) {
+			return List.of();
+		}
+		return jdbc.sql("select " + COLUMNS + " from workitem.artifact a where a.id = any(cast(:ids as uuid[])) and "
+				+ READABLE + " and not a.archived")
+			.param("ids", array(ids))
+			.param("scope", array(scope))
+			.query((rs, n) -> row(rs))
+			.list();
+	}
+
 	long count(Filter filter, Collection<UUID> scope) {
 		StringBuilder sql = new StringBuilder("select count(*) from workitem.artifact a where ");
 		Map<String, Object> params = where(sql, filter, scope);

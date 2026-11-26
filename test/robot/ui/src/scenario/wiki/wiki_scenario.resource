@@ -63,3 +63,9 @@ WIKI UI - CONTINUAR PELA HOME
     [Arguments]    ${username}    ${display_name}    ${root_name}    ${title_base}
     Wiki - Abrir    ${username}    ${display_name}    ${root_name}
     Wiki - Continuar Pela Home    ${title_base}
+
+WIKI UI - BUSCAR PELO TOPO
+    [Documentation]    Busca pela caixa do topo leva à página do Wiki (#84).
+    [Arguments]    ${username}    ${display_name}    ${root_name}    ${title_base}
+    Wiki - Abrir    ${username}    ${display_name}    ${root_name}
+    Wiki - Buscar Pelo Topo    ${title_base}

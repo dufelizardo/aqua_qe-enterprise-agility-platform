@@ -12,3 +12,7 @@ ${SHELL_BRAND}              css=[data-testid="brand"]
 ${HOME_RECENT_ITEM_BY_TEXT}     css=[data-testid="home-recent-item"] a:text-is("{}")
 ${HOME_RECENT}                  css=[data-testid="home-recent"]
 ${HOME_NEWS}                    css=[data-testid="home-news"]
+# Busca (#84).
+${SHELL_SEARCH_INPUT}           css=[data-testid="search-input"]
+${SEARCH_RESULT_LINK_BY_TEXT}   css=[data-testid="search-result-link"]:has-text("{}")
+${SEARCH_GROUP_PAGE}            css=[data-testid="search-group-PAGE"]

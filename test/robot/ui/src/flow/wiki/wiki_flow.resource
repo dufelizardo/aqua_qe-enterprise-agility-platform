@@ -211,3 +211,18 @@ Home Should Show Page
     Should Contain    ${recent}    ${title}
     ${news}=    Get Home News Text
     Should Contain    ${news}    Você criou a página ${title}
+
+Wiki - Buscar Pelo Topo
+    [Documentation]    #84: a página criada é achada pela caixa "Buscar" do topo, sem acento; o resultado reabre a página.
+    [Arguments]    ${title_base}
+    ${title}=    Unique Name    ${title_base}
+    Create Wiki Page    ${title}
+    Wait For Wiki Page Title    ${title}
+    ${folded}=    Evaluate    unicodedata.normalize('NFD', $title).encode('ascii', 'ignore').decode().upper()    modules=unicodedata
+    Search From Header    ${folded}
+    Wait For Url To Contain    /busca?q=
+    Wait For Search Result    ${title}
+    ${pages}=    Get Search Pages Text
+    Should Contain    ${pages}    ${title}
+    Click Search Result    ${title}
+    Wait For Wiki Page Title    ${title}
