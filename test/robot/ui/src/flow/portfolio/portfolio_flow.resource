@@ -5,6 +5,7 @@ Resource            ../../pom/portfolio/portfolio_pom.resource
 Resource            ../admin/admin_flow.resource
 Resource            ../../pom/navigation/navigation_pom.resource
 Resource            ../../pom/artifact/artifact_pom.resource
+Resource            ../../pom/gates/gates_pom.resource
 
 *** Keywords ***
 Portfolio - Preparar Portfólio
@@ -170,3 +171,57 @@ Artefato - Editar Titulo E Responsavel
     Wait For Artifact Field    ownerId    ${person}
     Click Artifact Back
     Wait For Card In Column    ${status}    ${new_title}
+
+Artefato - Gate Com Aprovacao
+    [Documentation]    #78: o administrador cria um gate com aprovação de Tech Lead na transição Ideia → Cancelado; na
+    ...    página da Iniciativa, os Próximos passos mostram a regra pendente e o Mover desabilitado; aprovar libera e
+    ...    mover leva a Cancelado. O gate é removido no fim, mesmo se o teste falhar.
+    [Arguments]    ${status}    ${title}    ${gate_name}    ${message}    ${path}    ${to_key}    ${to_name}
+    ${card}=    Card Locator    ${status}    ${title}
+    Open Card Page    ${card}
+    Wait For Artifact Title    ${title}
+    ${artifact_url}=    Get Current Page Url
+    Go To AQuA-QE Path    /admin/gates
+    Choose Gates Workflow For Type    INITIATIVE
+    Open Gate Of Transition    ${path}
+    Fill Approval Gate    ${gate_name}    ${message}
+    Save Gate
+    Wait Until Keyword Succeeds    10s    500ms    Transition Row Should Contain    ${path}    ${gate_name}
+    TRY
+        Open Saved Page    ${artifact_url}
+        Wait For Artifact Title    ${title}
+        ${step}=    Get Gate Step Text    ${to_key}
+        Should Contain    ${step}    ${message}
+        Should Contain    ${step}    0/1
+        ${enabled}=    Is Gate Move Enabled    ${to_key}
+        Should Not Be True    ${enabled}
+        Approve Gate Rule    ${to_key}
+        Wait Until Keyword Succeeds    10s    500ms    Gate Step Should Contain    ${to_key}    1/1
+        Click Gate Move    ${to_key}
+        Wait Until Keyword Succeeds    15s    500ms    Artifact Status Should Be    ${to_name}
+    FINALLY
+        Run Keyword And Ignore Error    Remover Gate Da Transicao    ${path}
+    END
+
+Remover Gate Da Transicao
+    [Documentation]    Limpeza do teste: remove o gate da transição em Admin › Gates.
+    [Arguments]    ${path}
+    Go To AQuA-QE Path    /admin/gates
+    Choose Gates Workflow For Type    INITIATIVE
+    Open Gate Of Transition    ${path}
+    Remove Gate Accepting
+
+Transition Row Should Contain
+    [Arguments]    ${path}    ${text}
+    ${row}=    Get Transition Row Text    ${path}
+    Should Contain    ${row}    ${text}
+
+Gate Step Should Contain
+    [Arguments]    ${to_key}    ${text}
+    ${step}=    Get Gate Step Text    ${to_key}
+    Should Contain    ${step}    ${text}
+
+Artifact Status Should Be
+    [Arguments]    ${name}
+    ${status}=    Get Artifact Status Text
+    Should Be Equal    ${status}    ${name}

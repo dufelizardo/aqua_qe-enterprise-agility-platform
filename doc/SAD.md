@@ -164,7 +164,7 @@ flowchart TB
 | `configuration` | D10 | Tipos de artefato, definições de workflow e templates de documento, como dados versionados. | Tipo de artefato, Workflow, Template |
 | `workitem` | D02, D03 | Artefatos de todos os níveis, hierarquia, vínculos, RNs e CAs, contexto herdado. | Artefato, Vínculo, RN, CA |
 | `workflow` | D05 | Status atual e execução de transições; consulta os guardas antes de mudar o status. | Transição executada |
-| `governance` | D05 | Gates, validações e aprovações; implementa o guarda de transição. | Gate, Regra, Aprovação |
+| `governance` | D05 | Gates, validações e aprovações; implementa o guarda de transição (`GateGuard`, #78). Cada tipo de regra é um `GateRuleEvaluator`; usa as APIs públicas `ArtifactDocuments` (`livingdocs`), `Artifacts` (`workitem`) e `ArtifactConfiguration.transition` (`configuration`). | Gate, Regra, Aprovação |
 | `livingdocs` | D04 | Motor de documentos com dono genérico: documentos do artefato (PRD, SAD, SSD, UX/UI, QA) e páginas de conhecimento por unidade ([Proposta 07](KNOWLEDGE-PROPOSAL.md)), versões e status. Cria os documentos da Iniciativa e da Feature ao receber o evento em memória `ArtifactCreated`, publicado pelo `workitem` na transação da criação; assim `workitem` não conhece documentos. | Documento, Versão |
 | `portfolio` | D01 | Dados próprios da Iniciativa: business case. | Business case |
 | `board` | D02, D03 | Quadros por nível, colunas Upstream e Downstream, sprints. | Quadro, Sprint |

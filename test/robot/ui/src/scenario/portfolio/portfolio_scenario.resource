@@ -93,3 +93,17 @@ PORTFOLIO - EDITAR DADOS DA INICIATIVA
     Squad - Abrir Quadro Do Nivel    ${squad}    ${squad_level_name}    portfolio
     Portfolio - Criar Iniciativa    ${title}    ${initiative_description}    ${squad}
     Artefato - Editar Titulo E Responsavel    IDEA    ${title}    ${title} ${renamed_suffix}    ${display_name}
+
+PORTFOLIO - GATE COM APROVACAO
+    [Documentation]    Cria a Iniciativa no Quadro da Squad e testa o gate com aprovação nos Próximos passos (#78).
+    [Arguments]    ${username}    ${display_name}    ${root_name}    ${portfolio_base}    ${portfolio_label}
+    ...    ${cadeia_base}    ${cadeia_label}    ${squad_base}    ${squad_label}    ${squad_level_name}
+    ...    ${initiative_base}    ${initiative_description}    ${gate_name}    ${gate_message}    ${gate_path}
+    ...    ${gate_to_key}    ${gate_to_name}
+    ${squad}=    Squad - Preparar Squad    ${username}    ${display_name}    ${root_name}    ${portfolio_base}
+    ...    ${portfolio_label}    ${cadeia_base}    ${cadeia_label}    ${squad_base}    ${squad_label}
+    ${title}=    Unique Name    ${initiative_base}
+    Squad - Abrir Quadro Do Nivel    ${squad}    ${squad_level_name}    portfolio
+    Portfolio - Criar Iniciativa    ${title}    ${initiative_description}    ${squad}
+    Artefato - Gate Com Aprovacao    IDEA    ${title}    ${gate_name}    ${gate_message}    ${gate_path}    ${gate_to_key}
+    ...    ${gate_to_name}

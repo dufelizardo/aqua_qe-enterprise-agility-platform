@@ -578,6 +578,14 @@ Regras de aprovação:
 
 A situação dos gates (`GET /artifacts/{artifact}/gates`) usa o mesmo formato de regra da seção 5.3, com todas as regras, atendidas ou não.
 
+**Implementado (#78, 2026-11-26).** Detalhes da implementação:
+- `GET /gates` devolve `{id, transitionId, name, rules}` (quantidade de regras), com `workflowId` opcional.
+- `GET /workflow-transitions/{id}/gate` devolve o gate com `from`, `to`, o workflow, os tipos de artefato e as regras. Exige gerir configuração, como o PUT.
+- O PUT aceita de 1 a 20 regras. Cada uma tem `type`, `params` e `message` (até 300 caracteres). O gate tem `name` (até 120). Salvar troca todas as regras, e as regras novas ganham ids novos.
+- O painel (`GET /artifacts/{artifact}/gates`) traz, por gate: `transitionId`, `to`, `satisfied`, `total` e as regras. Cada regra tem `satisfied`, `lastDecision` (`decision`, `comment`, `by`, `at`) e `canDecide`.
+- A aprovação vale no status em que foi dada: a decisão grava o status atual do artefato e só conta enquanto o artefato estiver nele. Assim, mudar de status invalida as aprovações, inclusive na volta ao status anterior.
+- Os eventos `gate.created`, `gate.updated`, `gate.deleted` e `approval.decided` vão para a trilha de auditoria.
+
 ### 3.7 `livingdocs`
 
 Documentos existem apenas em Iniciativas e Features. Os tipos são `PRD`, `SAD`, `SSD`, `UX`, `QA`. Os cinco documentos são criados junto com o artefato, com status `PENDING`.
@@ -938,6 +946,14 @@ Definição de um gate (`PUT /workflow-transitions/{transitionId}/gate`):
 | `ROLE_APPROVAL` | Aprovação | `role`, `label` | Existe uma aprovação `APPROVED` vigente, dada por alguém com o papel. |
 
 Regras que citam documento ou business case em um tipo de artefato que não os possui são rejeitadas ao salvar o gate (`VALIDATION_FAILED`).
+
+**Situação (#78, 2026-11-26).** Implementados `REQUIRED_FIELD`, `DOCUMENT_SECTION_FILLED`, `DOCUMENT_APPROVED`, `MIN_CHILDREN` e `ROLE_APPROVAL`. Ficam pendentes:
+- `BUSINESS_CASE_VALIDATED` é recusado ao salvar o gate (`VALIDATION_FAILED` em `rules[i].type`), até o business case existir no módulo `portfolio`.
+- Em `REQUIRED_FIELD`, `acceptanceCriteria` e `businessRuleRefs` também são recusados, porque esses campos ainda não existem nos artefatos.
+- `DOCUMENT_SECTION_FILLED` confere `sectionKey` contra as seções do template atual do documento.
+- `MIN_CHILDREN` aceita `min` de 1 a 100.
+- `ROLE_APPROVAL` aceita `label` opcional, de até 60 caracteres.
+- O `failedRules` do `GATE_BLOCKED` traz também `gateName`.
 
 **Extensão.** Cada tipo de regra é avaliado por um componente registrado para aquele tipo. O módulo `governance` define a interface (`GateRuleEvaluator`) e traz os avaliadores de campo, documento, filhos e aprovação; o módulo `portfolio` registra o de business case. Novos tipos, como cobertura de testes na Fase 2, entram da mesma forma.
 

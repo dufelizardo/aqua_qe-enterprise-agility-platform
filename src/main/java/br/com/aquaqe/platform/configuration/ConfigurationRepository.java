@@ -138,6 +138,37 @@ class ConfigurationRepository implements ArtifactConfiguration {
 			.toList();
 	}
 
+	@Override
+	public Optional<TransitionScope> transition(UUID transitionId) {
+		return jdbc.sql("""
+				select tr.id, tr.from_status_id, tr.to_status_id, w.id as workflow_id, w.name as workflow_name
+				  from configuration.workflow_transition tr
+				  join configuration.workflow w on w.id = tr.workflow_id
+				 where tr.id = :id
+				""")
+			.param("id", transitionId)
+			.query((rs, n) -> new Object[] { rs.getObject("from_status_id", UUID.class),
+				rs.getObject("to_status_id", UUID.class), rs.getObject("workflow_id", UUID.class),
+				rs.getString("workflow_name") })
+			.optional()
+			.map(row -> {
+				UUID from = (UUID) row[0];
+				UUID to = (UUID) row[1];
+				UUID workflowId = (UUID) row[2];
+				Map<UUID, Status> statuses = statuses(List.of(from, to));
+				List<String> types = jdbc.sql("""
+						select t.key from configuration.workflow_artifact_type wt
+						  join configuration.artifact_type t on t.id = wt.artifact_type_id
+						 where wt.workflow_id = :id order by t.key
+						""")
+					.param("id", workflowId)
+					.query(String.class)
+					.list();
+				return new TransitionScope(new StatusTransition(transitionId, statuses.get(from), statuses.get(to)),
+					workflowId, (String) row[3], types);
+			});
+	}
+
 	List<Workflow> workflows(String artifactType) {
 		return jdbc.sql("""
 				select w.id, w.name, w.version_number from configuration.workflow w
@@ -196,7 +227,7 @@ class ConfigurationRepository implements ArtifactConfiguration {
 			List<Transition> transitions) {
 	}
 
-	/** {@code hasGate} passa a ser calculado com o módulo governance; por ora nenhuma transição tem gate. */
+	/** {@code hasGate} fica sempre falso aqui: os gates são do módulo governance ({@code GET /gates}, #78). */
 	record Transition(UUID id, String from, String to, boolean hasGate) {
 	}
 }

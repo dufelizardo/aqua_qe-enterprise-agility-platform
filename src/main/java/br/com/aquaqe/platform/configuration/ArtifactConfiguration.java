@@ -34,6 +34,13 @@ public interface ArtifactConfiguration {
 	/** Transições do workflow que saem do status informado (SSD 8.2). */
 	List<StatusTransition> transitionsFrom(UUID statusId);
 
+	/** A transição, com o workflow e os tipos de artefato dele; vazio se não existe (gates, SSD 5). */
+	Optional<TransitionScope> transition(UUID transitionId);
+
+	/** Transição com o workflow a que pertence e os tipos de artefato que o usam. */
+	record TransitionScope(StatusTransition transition, UUID workflowId, String workflowName, List<String> artifactTypes) {
+	}
+
 	record StatusTransition(UUID id, Status from, Status to) {
 	}
 
