@@ -141,13 +141,34 @@
       }
     }
     <label for="item-unit">{{ levelName() }}</label>
-    <select id="item-unit" [value]="newUnit()" (change)="newUnit.set(value($event))" data-testid="new-item-unit">
+    <select id="item-unit" [value]="newUnit()" (change)="chooseUnit(value($event))" data-testid="new-item-unit">
       @for (unit of levelUnits(); track unit.id) {
         <option [value]="unit.id" [selected]="unit.id === newUnit()">{{ unit.name }}</option>
       }
     </select>
     @if (levelUnits().length === 0) {
       <p class="hint">Não há unidade de {{ levelName() }} ({{ routeSetup().level }}) neste workspace. Peça ao administrador.</p>
+    }
+    @if (ownerSuggestion(); as suggestion) {
+      @if (suggestion.candidates.length > 0) {
+        <label for="item-owner">Owner</label>
+        <select id="item-owner" [value]="newOwner()" (change)="newOwner.set(value($event))" data-testid="new-item-owner">
+          @if (suggestion.candidates.length > 1) {
+            <option value="" [selected]="newOwner() === ''">Escolha…</option>
+          }
+          @for (person of suggestion.candidates; track person.id) {
+            <option [value]="person.id" [selected]="person.id === newOwner()">{{ person.name }}</option>
+          }
+          <option value="none" [selected]="newOwner() === 'none'">Sem Owner</option>
+        </select>
+        <p class="hint" data-testid="new-item-owner-hint">
+          @if (suggestion.candidates.length > 1) {
+            Mais de uma pessoa atende à regra ({{ ownerRuleText(suggestion) }}). Escolha quem fica como Owner.
+          } @else {
+            Sugerido pela regra da unidade: {{ ownerRuleText(suggestion) }}.
+          }
+        </p>
+      }
     }
     @if (createError(); as error) {
       <p class="field-error" data-testid="new-item-error">{{ messageOf(error) }}</p>

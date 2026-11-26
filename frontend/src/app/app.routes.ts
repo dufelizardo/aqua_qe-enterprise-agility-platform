@@ -91,6 +91,12 @@ export const routes: Routes = [
             title: 'Gates · AQuA-QE',
             loadComponent: () => import('./admin/admin-gates').then((m) => m.AdminGates),
           },
+          // Responsável padrão por unidade e tipo (#43).
+          {
+            path: 'responsavel-padrao',
+            title: 'Responsável padrão · AQuA-QE',
+            loadComponent: () => import('./admin/admin-default-owner').then((m) => m.AdminDefaultOwner),
+          },
         ],
       },
       {

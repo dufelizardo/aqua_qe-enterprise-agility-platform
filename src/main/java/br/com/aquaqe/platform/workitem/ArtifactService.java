@@ -64,10 +64,12 @@ class ArtifactService {
 	private final ObjectMapper json;
 	private final DomainEvents events;
 	private final ApplicationEventPublisher publisher;
+	private final DefaultOwners defaultOwners;
 
 	ArtifactService(ArtifactRepository repository, ArtifactConfiguration configuration, OrgUnits orgUnits,
 			Authorization authorization, CurrentUser currentUser, UserDirectory users, ObjectMapper json,
-			DomainEvents events, ApplicationEventPublisher publisher) {
+			DomainEvents events, ApplicationEventPublisher publisher, DefaultOwners defaultOwners) {
+		this.defaultOwners = defaultOwners;
 		this.repository = repository;
 		this.configuration = configuration;
 		this.orgUnits = orgUnits;
@@ -185,6 +187,11 @@ class ArtifactService {
 		}
 		Row parent = parentFor(type, uuidField(body, "parentId"), unitId, caller, null);
 		Map<String, UUID> people = people(body, null);
+		// Sem ownerId no corpo, vale o responsável padrão da unidade para o tipo (#43). ownerId: null deixa sem Owner.
+		boolean defaultOwner = !body.containsKey("ownerId");
+		if (defaultOwner) {
+			people.put("ownerId", defaultOwners.ownerFor(unitId, type, caller.userId()));
+		}
 
 		UUID id = UUID.randomUUID();
 		String key = type.keyPrefix() + "-" + repository.nextNumber(type.keyPrefix());
@@ -198,6 +205,9 @@ class ArtifactService {
 		payload.put("key", key);
 		payload.put("artifactType", type.key());
 		payload.put("parentId", row.parentId());
+		if (defaultOwner && row.ownerId() != null) {
+			payload.put("ownerFromDefaultRule", true);
+		}
 		events.publish("artifact.created", caller.userId(), unitId, new Aggregate("ARTIFACT", id, key), payload, null,
 			auditable(row));
 		publisher.publishEvent(new ArtifactCreated(id, key, type.key(), unitId, caller.userId()));

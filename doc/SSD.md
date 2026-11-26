@@ -486,7 +486,15 @@ Como as regras de escopo foram aplicadas (2026-11-20):
 - **Editar, arquivar e trocar o pai** exigem a permissão do nível do artefato (matriz da seção 2) na unidade dele ou acima. Ler um descendente de outro ramo não dá edição (`403`).
 - Ainda não implementados: vínculos, ordenação, RNs e CAs desta seção, e o evento de auditoria de cada operação (com os módulos `events` e `audit`).
 - **Bloqueio** ([Proposta 04](BOARDS-PROPOSAL.md), KAN-009): `blocked` (booleano) e `blockedReason` (até 500 caracteres), alterados por `PATCH` com a permissão de edição. Desmarcar `blocked` limpa o motivo. O cartão do quadro traz os dois campos.
-- **Responsável padrão (decidido em 2026-11-20, a especificar):** quem fica como Owner de um artefato criado sem `ownerId` varia por instituição (em algumas é o PO, em outras o PM). Será configurável, por tipo de artefato e por unidade, na configuração organizacional. Até lá, o artefato nasce sem Owner.
+- **Responsável padrão (#43, implementado em 2026-11-26):** quem fica como Owner de um artefato criado sem `ownerId` varia por instituição, por isso é configurável.
+  - **Regra:** uma por unidade e tipo de artefato. A unidade sem regra própria herda a da unidade acima mais próxima; sem regra na linhagem, vale `NONE`.
+  - **Modos:** `NONE` (sem Owner), `CREATOR` (quem criou) e `ROLE` (quem tem o `role` na unidade do item ou, se ninguém lá o tiver, na unidade acima mais próxima). `PLATFORM_ADMIN` não é aceito como papel.
+  - **Na criação:** só vale quando o corpo não traz `ownerId`; `ownerId: null` deixa sem Owner. Com `ROLE` e mais de uma pessoa, o artefato nasce sem Owner pela API; o formulário pede a escolha. O evento `artifact.created` leva `ownerFromDefaultRule: true` quando a regra preencheu o Owner.
+  - **Endpoints:**
+    - `GET /api/v1/org-units/{unitId}/default-owner-rules`: a regra vigente de cada tipo, com `mode`, `role`, `inherited` e `source` (a unidade de onde vem; nulo no padrão).
+    - `PUT /api/v1/org-units/{unitId}/default-owner-rules/{artifactType}` com `{mode, role}`: grava a regra própria. Exige `MANAGE_CONFIGURATION` na unidade ou acima (`403`); modo ou papel inválido dá `400` em `mode` ou `role`; tipo inexistente, `400` em `artifactType`. Evento `default_owner_rule.updated`.
+    - `DELETE /api/v1/org-units/{unitId}/default-owner-rules/{artifactType}`: a unidade volta a herdar (`204`; `404` sem regra própria). Evento `default_owner_rule.removed`.
+    - `GET /api/v1/org-units/{unitId}/default-owner?artifactType=`: a sugestão do formulário, com `mode`, `role`, `source`, `candidates` (pessoas ativas, da mais antiga no papel à mais nova) e `suggestedId` (só com uma pessoa).
 
 Vínculos: `type` é um de `RELATES_TO`, `ORIGINATES_FROM`, `DUPLICATES`. `ORIGINATES_FROM` é o vínculo de um Bug ou Problema de Produção com o artefato de origem.
 
@@ -1258,6 +1266,7 @@ Convenções:
 | | `workflow_status` | `workflow_id`, `key`, `name`, `phase`, `category`, `position` | (`workflow_id`, `key`) único. |
 | | `workflow_transition` | `workflow_id`, `from_status_id`, `to_status_id` | Única por (`from_status_id`, `to_status_id`). |
 | | `doc_template` | `document_type`, `version_number`, `name`, `sections` (JSON), `approver_role`, `governed`, `org_unit_id` | (`document_type`, `org_unit_id`, `version_number`) único. Tipos: os cinco do artefato, `PAGE` e `REGIMENTO`. |
+| `workitem` | `default_owner_rule` (#43) | `org_unit_id`, `artifact_type_id`, `mode` (`NONE`, `CREATOR`, `ROLE`), `role`, `updated_by`, `updated_at` | Chave (`org_unit_id`, `artifact_type_id`); `role` preenchido só em `ROLE`. |
 | `workitem` | `artifact` | `key`, `type_id`, `parent_id`, `org_unit_id`, `status_id`, `title`, `description`, `owner_id`, `technical_lead_id`, `qa_owner_id`, `assignee_id`, `size`, `custom_fields` (JSON), `rank`, `archived`, `blocked`, `blocked_reason`, `version`, `search_vector` | `key` única; índices em `parent_id`, em (`org_unit_id`, `type_id`, `status_id`) e índice de texto em `search_vector`. |
 | | `key_sequence` | `key_prefix` (PK), `next_value` | Gera o número da chave legível. |
 | | `artifact_link` | `source_id`, `target_id`, `type`, `created_by` | Único por (`source_id`, `target_id`, `type`); origem diferente do destino. |

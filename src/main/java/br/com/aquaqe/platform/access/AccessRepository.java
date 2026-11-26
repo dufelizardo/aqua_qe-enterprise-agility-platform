@@ -42,6 +42,26 @@ class AccessRepository {
 			.list();
 	}
 
+	/** Quem tem o papel vigente exatamente na unidade, do mais antigo no papel ao mais novo (#43). */
+	List<UUID> holders(String roleKey, UUID orgUnitId) {
+		return jdbc.sql("""
+				select a.user_id from access.role_assignment a join access.role r on r.id = a.role_id
+				 where a.revoked_at is null and r.key = :role and a.org_unit_id = :unit
+				 group by a.user_id order by min(a.granted_at)
+				""")
+			.param("role", roleKey)
+			.param("unit", orgUnitId)
+			.query(UUID.class)
+			.list();
+	}
+
+	boolean roleExists(String roleKey) {
+		return jdbc.sql("select exists (select 1 from access.role where key = :key)")
+			.param("key", roleKey)
+			.query(Boolean.class)
+			.single();
+	}
+
 	/** Verdadeiro se o usuário tem algum dos papéis em alguma das unidades. */
 	boolean hasAnyRole(UUID userId, Collection<String> roles, Collection<UUID> orgUnitIds) {
 		if (roles.isEmpty() || orgUnitIds.isEmpty()) {

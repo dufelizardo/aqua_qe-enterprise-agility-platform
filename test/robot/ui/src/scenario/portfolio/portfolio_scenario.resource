@@ -107,3 +107,14 @@ PORTFOLIO - GATE COM APROVACAO
     Portfolio - Criar Iniciativa    ${title}    ${initiative_description}    ${squad}
     Artefato - Gate Com Aprovacao    IDEA    ${title}    ${gate_name}    ${gate_message}    ${gate_path}    ${gate_to_key}
     ...    ${gate_to_name}
+
+PORTFOLIO - RESPONSAVEL PADRAO
+    [Documentation]    Prepara a Squad e testa o responsável padrão "Quem criou" na nova Iniciativa (#43).
+    [Arguments]    ${username}    ${display_name}    ${root_name}    ${portfolio_base}    ${portfolio_label}
+    ...    ${cadeia_base}    ${cadeia_label}    ${squad_base}    ${squad_label}    ${squad_level_name}
+    ...    ${initiative_base}    ${initiative_description}
+    ${squad}=    Squad - Preparar Squad    ${username}    ${display_name}    ${root_name}    ${portfolio_base}
+    ...    ${portfolio_label}    ${cadeia_base}    ${cadeia_label}    ${squad_base}    ${squad_label}
+    ${title}=    Unique Name    ${initiative_base}
+    Responsavel Padrao - Quem Criou    ${squad}    ${squad_level_name}    ${title}    ${initiative_description}
+    ...    ${display_name}

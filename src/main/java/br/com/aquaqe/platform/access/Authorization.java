@@ -39,6 +39,30 @@ public class Authorization {
 		return repository.hasAnyRole(userId, Set.of(role, "PLATFORM_ADMIN"), lineage);
 	}
 
+	/**
+	 * Quem tem o papel na unidade ou, se ninguém lá o tem, na unidade acima mais próxima em que alguém o tenha (#43,
+	 * responsável padrão). {@code orgUnitId} nulo e lista vazia quando ninguém na linhagem tem o papel.
+	 */
+	public RoleHolders nearestHolders(String role, UUID orgUnitId) {
+		List<UUID> lineage = orgUnits.lineage(orgUnitId);
+		for (int i = lineage.size() - 1; i >= 0; i--) {
+			List<UUID> users = repository.holders(role, lineage.get(i));
+			if (!users.isEmpty()) {
+				return new RoleHolders(lineage.get(i), users);
+			}
+		}
+		return new RoleHolders(null, List.of());
+	}
+
+	/** O papel existe no catálogo (SSD 2)? */
+	public boolean roleExists(String role) {
+		return role != null && repository.roleExists(role);
+	}
+
+	/** Pessoas com um papel numa unidade, da mais antiga no papel à mais nova. */
+	public record RoleHolders(UUID orgUnitId, List<UUID> userIds) {
+	}
+
 	/** Usuários com algum papel vigente em alguma das unidades. */
 	public Set<UUID> peopleIn(java.util.Collection<UUID> orgUnitIds) {
 		return orgUnitIds.isEmpty() ? Set.of() : Set.copyOf(repository.usersIn(orgUnitIds));

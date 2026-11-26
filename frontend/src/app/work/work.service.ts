@@ -263,6 +263,8 @@ export class WorkService {
     description?: string;
     orgUnitId: string;
     parentId?: string;
+    /** Omitido: vale o responsável padrão (#43); {@code null}: sem Owner. */
+    ownerId?: string | null;
   }): Promise<Artifact> {
     return firstValueFrom(this.http.post<Artifact>(`${API}/artifacts`, body));
   }
