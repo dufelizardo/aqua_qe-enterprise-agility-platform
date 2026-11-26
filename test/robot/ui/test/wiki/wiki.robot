@@ -48,3 +48,9 @@ CT-006 - KNOW-006: Validate Wiki - menu ⋯ renomeia, faz uma cópia e arquiva
     [Tags]    UI    Wiki    KNOW-006
     WIKI UI - MENU DA PAGINA    ${wiki_pm_username}    ${wiki_pm_display_name}    ${wiki_root_name}
     ...    ${wiki_page_base}    ${wiki_renamed_suffix}
+
+CT-007 - KNOW-020: Validate Wiki - rascunho automático e aviso ao sair sem salvar
+    [Documentation]    #82: o texto digitado fica como rascunho; sair pergunta; editar de novo recupera; salvar apaga.
+    [Tags]    UI    Wiki    KNOW-020
+    WIKI UI - RASCUNHO AUTOMATICO    ${wiki_pm_username}    ${wiki_pm_display_name}    ${wiki_root_name}
+    ...    ${wiki_page_base}    ${wiki_draft_text}

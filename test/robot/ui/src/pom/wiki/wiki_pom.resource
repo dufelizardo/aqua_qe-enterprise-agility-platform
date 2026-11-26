@@ -168,3 +168,44 @@ Wait For Wiki Page Link Gone
     [Arguments]    ${title}
     ${locator}=    Evaluate    $WIKI_PAGE_LINK_BY_TITLE.replace('{}', $title)
     Wait For Elements State    ${locator}    detached    timeout=30s
+
+Start Editing And Type
+    [Documentation]    Editar, clicar na área de texto e digitar, sem salvar (#82).
+    [Arguments]    ${text}
+    Click    ${WIKI_EDIT}
+    Wait For Elements State    ${WIKI_EDITOR}    visible    timeout=30s
+    Click    ${WIKI_EDITOR}
+    Keyboard Input    type    ${text}
+
+Wait For Wiki Draft Saved
+    Wait For Elements State    ${WIKI_DRAFT_STATUS}    visible    timeout=30s
+
+Open Wiki Page Accepting Leave
+    [Documentation]    Clica na página da árvore e aceita a pergunta de sair com alterações não salvas.
+    [Arguments]    ${title}
+    ${locator}=    Evaluate    $WIKI_PAGE_LINK_BY_TITLE.replace('{}', $title)
+    ${promise}=    Promise To    Wait For Alert    action=accept    timeout=10s
+    Click    ${locator}
+    Wait For    ${promise}
+
+Open Wiki Page
+    [Arguments]    ${title}
+    ${locator}=    Evaluate    $WIKI_PAGE_LINK_BY_TITLE.replace('{}', $title)
+    Click    ${locator}
+
+Click Wiki Edit
+    Click    ${WIKI_EDIT}
+
+Wait For Wiki Draft Restored
+    Wait For Elements State    ${WIKI_DRAFT_RESTORED}    visible    timeout=30s
+
+Get Wiki Editor Text
+    ${text}=    Get Text    ${WIKI_EDITOR}
+    RETURN    ${text}
+
+Click Wiki Save
+    Click    ${WIKI_SAVE}
+
+Get Wiki Draft Restored Count
+    ${count}=    Get Element Count    ${WIKI_DRAFT_RESTORED}
+    RETURN    ${count}

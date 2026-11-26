@@ -44,3 +44,6 @@ ${WIKI_RENAME_CONFIRM}      css=[data-testid="wiki-rename-confirm"]
 ${WIKI_COPY}                css=[data-testid="wiki-copy"]
 ${WIKI_MENU_ARCHIVE}        css=[data-testid="wiki-menu-archive"]
 ${WIKI_ARCHIVE_CONFIRM}     css=[data-testid="wiki-archive-confirm"]
+# Rascunho automático (#82).
+${WIKI_DRAFT_STATUS}        css=[data-testid="wiki-draft-status"]
+${WIKI_DRAFT_RESTORED}      css=[data-testid="wiki-draft-restored"]

@@ -19,3 +19,4 @@ ${wiki_summary}             Primeira redação
 ${wiki_screenshot_page}     wiki-page
 ${wiki_screenshot_reg}      wiki-regimento
 ${wiki_renamed_suffix}               renomeada
+${wiki_draft_text}                  Texto guardado como rascunho

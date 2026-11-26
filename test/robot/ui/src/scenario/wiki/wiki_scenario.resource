@@ -51,3 +51,9 @@ WIKI UI - MENU DA PAGINA
     [Arguments]    ${username}    ${display_name}    ${root_name}    ${title_base}    ${renamed_suffix}
     Wiki - Abrir    ${username}    ${display_name}    ${root_name}
     Wiki - Menu Da Pagina    ${title_base}    ${renamed_suffix}
+
+WIKI UI - RASCUNHO AUTOMATICO
+    [Documentation]    Rascunho automático e aviso ao sair sem salvar (#82).
+    [Arguments]    ${username}    ${display_name}    ${root_name}    ${title_base}    ${draft_text}
+    Wiki - Abrir    ${username}    ${display_name}    ${root_name}
+    Wiki - Rascunho Automatico    ${title_base}    ${draft_text}

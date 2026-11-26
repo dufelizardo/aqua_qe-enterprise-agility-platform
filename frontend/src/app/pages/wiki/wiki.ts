@@ -1,6 +1,6 @@
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { DatePipe } from '@angular/common';
-import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
+import { Component, HostListener, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatMenuModule } from '@angular/material/menu';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -12,6 +12,7 @@ import { ApiError, messageOf, toApiError } from '../../core/api-error';
 import { LevelsService } from '../../core/levels.service';
 import { WorkspaceService } from '../../core/workspace.service';
 import { UnitHeader } from '../../layout/unit-header';
+import { DraftMatch, DraftStore, LEAVE_MESSAGE, LeaveAware, draftBlocks, draftKey, draftMatch } from '../../knowledge/draft-store';
 import { RichEditor } from '../../knowledge/rich-editor';
 import {
   KnowledgeService,
@@ -55,7 +56,7 @@ interface DraftSection {
   templateUrl: './wiki.html',
   styleUrl: './wiki.scss',
 })
-export class Wiki {
+export class Wiki implements LeaveAware {
   private readonly knowledge = inject(KnowledgeService);
   private readonly router = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
@@ -97,6 +98,15 @@ export class Wiki {
   );
   protected readonly draftTitle = signal('');
   protected readonly draftSummary = signal('');
+  // Rascunho automático neste navegador (#82).
+  private readonly drafts = inject(DraftStore);
+  /** Houve alteração desde que a edição começou (ou desde o rascunho recuperado). */
+  protected readonly dirty = signal(false);
+  /** Hora do último rascunho guardado, para o aviso na barra de salvar. */
+  protected readonly draftSavedAt = signal<Date | null>(null);
+  /** Rascunho encontrado ao começar a editar: recuperado ('same') ou de uma versão anterior ('older'). */
+  protected readonly draftFound = signal<{ match: DraftMatch; savedAt: Date; version: number } | null>(null);
+  private draftTimer: ReturnType<typeof setTimeout> | null = null;
   protected readonly conflict = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly busy = signal(false);
@@ -161,7 +171,26 @@ export class Wiki {
   }
 
   protected select(id: string): void {
+    if (id !== this.page()?.id && !this.canLeave() && !window.confirm(LEAVE_MESSAGE)) {
+      return;
+    }
+    if (id !== this.page()?.id) {
+      this.stopEditing();
+    }
     void this.router.navigate([], { queryParams: { page: id } });
+  }
+
+  /** Sair sem perguntar: fora da edição ou sem alterações (#82). */
+  canLeave(): boolean {
+    return this.mode() !== 'edit' || !this.dirty();
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  protected beforeUnload(event: BeforeUnloadEvent): void {
+    if (!this.canLeave()) {
+      this.flushDraft();
+      event.preventDefault();
+    }
   }
 
   private async open(id: string): Promise<void> {
@@ -220,11 +249,111 @@ export class Wiki {
     this.draftSummary.set('');
     this.conflict.set(false);
     this.error.set(null);
+    this.dirty.set(false);
+    this.draftSavedAt.set(null);
+    this.draftFound.set(null);
+    const stored = this.drafts.read(draftKey('page', page.id));
+    const match = draftMatch(stored, page.currentVersion);
+    if (stored && match) {
+      this.draftFound.set({ match, savedAt: new Date(stored.savedAt), version: stored.baseVersion });
+      if (match === 'same') {
+        this.applyStoredDraft();
+      }
+    }
     this.mode.set('edit');
+  }
+
+  /** Repõe no editor o rascunho guardado; o de versão anterior só quando a pessoa pede. */
+  protected applyStoredDraft(): void {
+    const page = this.page();
+    const stored = page ? this.drafts.read(draftKey('page', page.id)) : null;
+    if (!page || !stored) {
+      return;
+    }
+    this.draft.set(
+      this.draft().map((s) => {
+        const blocks = draftBlocks(stored, s.key);
+        return blocks ? { ...s, doc: blocksToDoc(blocks) } : s;
+      }),
+    );
+    if (stored.title) {
+      this.draftTitle.set(stored.title);
+    }
+    const found = this.draftFound();
+    this.draftFound.set(found ? { ...found, match: 'same' } : null);
+    this.dirty.set(true);
+    this.draftSavedAt.set(new Date(stored.savedAt));
+  }
+
+  /** Apaga o rascunho guardado e volta ao texto da versão atual. */
+  protected discardStoredDraft(): void {
+    const page = this.page();
+    if (page) {
+      this.drafts.clear(draftKey('page', page.id));
+    }
+    this.startEdit();
   }
 
   protected setDoc(index: number, doc: RichDoc): void {
     this.draft.set(this.draft().map((s, i) => (i === index ? { ...s, doc } : s)));
+    this.touch();
+  }
+
+  protected setDraftTitle(title: string): void {
+    this.draftTitle.set(title);
+    this.touch();
+  }
+
+  /** Cancelar: com alterações, pergunta e apaga o rascunho. */
+  protected cancelEdit(): void {
+    if (this.dirty() && !window.confirm('Descartar as alterações? O rascunho guardado neste navegador também será apagado.')) {
+      return;
+    }
+    const page = this.page();
+    if (page) {
+      this.drafts.clear(draftKey('page', page.id));
+    }
+    this.stopEditing();
+  }
+
+  private stopEditing(): void {
+    if (this.draftTimer) {
+      clearTimeout(this.draftTimer);
+      this.draftTimer = null;
+    }
+    this.dirty.set(false);
+    this.draftFound.set(null);
+    this.draftSavedAt.set(null);
+    if (this.mode() === 'edit') {
+      this.mode.set('read');
+    }
+  }
+
+  /** Marca a alteração e guarda o rascunho pouco depois da última tecla. */
+  private touch(): void {
+    this.dirty.set(true);
+    if (this.draftTimer) {
+      clearTimeout(this.draftTimer);
+    }
+    this.draftTimer = setTimeout(() => this.flushDraft(), 800);
+  }
+
+  private flushDraft(): void {
+    this.draftTimer = null;
+    const page = this.page();
+    if (!page || this.mode() !== 'edit' || !this.dirty()) {
+      return;
+    }
+    const savedAt = new Date();
+    const ok = this.drafts.write(draftKey('page', page.id), {
+      baseVersion: page.currentVersion,
+      title: this.draftTitle(),
+      sections: this.draft().map((s) => ({ key: s.key, blocks: docToBlocks(s.doc) })),
+      savedAt: savedAt.toISOString(),
+    });
+    if (ok) {
+      this.draftSavedAt.set(savedAt);
+    }
   }
 
   protected async save(): Promise<void> {
@@ -246,8 +375,9 @@ export class Wiki {
       if (title && title !== page.title) {
         saved = await this.knowledge.update(page.id, { title });
       }
+      this.drafts.clear(draftKey('page', page.id));
+      this.stopEditing();
       this.page.set(saved);
-      this.mode.set('read');
       await this.reloadList();
     } catch (error) {
       const api = toApiError(error);
