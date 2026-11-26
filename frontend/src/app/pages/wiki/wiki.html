@@ -38,7 +38,7 @@
               (click)="select(node.id)"
               data-testid="wiki-page-link"
             >
-              <span class="title">{{ node.title }}</span>
+              <span class="title">@if (node.icon) {<span class="icon" aria-hidden="true">{{ node.icon }} </span>}{{ node.title }}</span>
               @if (node.governed && node.status !== 'PUBLISHED') {
                 <span class="chip" [attr.data-status]="node.status">{{ statusLabels[node.status] }}</span>
               }
@@ -161,6 +161,13 @@
               <input class="title-input" [value]="draftTitle()" (input)="setDraftTitle(value($event))" aria-label="Título da página" maxlength="200" data-testid="wiki-edit-title" />
             } @else {
               <div class="title-row">
+                @if (current.canEdit && !current.archived && !oldVersion()) {
+                  <button type="button" class="page-icon" (click)="iconPicker.set(!iconPicker())" [attr.aria-expanded]="iconPicker()"
+                    [attr.aria-label]="p.icon ? 'Trocar o ícone da página' : 'Escolher um ícone para a página'"
+                    [title]="p.icon ? 'Trocar o ícone' : 'Escolher um ícone'" data-testid="wiki-icon-button">{{ p.icon || '☺' }}</button>
+                } @else if (p.icon) {
+                  <span class="page-icon static" aria-hidden="true" data-testid="wiki-icon">{{ p.icon }}</span>
+                }
                 <h2 data-testid="wiki-page-title">{{ p.title }}</h2>
                 @if (!oldVersion()) {
                   <button type="button" class="star" [class.on]="favorites().has(current.id)" [attr.aria-pressed]="favorites().has(current.id)"
@@ -188,6 +195,17 @@
               }
             </div>
           </header>
+
+          @if (iconPicker()) {
+            <div class="icon-picker" role="group" aria-label="Ícone da página" data-testid="wiki-icon-picker">
+              @for (e of emojis; track e) {
+                <button type="button" (click)="setIcon(e)" [attr.aria-label]="'Usar ' + e" data-testid="wiki-icon-option">{{ e }}</button>
+              }
+              @if (current.icon) {
+                <button type="button" class="clear" (click)="setIcon(null)" data-testid="wiki-icon-clear">Tirar o ícone</button>
+              }
+            </div>
+          }
 
           @if (oldVersion()) {
             <p class="banner" data-testid="wiki-old-version">
@@ -315,7 +333,8 @@
               }
             </div>
           } @else {
-            <div class="reading" (mouseup)="readSelection()" (keyup)="readSelection()">
+            <app-doc-outline [docs]="readingDocs()" [container]="reading" />
+            <div #reading class="reading" (mouseup)="readSelection()" (keyup)="readSelection()">
             @for (section of shownDocs(); track section.key) {
               <section class="section" [attr.data-section]="section.key">
                 @if (shownDocs().length > 1) {

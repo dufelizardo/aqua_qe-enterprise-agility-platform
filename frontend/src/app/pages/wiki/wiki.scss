@@ -445,3 +445,12 @@ input:focus-visible {
 .star.on { color: #d4a000; }
 .star:hover { background: var(--hover, rgba(0, 0, 0, .06)); }
 .quote-button { position: fixed; z-index: 20; box-shadow: 0 4px 14px rgba(0, 0, 0, .18); }
+
+// Ícone da página (#86).
+.page-icon { flex: none; border: 1px solid transparent; background: none; cursor: pointer; font-size: 26px; line-height: 1; padding: 2px 4px; border-radius: 8px; color: var(--text-secondary); }
+.page-icon:hover { border-color: var(--border-strong); }
+.page-icon.static { cursor: default; }
+.icon-picker { display: flex; flex-wrap: wrap; gap: 4px; margin: 8px 0 12px; padding: 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+.icon-picker button { min-width: 34px; min-height: 34px; border: 1px solid transparent; border-radius: 6px; background: none; cursor: pointer; font-size: 20px; }
+.icon-picker button:hover { border-color: var(--border-strong); }
+.icon-picker .clear { font-size: 13px; padding: 0 10px; border-color: var(--border-strong); color: var(--text); }

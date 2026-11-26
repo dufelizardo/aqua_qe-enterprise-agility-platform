@@ -117,3 +117,11 @@ GET Favorites As Persona
     ${response}=    GET On Session    ${session}    ${API_BASE_PATH}/me/favorites    expected_status=ANY
     Log    ${response.status_code} ${response.text}
     RETURN    ${response}
+
+PATCH Page As Persona
+    [Arguments]    ${persona}    ${page}    ${payload}
+    ${session}=    Get AQuA-QE Session For Persona    ${persona}
+    ${response}=    PATCH On Session    ${session}    ${API_BASE_PATH}/pages/${page}    json=${payload}
+    ...    expected_status=ANY
+    Log    ${response.status_code} ${response.text}
+    RETURN    ${response}

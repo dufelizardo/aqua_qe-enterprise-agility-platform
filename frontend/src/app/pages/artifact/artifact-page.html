@@ -279,12 +279,15 @@
                 }
               </div>
             } @else {
+              <app-doc-outline [docs]="readingDocs()" [container]="docReading" />
+              <div #docReading>
               @for (section of shownDocs(); track section.key) {
                 <section class="section" [attr.data-section]="section.key">
                   <h3>{{ section.title }}@if (section.required) {<span class="req" title="Obrigatória para aprovar"> *</span>}</h3>
                   <app-rich-editor [doc]="section.doc" [label]="section.title" />
                 </section>
               }
+              </div>
             }
           </article>
         }

@@ -56,3 +56,13 @@ ${COMMENT_INPUT}            css=[data-testid="comment-input"]
 ${COMMENT_MENTION_OPTION}   css=[data-testid="comment-mention-option"] >> nth=0
 ${COMMENT_SEND}             css=[data-testid="comment-send"]
 ${COMMENT_ITEM}             css=[data-testid="comment-item"] >> nth=0
+# Editor: sumário, tarefas, emoji e ícone (#86).
+${RT_STYLE}                 css=.rich-editor.editing [data-testid="rt-style"]
+${RT_TASK}                  css=.rich-editor.editing [data-testid="rt-task"]
+${RT_EMOJI}                 css=.rich-editor.editing [data-testid="rt-emoji"]
+${RT_EMOJI_OPTION}          css=[data-testid="rt-emoji-option"] >> nth=0
+${DOC_OUTLINE}              css=[data-testid="doc-outline"]
+${DOC_OUTLINE_ITEM}         css=[data-testid="doc-outline-item"]
+${WIKI_READ_TASK_ITEM}      css=[data-testid="wiki-page"] .reading ul[data-type="taskList"] li
+${WIKI_ICON_BUTTON}         css=[data-testid="wiki-icon-button"]
+${WIKI_ICON_OPTION}         css=[data-testid="wiki-icon-option"] >> nth=0

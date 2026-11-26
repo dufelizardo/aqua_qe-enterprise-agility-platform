@@ -198,3 +198,23 @@ Notification Should Include
     Should Be Equal As Integers    ${inbox.status_code}    200
     ${matches}=    Evaluate    [n for n in $inbox.json()['items'] if n['targetId'] == $page_id and n['kind'] == $kind]
     Should Not Be Empty    ${matches}
+
+Pages - Icone Tarefas E Cores
+    [Documentation]    #86: o ícone (emoji) muda sem criar versão; a lista de tarefas e as cores #rrggbb são gravadas;
+    ...    uma cor fora do formato é recusada.
+    [Arguments]    ${unit_name}    ${title}    ${icon}    ${color}
+    ${unit}=    Create Knowledge Unit    ${unit_name}
+    ${page}=    Create Page    pm    ${unit}    ${title}
+    ${payload}=    Create Dictionary    icon=${icon}
+    ${patched}=    PATCH Page As Persona    pm    ${page}[id]    ${payload}
+    Should Be Equal As Integers    ${patched.status_code}    200
+    Should Be Equal    ${patched.json()}[icon]    ${icon}
+    Should Be Equal As Integers    ${patched.json()}[versionNumber]    1
+    ${invalid}=    Create Dictionary    icon=abc
+    ${refused}=    PATCH Page As Persona    pm    ${page}[id]    ${invalid}
+    Validate Error Body    ${refused}    400    VALIDATION_FAILED
+    ${saved}=    PUT Page As Persona    pm    ${page}[id]    ${{ {'baseVersion': 1, 'sections': [{'key': 'content', 'blocks': [{'type': 'richtext', 'doc': {'type': 'doc', 'content': [{'type': 'taskList', 'content': [{'type': 'taskItem', 'attrs': {'checked': False}, 'content': [{'type': 'paragraph', 'content': [{'type': 'text', 'text': 'Revisar', 'marks': [{'type': 'textStyle', 'attrs': {'color': $color}}]}]}]}]}]}}]}]} }}
+    Should Be Equal As Integers    ${saved.status_code}    200
+    Should Be Equal    ${saved.json()}[sections][0][blocks][0][doc][content][0][type]    taskList
+    ${bad}=    PUT Page As Persona    pm    ${page}[id]    ${{ {'baseVersion': 2, 'sections': [{'key': 'content', 'blocks': [{'type': 'richtext', 'doc': {'type': 'doc', 'content': [{'type': 'paragraph', 'content': [{'type': 'text', 'text': 'x', 'marks': [{'type': 'highlight', 'attrs': {'color': 'red;background:url(x)'}}]}]}]}}]}]} }}
+    Validate Error Body    ${bad}    400    VALIDATION_FAILED

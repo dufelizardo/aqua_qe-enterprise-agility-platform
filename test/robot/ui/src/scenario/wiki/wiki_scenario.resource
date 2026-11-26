@@ -75,3 +75,10 @@ WIKI UI - COMENTAR TRECHO E FAVORITAR
     [Arguments]    ${username}    ${display_name}    ${root_name}    ${title_base}    ${text}    ${summary}    ${comment_text}
     Wiki - Abrir    ${username}    ${display_name}    ${root_name}
     Wiki - Comentar Trecho E Favoritar    ${title_base}    ${text}    ${summary}    ${display_name}    ${comment_text}
+
+WIKI UI - SUMARIO TAREFAS E ICONE
+    [Documentation]    Sumário automático, lista de tarefas, emoji e ícone da página (#86).
+    [Arguments]    ${username}    ${display_name}    ${root_name}    ${title_base}    ${heading_one}    ${heading_two}
+    ...    ${task}    ${summary}
+    Wiki - Abrir    ${username}    ${display_name}    ${root_name}
+    Wiki - Sumario Tarefas E Icone    ${title_base}    ${heading_one}    ${heading_two}    ${task}    ${summary}

@@ -635,7 +635,7 @@ O mesmo motor de documentos tem **dono genérico**: um artefato (os cinco docume
 | POST | `/org-units/{id}/regimento` | Cria o regimento (`title` opcional; padrão "Regimento — unidade"). Um ativo por unidade: `REGIMENTO_EXISTS`. | `EDIT_KNOWLEDGE` |
 | GET | `/pages/{id}` | Conteúdo da versão atual; para quem lê pela regra 9, da versão publicada. Traz `canEdit`, `canApprove` e `missingSections`. | ler |
 | PUT | `/pages/{id}` | Salva nova versão: `baseVersion`, `sections` (seção 6), `summary` opcional. `VERSION_CONFLICT` se `baseVersion` não for a atual. | `EDIT_KNOWLEDGE` |
-| PATCH | `/pages/{id}` | Renomeia (`title`) e move (`parentId`, `null` para a raiz). Recusa pai de outra unidade, arquivado ou descendente da própria página. | `EDIT_KNOWLEDGE` |
+| PATCH | `/pages/{id}` | Renomeia (`title`), troca o ícone (`icon`, #86: um emoji de até 16 caracteres, sem caracteres do teclado; `null` ou vazio tira; não cria versão) e move (`parentId`, `null` para a raiz). Recusa pai de outra unidade, arquivado ou descendente da própria página. | `EDIT_KNOWLEDGE` |
 | GET | `/pages/{id}/versions` | Histórico (sem conteúdo), com `approved` e `published`. | ler pelas regras 1 a 7 |
 | GET | `/pages/{id}/versions/{n}` | Conteúdo de uma versão. | ler pelas regras 1 a 7 |
 | POST | `/pages/{id}/status` | Ciclo da página governada: `{"status": ..., "comment": ...}`. | ver abaixo |
@@ -1036,7 +1036,7 @@ Um documento é uma lista de seções; cada seção corresponde a uma seção do
 
 | Tipo | Campos | Observação |
 |---|---|---|
-| `richtext` | `doc` | Documento do editor contínuo (bug #67). É o que a tela grava. |
+| `richtext` | `doc` | Documento do editor contínuo (bug #67). É o que a tela grava. Desde a #86 aceita também lista de tarefas (`taskList` e `taskItem`, com `checked`), cor do texto (marca `textStyle`) e destaque (marca `highlight`). A cor fica em `attrs.color` e só vale no formato `#rrggbb`; outro valor dá 400 na seção, para que o conteúdo não leve CSS para a página. |
 | `heading` | `level` (2 ou 3), `text` | Subtítulo dentro da seção. |
 | `paragraph` | `text` | Texto com marcação Markdown em linha (negrito, itálico, código, link). |
 | `list` | `ordered`, `items` | Itens em texto com a mesma marcação. |

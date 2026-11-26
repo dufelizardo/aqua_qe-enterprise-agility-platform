@@ -72,3 +72,10 @@ CT-010 - KNOW-024: Validate Wiki - comentar trecho com @menção e marcar com es
     [Tags]    UI    Wiki    Comments    KNOW-024    KNOW-025
     WIKI UI - COMENTAR TRECHO E FAVORITAR    ${wiki_pm_username}    ${wiki_pm_display_name}    ${wiki_root_name}
     ...    ${wiki_page_base}    ${wiki_text}    ${wiki_summary}    ${wiki_comment_text}
+
+CT-011 - KNOW-020: Validate Wiki - sumário automático, lista de tarefas, emoji e ícone da página
+    [Documentation]    #86: dois títulos geram o sumário; a tarefa aparece com caixa de marcar; o emoji entra no texto; o
+    ...    ícone escolhido aparece ao lado do título.
+    [Tags]    UI    Wiki    Editor    KNOW-020
+    WIKI UI - SUMARIO TAREFAS E ICONE    ${wiki_pm_username}    ${wiki_pm_display_name}    ${wiki_root_name}
+    ...    ${wiki_page_base}    ${wiki_heading_one}    ${wiki_heading_two}    ${wiki_task}    ${wiki_summary}
