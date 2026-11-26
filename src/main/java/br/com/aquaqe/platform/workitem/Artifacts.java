@@ -83,6 +83,16 @@ public class Artifacts {
 		return repository.find(artifactId).orElseThrow(ApiException::notFound).statusId();
 	}
 
+	/** Busca textual (#84) nos artefatos que o usuário corrente lê, já com os termos dobrados ({@code TextSearch}). */
+	public List<ArtifactView> search(List<String> terms, int limit) {
+		return service.views(repository.textSearch(terms, service.caller().scope(), limit));
+	}
+
+	/** Dos artefatos informados, os não arquivados que o usuário corrente lê, no formato da API. */
+	public List<ArtifactView> readableAmong(Collection<UUID> ids) {
+		return service.views(repository.readableAmong(ids, service.caller().scope()));
+	}
+
 	/** O artefato no formato da API (SSD 3.4). */
 	public ArtifactView view(UUID artifactId) {
 		return service.views(List.of(repository.find(artifactId).orElseThrow(ApiException::notFound))).getFirst();

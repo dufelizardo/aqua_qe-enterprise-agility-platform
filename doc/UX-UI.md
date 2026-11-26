@@ -530,6 +530,13 @@ Documentação                    Gates — Pronto para Construir    4 de 6
 - **Dados:** `GET /search`.
 - **Layout:** lista com tipo, chave, título e o trecho encontrado, separando artefatos de documentos. Filtro por tipo de resultado.
 - **Estado vazio:** "Nada encontrado para *termo*. A busca só inclui itens a que você tem acesso."
+- **Entregue (#84, 2026-11-26):** a caixa "Buscar" do topo (atalho `/`) abre `/busca?q=`.
+  - Os resultados vêm em três grupos: Artefatos, Documentos e Páginas.
+  - Filtros por tipo, com a contagem de cada um: Todos, Artefatos, Documentos e Páginas.
+  - Cada resultado mostra o rótulo (chave do artefato, tipo do documento, "Página" ou "Regimento"), o título e o trecho encontrado, com os termos marcados. Abaixo, a unidade, o status e a data.
+  - A busca não diferencia maiúsculas nem acentos: "governanca" acha "Governança".
+  - Menos de 2 caracteres mostra "Digite pelo menos 2 caracteres."
+  - A página do Wiki abre na unidade dela; o documento abre na aba dele na página do artefato.
 
 ### 7.10 Administração
 

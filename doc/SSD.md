@@ -775,7 +775,7 @@ Implementação (2026-11-20):
 |---|---|---|---|---|
 | GET | `/audit-events` | Consulta a trilha (filtros `targetType`, `targetId`, `actorId`, `action`, `from`, `to`). | consultar auditoria | 026 |
 | GET | `/audit-events/verification` | Verifica a cadeia de hash e informa o primeiro registro inconsistente, se houver. | consultar auditoria | 026 |
-| GET | `/search` | Busca textual em artefatos e documentos (parâmetros `q`, `kind`). | ler | — |
+| GET | `/search` | Busca textual em artefatos, documentos do artefato e páginas do Wiki e do Regimento (#84). Parâmetros: `q` (2 a 100 caracteres; até 5 termos, todos precisam aparecer, sem diferença de maiúsculas e acentos) e `kind` opcional (`ARTIFACT`, `DOCUMENT` ou `PAGE`). Resposta `{q, artifacts, documents, pages}`, até 20 de cada tipo, com o trecho em volta do termo (`snippet`). Aplica as regras de leitura de cada item: artefato pelas regras 1, 2 e 6 e não arquivado; documento pela leitura do artefato, na versão atual; página na versão atual nas unidades lidas por inteiro e só na publicada nas de cima (regra 9), sem as arquivadas. 400 `VALIDATION_FAILED` para `q` curto ou longo e `kind` desconhecido. Módulo `search`, sem tabelas próprias. | ler | — |
 
 A trilha não tem endpoint de escrita, alteração ou exclusão. Consultar a trilha exige `PLATFORM_ADMIN` na unidade raiz, porque ela cobre a instalação inteira. A listagem vem da mais recente para a mais antiga; `from` e `to` são data e hora ISO-8601. A verificação responde `{ "valid": true, "checked": 1520, "firstInconsistent": null }`; quando a cadeia não confere, `valid` é `false` e `firstInconsistent` traz o `sequence` do primeiro registro com problema. Toda resposta de erro traz o `correlationId` (seção 1.6). Registro de auditoria:
 

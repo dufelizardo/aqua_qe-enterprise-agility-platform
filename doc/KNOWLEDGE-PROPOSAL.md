@@ -37,7 +37,7 @@ Também acertou ao separar **proprietário, visibilidade, aplicabilidade, ediç�
 | Templates (SSD 8.4) | "A validar", sem código. | Tabela `configuration.doc_template` com os cinco tipos do artefato, `PAGE` e `REGIMENTO`. |
 | Acesso (SSD 2.1) | A regra 3 mostra só o resumo dos ancestrais, nunca o conteúdo de documentos. | **Regra 9 nova**: o conhecimento **publicado** desce. Só acrescenta leituras, como a regra 8 permite. |
 | Anexos e imagens | ADR-10 (S3/MinIO) decidido; MinIO ainda fora do `compose.yaml`. | Fora desta etapa. |
-| Busca (`GET /search`) | Especificada, sem código. | Knowledge Center fica na Fase C, junto com a busca. |
+| Busca (`GET /search`) | **Implementada (#84, 2026-11-26)**: artefatos, documentos do artefato e páginas, com as regras de leitura. | Knowledge Center fica na Fase C, junto com a busca. |
 | Auditoria | Pronta (outbox + trilha encadeada). | Eventos `knowledge_page.*` na trilha. |
 | Navegação | Árvore no menu e "Visões da unidade" ([Proposta 06](NAVIGATION-PROPOSAL.md#6-revisão-2-proposal-07-estrutura-organizacional-como-navegação)). | Item **Wiki** nas visões da unidade (KNOW-013). |
 | Central de documentos (PRD-RF-021) | Fase 2. | Converge com o Knowledge Center (Fase C). |
@@ -96,7 +96,7 @@ O usuário comparou o Wiki com o Confluence (home, árvore do espaço, página e
 | 1 | Menu ⋯ completo: renomear, copiar link, fazer uma cópia, organizar e arquivar | #81 | Concluída (validada em dev, 2026-11-25). |
 | 2 | Rascunho automático e aviso ao sair sem salvar (Wiki e documentos) | #82 | Concluída (validada em dev, 2026-11-25): rascunho neste navegador. |
 | 3 | Home: Recentes e Novidades | #83 | Concluída (validada em dev, 2026-11-26): módulo `activity`, `GET/POST /me/recent`, `GET /me/news`; UX/UI 7.2. |
-| 4 | Busca em páginas, documentos e artefatos (`GET /search`, Fase C) | #84 | Backlog. |
+| 4 | Busca em páginas, documentos e artefatos (`GET /search`, Fase C) | #84 | Concluída (validada em dev, 2026-11-26): módulo `search`, `GET /search`; UX/UI 7.9. |
 | 5 | Comentários com @menção, notificações e favoritos (Fase D) | #85 | Backlog. |
 | 6 | Editor: lista de tarefas, cor, sumário e emoji | #86 | Backlog. |
 
@@ -114,7 +114,8 @@ Fora da lista por decisão: "remover de vez" (aqui se arquiva, por causa da audi
 | KNOW-011 propriedade × visibilidade × aplicabilidade × edição × aprovação | **Parcial**: propriedade, visibilidade (regra 9), edição e aprovação; aplicabilidade na Fase C. |
 | KNOW-012 permissões | **Implementado**; a API valida tudo, com 404 e 403 conforme a regra 7. |
 | KNOW-013 acesso pelo contexto | **Implementado**: item Wiki nas visões da unidade. |
-| KNOW-014, 015, 016, 022, 023, 029 | Fase C. |
+| KNOW-014 busca | **Implementado (#84)**: `GET /search` e a tela de resultados (UX/UI 7.9). |
+| KNOW-015, 016, 022, 023, 029 | Fase C. |
 | KNOW-017 auditoria | **Implementado**: `knowledge_page.created`, `.updated`, `.status_changed`, `.moved`, `.archived` e `.restored`. |
 | KNOW-018 publicar e arquivar | **Implementado**. |
 | KNOW-019 revisão periódica | Fase B. |

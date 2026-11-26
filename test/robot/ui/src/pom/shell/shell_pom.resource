@@ -40,3 +40,26 @@ Click Home Recent Item
 Get Home News Text
     ${text}=    Get Text    ${HOME_NEWS}
     RETURN    ${text}
+
+Search From Header
+    [Arguments]    ${text}
+    Fill Text    ${SHELL_SEARCH_INPUT}    ${text}
+    Keyboard Key    press    Enter
+
+Wait For Search Result
+    [Arguments]    ${text}
+    ${locator}=    Evaluate    $SEARCH_RESULT_LINK_BY_TEXT.replace('{}', $text)
+    Wait For Elements State    ${locator}    visible    timeout=30s
+
+Get Search Pages Text
+    ${text}=    Get Text    ${SEARCH_GROUP_PAGE}
+    RETURN    ${text}
+
+Click Search Result
+    [Arguments]    ${text}
+    ${locator}=    Evaluate    $SEARCH_RESULT_LINK_BY_TEXT.replace('{}', $text)
+    Click    ${locator}
+
+Wait For Url To Contain
+    [Arguments]    ${fragment}
+    Wait For Condition    Url    contains    ${fragment}    timeout=30s
