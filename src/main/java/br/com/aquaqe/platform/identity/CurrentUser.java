@@ -12,7 +12,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
@@ -21,6 +24,9 @@ import br.com.aquaqe.platform.shared.ApiException;
 /**
  * Conta do usuário da requisição. Cria a conta no primeiro acesso (SSD, seção 1.2) e publica
  * {@link UserAccountCreated}; nos acessos seguintes, atualiza nome e e-mail vindos do IdP.
+ *
+ * <p>A gravação da conta roda numa transação própria, de escrita: a rota pode estar numa transação somente leitura
+ * (os painéis e listas com {@code readOnly = true}) e o primeiro acesso de um usuário pode ser justamente ela (#95).
  */
 @Service
 public class CurrentUser {
@@ -29,10 +35,13 @@ public class CurrentUser {
 
 	private final JdbcClient jdbc;
 	private final ApplicationEventPublisher events;
+	private final TransactionTemplate write;
 
-	CurrentUser(JdbcClient jdbc, ApplicationEventPublisher events) {
+	CurrentUser(JdbcClient jdbc, ApplicationEventPublisher events, PlatformTransactionManager transactions) {
 		this.jdbc = jdbc;
 		this.events = events;
+		this.write = new TransactionTemplate(transactions);
+		this.write.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 	}
 
 	/** @throws ApiException {@code UNAUTHENTICATED} se a requisição não tem usuário autenticado */
@@ -63,16 +72,20 @@ public class CurrentUser {
 			UserAccount found = existing.get();
 			if (!Objects.equals(found.username(), username) || !Objects.equals(found.name(), name)
 					|| !Objects.equals(found.email(), email)) {
-				jdbc.sql("""
+				write.executeWithoutResult(status -> jdbc.sql("""
 						update identity.user_account set username = :username, name = :name, email = :email,
 						       last_seen_at = now() where id = :id
 						""")
 					.param("id", found.id()).param("username", username).param("name", name).param("email", email)
-					.update();
+					.update());
 				return new UserAccount(found.id(), subject, username, name, email);
 			}
 			return found;
 		}
+		return write.execute(status -> create(subject, username, name, email));
+	}
+
+	private UserAccount create(String subject, String username, String name, String email) {
 		Optional<UUID> created = jdbc.sql("""
 				insert into identity.user_account (subject, username, name, email)
 				values (:subject, :username, :name, :email)
