@@ -42,6 +42,14 @@ class AccessRepository {
 			.list();
 	}
 
+	/** Atribuições de papel vigentes exatamente na unidade (#35). */
+	int activeAssignments(UUID orgUnitId) {
+		return jdbc.sql("select count(*) from access.role_assignment where revoked_at is null and org_unit_id = :unit")
+			.param("unit", orgUnitId)
+			.query(Integer.class)
+			.single();
+	}
+
 	/** Quem tem o papel vigente exatamente na unidade, do mais antigo no papel ao mais novo (#43). */
 	List<UUID> holders(String roleKey, UUID orgUnitId) {
 		return jdbc.sql("""

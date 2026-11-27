@@ -38,6 +38,17 @@ ADMIN ORG - CADEIA COMPARTILHADA
     Admin - Criar Unidade Sob    ${portfolio_a}    ${cadeia}    ${cadeia_label}
     Admin - Vincular Unidade    ${cadeia}    ${portfolio_b}    ${portfolio_label}
 
+ADMIN ORG - DESATIVAR COM CONFIRMACAO
+    [Documentation]    Portfólio com uma Cadeia abaixo: o aviso cita a subunidade; cancela e depois confirma.
+    [Arguments]    ${username}    ${display_name}    ${root_name}    ${portfolio_base}    ${portfolio_label}
+    ...    ${cadeia_base}    ${cadeia_label}    ${expected_impact}
+    Admin - Abrir Estrutura Organizacional    ${username}    ${display_name}
+    ${portfolio}=    Unique Name    ${portfolio_base}
+    ${cadeia}=    Unique Name    ${cadeia_base}
+    Admin - Criar Unidade Sob    ${root_name}    ${portfolio}    ${portfolio_label}
+    Admin - Criar Unidade Sob    ${portfolio}    ${cadeia}    ${cadeia_label}
+    Admin - Desativar Com Confirmacao    ${portfolio}    ${expected_impact}
+
 ADMIN ORG - SEM ACESSO
     [Documentation]    Quem não administra a plataforma não chega à Administração.
     [Arguments]    ${username}    ${display_name}

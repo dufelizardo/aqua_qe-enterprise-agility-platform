@@ -252,6 +252,7 @@ MFA (PRD-RF-037) não tem endpoint: é aplicado pelo IdP antes da emissão do to
 | GET | `/org-units/{id}` | Detalhe, com o caminho até a raiz e os vínculos. | autenticado | — |
 | POST | `/org-units` | Cria unidade. | gerir configuração | — |
 | PATCH | `/org-units/{id}` | Renomeia ou desativa (`active: false`). | gerir configuração | — |
+| GET | `/org-units/{id}/deactivation-impact` | O que ainda está ligado à unidade, para o aviso antes de desativar (#35). | gerir configuração | — |
 | GET | `/org-units/{id}/links` | Unidades que esta atende e que a atendem. | autenticado | — |
 | PUT | `/org-units/{id}/links/{targetId}` | Declara que a unidade atende à unidade de destino. | gerir configuração | — |
 | DELETE | `/org-units/{id}/links/{targetId}` | Remove o vínculo. | gerir configuração | — |
@@ -283,7 +284,13 @@ Regras:
 - Um vínculo só é aceito entre unidades que não estejam na mesma linha da árvore (uma não é ancestral da outra).
 - A unidade raiz é criada na instalação e é única; não pode ser desativada. Toda unidade nova tem pai ativo.
 - `PATCH` exige o `version` lido (seção 1.5).
-- **Pendente:** quando houver artefatos, decidir o que acontece ao desativar uma unidade com itens ativos, papéis vigentes ou vínculos (bloquear, avisar ou exigir mover). A tela pede confirmação antes de desativar ([Proposta 03](ADMIN-PROPOSAL.md#6-o-que-a-análise-revelou-no-produto-atual)).
+- **Desativar avisa e permite (#35, decidido em 2026-11-27).** Antes de desativar, a tela pede confirmação ([Proposta 03](ADMIN-PROPOSAL.md#6-o-que-a-análise-revelou-no-produto-atual)) e mostra o que ainda está ligado à unidade, por `GET /org-units/{id}/deactivation-impact`:
+  - `activeSubunits`: unidades ativas abaixo, em qualquer profundidade;
+  - `openArtifacts`: artefatos da própria unidade, não arquivados, em status de categoria diferente de `DONE`;
+  - `activeRoleAssignments`: atribuições de papel vigentes na própria unidade;
+  - `links`: vínculos "atende a", nos dois sentidos.
+
+  A desativação não é bloqueada e não move, revoga nem apaga nada: a unidade só sai das escolhas de pai, de vínculo e de criação. Ela pode ser reativada depois.
 
 Detalhe de unidade (`GET /org-units/{id}`; também é a resposta de `POST` e `PATCH`). `path` vai da raiz até o pai:
 

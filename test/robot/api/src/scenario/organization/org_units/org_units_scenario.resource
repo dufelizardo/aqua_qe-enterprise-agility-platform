@@ -22,3 +22,9 @@ ORGANIZATION - PUT ORG UNIT LINK - PUT
     [Arguments]    ${meuHTTP}    ${persona}    ${portfolio_name}    ${cadeia_name}
     Organization - Put Org Unit Link - PUT - By HTTP Status Code    ${meuHTTP}    ${persona}    ${portfolio_name}
     ...    ${cadeia_name}
+
+ORGANIZATION - GET DEACTIVATION IMPACT - GET
+    [Documentation]    Cenário de GET /api/v1/org-units/{id}/deactivation-impact pelo status esperado (#35).
+    [Arguments]    ${meuHTTP}    ${persona}    ${portfolio_name}    ${cadeia_name}
+    Organization - Get Deactivation Impact - GET - By HTTP Status Code    ${meuHTTP}    ${persona}    ${portfolio_name}
+    ...    ${cadeia_name}

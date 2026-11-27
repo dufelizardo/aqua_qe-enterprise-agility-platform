@@ -13,5 +13,11 @@ ${ADMIN_ORG_NEW_SUBMIT}         css=[data-testid="org-new-submit"]
 ${ADMIN_ORG_LINK_TARGET}        css=[data-testid="org-link-target"]
 ${ADMIN_ORG_LINK_SUBMIT}        css=[data-testid="org-link-submit"]
 ${ADMIN_ORG_SERVES_LIST}        css=[data-testid="org-serves-list"]
+${ADMIN_ORG_DETAIL_STATUS}      css=[data-testid="org-detail-status"]
+${ADMIN_ORG_TOGGLE_ACTIVE}      css=[data-testid="org-toggle-active"]
+${ADMIN_ORG_DEACTIVATE_PANEL}   css=[data-testid="org-deactivate-confirm"]
+${ADMIN_ORG_DEACTIVATE_IMPACT}  css=[data-testid="org-deactivate-impact"]
+${ADMIN_ORG_DEACTIVATE_OK}      css=[data-testid="org-deactivate-confirm-button"]
+${ADMIN_ORG_DEACTIVATE_CANCEL}  css=[data-testid="org-deactivate-cancel"]
 # Item da árvore pelo nome exato da unidade: format com o nome.
 ${ADMIN_ORG_TREE_ITEM_BY_NAME}  css=[data-testid="org-tree-item"]:has(.unit-name:text-is("{}"))

@@ -54,6 +54,11 @@ public class Authorization {
 		return new RoleHolders(null, List.of());
 	}
 
+	/** Quantas atribuições de papel vigentes há exatamente na unidade (#35, aviso ao desativar). */
+	public int activeAssignments(UUID orgUnitId) {
+		return repository.activeAssignments(orgUnitId);
+	}
+
 	/** O papel existe no catálogo (SSD 2)? */
 	public boolean roleExists(String role) {
 		return role != null && repository.roleExists(role);

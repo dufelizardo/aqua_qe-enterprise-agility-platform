@@ -54,3 +54,15 @@ CT-008 - REV-01: Validate PUT Org Unit Link - HTTP 403 FORBIDDEN (sem gerir conf
     [Tags]    PUT    PutOrgUnitLink    HTTP403    REV-01    security    ASVS-V4
     ORGANIZATION - PUT ORG UNIT LINK - PUT    403    tl    ${post_org_unit_portfolio_name}
     ...    ${post_org_unit_cadeia_name}
+
+CT-009 - SSD-3.2: Validate GET Org Unit Deactivation Impact - HTTP 200 OK
+    [Documentation]    #35: o aviso antes de desativar conta subunidades ativas, artefatos abertos, papéis e vínculos.
+    [Tags]    GET    GetDeactivationImpact    HTTP200    SSD-3.2
+    ORGANIZATION - GET DEACTIVATION IMPACT - GET    200    admin    ${post_org_unit_portfolio_name}
+    ...    ${post_org_unit_cadeia_name}
+
+CT-010 - REV-01: Validate GET Org Unit Deactivation Impact - HTTP 403 FORBIDDEN
+    [Documentation]    Quem não gere configuração não vê o aviso.
+    [Tags]    GET    GetDeactivationImpact    HTTP403    REV-01    security    ASVS-V4
+    ORGANIZATION - GET DEACTIVATION IMPACT - GET    403    tl    ${post_org_unit_portfolio_name}
+    ...    ${post_org_unit_cadeia_name}

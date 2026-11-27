@@ -64,3 +64,30 @@ Wait For Serves List To Contain
 Get Serves List Text
     ${text}=    Get Text    ${ADMIN_ORG_SERVES_LIST}
     RETURN    ${text}
+
+Click Toggle Active
+    Click    ${ADMIN_ORG_TOGGLE_ACTIVE}
+
+Wait For Deactivation Panel
+    Wait For Elements State    ${ADMIN_ORG_DEACTIVATE_PANEL}    visible    timeout=30s
+
+Wait For Deactivation Panel Hidden
+    Wait For Elements State    ${ADMIN_ORG_DEACTIVATE_PANEL}    detached    timeout=30s
+
+Get Deactivation Impact Text
+    ${text}=    Get Text    ${ADMIN_ORG_DEACTIVATE_IMPACT}
+    RETURN    ${text}
+
+Confirm Deactivation
+    Click    ${ADMIN_ORG_DEACTIVATE_OK}
+
+Cancel Deactivation
+    Click    ${ADMIN_ORG_DEACTIVATE_CANCEL}
+
+Wait For Detail Status
+    [Arguments]    ${status}
+    Wait For Condition    Text    ${ADMIN_ORG_DETAIL_STATUS}    ==    ${status}    timeout=30s
+
+Get Detail Status Text
+    ${text}=    Get Text    ${ADMIN_ORG_DETAIL_STATUS}
+    RETURN    ${text}
