@@ -17,6 +17,12 @@ public interface ArtifactConfiguration {
 	Optional<ArtifactType> type(UUID id);
 
 	/**
+	 * Campos customizados declarados no tipo, na ordem (#17; REV-12). Com {@code typeKey} nulo, os de todos os tipos. Só
+	 * os declarados podem ser gravados no artefato e citados num gate.
+	 */
+	List<CustomField> customFields(String typeKey);
+
+	/**
 	 * Primeiro status do workflow vigente do tipo na unidade; todo artefato nasce nele (SSD 3.4). O vigente é o ativo da
 	 * unidade mais funda da linhagem que tenha um para o tipo (#49); a raiz sempre tem.
 	 */
@@ -61,6 +67,14 @@ public interface ArtifactConfiguration {
 
 	record ArtifactType(UUID id, String key, String level, String name, String keyPrefix, boolean parentRequired,
 			Set<String> parentTypes) {
+	}
+
+	/**
+	 * Campo customizado de um tipo de artefato. {@code type}: {@code TEXT}, {@code NUMBER}, {@code DATE} (AAAA-MM-DD),
+	 * {@code BOOLEAN} ou {@code SELECT} (um dos {@code options}).
+	 */
+	record CustomField(UUID id, String artifactType, String key, String label, String type, List<String> options,
+			int position) {
 	}
 
 	record Status(UUID id, String key, String name, String phase, String category, Integer position) {

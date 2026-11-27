@@ -199,7 +199,7 @@ class ArtifactService {
 		Row row = new Row(id, key, type.id(), parent == null ? null : parent.id(), path, unitId,
 			configuration.initialStatus(type.key(), unitId).id(), title, text(body, "description"), people.get("ownerId"),
 			people.get("technicalLeadId"), people.get("qaOwnerId"), people.get("assigneeId"),
-			size(body.get("size")), customFields(body.get("customFields")), false, 0, null, null, 0, false, null);
+			size(body.get("size")), customFields(type, null, body.get("customFields")), false, 0, null, null, 0, false, null);
 		repository.insert(row, caller.userId());
 		Map<String, Object> payload = new LinkedHashMap<>();
 		payload.put("key", key);
@@ -249,7 +249,9 @@ class ArtifactService {
 			body.containsKey("description") ? text(body, "description") : current.description(),
 			people.get("ownerId"), people.get("technicalLeadId"), people.get("qaOwnerId"), people.get("assigneeId"),
 			body.containsKey("size") ? size(body.get("size")) : current.size(),
-			body.containsKey("customFields") ? customFields(body.get("customFields")) : current.customFields(),
+			body.containsKey("customFields")
+				? customFields(type, parseCustomFields(current.customFields()), body.get("customFields"))
+				: current.customFields(),
 			current.archived(), current.version(), null, null, 0, blocked(body, current), blockedReason(body, current));
 		if (!repository.update(updated, version.intValue())) {
 			throw ApiException.versionConflict();
@@ -540,14 +542,10 @@ class ArtifactService {
 		return s;
 	}
 
-	private String customFields(Object value) {
-		if (value == null) {
-			return "{}";
-		}
-		if (!(value instanceof Map<?, ?> map)) {
-			throw ApiException.validation("customFields", "deve ser um objeto");
-		}
-		return json.writeValueAsString(map);
+	/** Só campos declarados no tipo, com o tipo certo; mescla com os atuais (#17; {@link CustomFieldValues}). */
+	private String customFields(ArtifactType type, Map<String, Object> current, Object patch) {
+		return json.writeValueAsString(
+			CustomFieldValues.merge(type.name(), configuration.customFields(type.key()), current, patch));
 	}
 
 	@SuppressWarnings("unchecked")

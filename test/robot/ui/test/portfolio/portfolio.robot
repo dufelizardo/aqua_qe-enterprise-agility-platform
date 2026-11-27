@@ -88,3 +88,13 @@ CT-009 - SSD-3.9: Validate Templates de quadro - criar pelo template, salvar com
     ...    ${portfolio_root_name}    ${portfolio_unit_base}    ${portfolio_unit_label}    ${tactical_cadeia_base}
     ...    ${tactical_cadeia_label}    ${squad_unit_base}    ${squad_unit_label}    ${board_template_ui_name}
     ...    ${board_template_ui_first_key}    ${board_template_ui_first_column}    ${board_template_ui_new_base}
+
+CT-010 - SSD-3.3: Validate Campos customizados - declarar na Iniciativa e preencher na página do item
+    [Documentation]    #17: o campo declarado em Administração › Campos customizados aparece na página da Iniciativa, e
+    ...    a opção escolhida fica gravada. O campo é removido no fim.
+    [Tags]    UI    Portfolio    CustomFields    SSD-3.3    REV-12
+    PORTFOLIO - CAMPO CUSTOMIZADO    ${portfolio_admin_username}    ${portfolio_admin_display_name}
+    ...    ${portfolio_root_name}    ${portfolio_unit_base}    ${portfolio_unit_label}    ${tactical_cadeia_base}
+    ...    ${tactical_cadeia_label}    ${squad_unit_base}    ${squad_unit_label}    ${squad_level_name}
+    ...    ${portfolio_initiative_base}    ${portfolio_initiative_description}    ${custom_field_ui_label}
+    ...    ${custom_field_ui_key}    ${custom_field_ui_option}    @{custom_field_ui_options}

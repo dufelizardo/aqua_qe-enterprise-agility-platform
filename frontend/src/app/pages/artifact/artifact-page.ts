@@ -23,10 +23,11 @@ import { ArtifactGates } from './artifact-gates';
 import { DraftMatch, DraftStore, LEAVE_MESSAGE, LeaveAware, draftBlocks, draftKey, draftMatch } from '../../knowledge/draft-store';
 import { RichDoc, blocksToDoc, docToBlocks } from '../../knowledge/knowledge.service';
 import { RichEditor } from '../../knowledge/rich-editor';
+import { CustomField, CustomFieldsService, formatValue, parseInput } from '../../work/custom-fields.service';
 import { Artifact, ArtifactPatch, PersonRef, SIZES, WorkService } from '../../work/work.service';
 
 /** Campo da Visão geral aberto para edição. */
-export type EditableField = 'title' | 'description' | 'size' | PersonField;
+export type EditableField = 'title' | 'description' | 'size' | PersonField | `custom:${string}`;
 export type PersonField = 'ownerId' | 'technicalLeadId' | 'qaOwnerId';
 
 /** Rótulo e valor atual de cada campo de pessoa. */
@@ -61,6 +62,7 @@ export class ArtifactPage implements LeaveAware {
   private readonly location = inject(Location);
   private readonly router = inject(Router);
   private readonly activity = inject(ActivityService);
+  private readonly customFieldsApi = inject(CustomFieldsService);
   // Rascunho automático neste navegador (#82).
   private readonly drafts = inject(DraftStore);
   protected readonly dirty = signal(false);
@@ -118,6 +120,8 @@ export class ArtifactPage implements LeaveAware {
   protected readonly personQuery = signal('');
   protected readonly personResults = signal<PersonRef[]>([]);
   protected readonly fieldNotice = signal<string | null>(null);
+  /** Campos customizados declarados no tipo do item (#17). */
+  protected readonly customFieldDefs = signal<CustomField[]>([]);
   private searchSeq = 0;
 
   constructor() {
@@ -151,6 +155,7 @@ export class ArtifactPage implements LeaveAware {
       this.artifact.set(artifact);
       this.activity.visit('ARTIFACT', artifact.key);
       this.summaries.set(TYPES_WITH_DOCUMENTS.includes(artifact.type) ? (await this.documents.list(artifact.key)).items : []);
+      this.customFieldDefs.set(await this.customFieldsApi.list(artifact.type));
     } catch (error) {
       this.artifact.set(null);
       this.loadError.set(messageOf(toApiError(error)));
@@ -209,6 +214,21 @@ export class ArtifactPage implements LeaveAware {
 
   protected async saveSize(value: string): Promise<void> {
     await this.patch({ size: value || null });
+  }
+
+  /** Abre um campo customizado; o rascunho é o valor atual como texto. */
+  protected startCustom(f: CustomField): void {
+    const current = this.artifact()?.customFields?.[f.key];
+    this.startField(`custom:${f.key}`);
+    this.textDraft.set(current === undefined || current === null ? '' : String(current));
+  }
+
+  protected async saveCustom(f: CustomField, raw: string): Promise<void> {
+    await this.patch({ customFields: { [f.key]: parseInput(f, raw) } });
+  }
+
+  protected customValue(f: CustomField, a: Artifact): string {
+    return formatValue(f, a.customFields?.[f.key]);
   }
 
   protected async choosePerson(field: PersonField, person: PersonRef | null): Promise<void> {

@@ -128,3 +128,16 @@ PORTFOLIO - TEMPLATES DE QUADRO
     ...    ${portfolio_label}    ${cadeia_base}    ${cadeia_label}    ${squad_base}    ${squad_label}
     Templates De Quadro - Criar Pelo Template E Salvar    ${squad}    ${template_name}    ${first_status_key}
     ...    ${first_column}    ${new_template_base}
+
+PORTFOLIO - CAMPO CUSTOMIZADO
+    [Documentation]    Cria a Iniciativa no Quadro da Squad, declara um campo na Iniciativa e o preenche na página (#17).
+    [Arguments]    ${username}    ${display_name}    ${root_name}    ${portfolio_base}    ${portfolio_label}
+    ...    ${cadeia_base}    ${cadeia_label}    ${squad_base}    ${squad_label}    ${squad_level_name}
+    ...    ${initiative_base}    ${initiative_description}    ${label_base}    ${key_base}    ${option}    @{options}
+    ${squad}=    Squad - Preparar Squad    ${username}    ${display_name}    ${root_name}    ${portfolio_base}
+    ...    ${portfolio_label}    ${cadeia_base}    ${cadeia_label}    ${squad_base}    ${squad_label}
+    ${title}=    Unique Name    ${initiative_base}
+    Squad - Abrir Quadro Do Nivel    ${squad}    ${squad_level_name}    portfolio
+    Portfolio - Criar Iniciativa    ${title}    ${initiative_description}    ${squad}
+    Artefato - Campo Customizado Declarado E Preenchido    IDEA    ${title}    ${label_base}    ${key_base}    ${option}
+    ...    @{options}

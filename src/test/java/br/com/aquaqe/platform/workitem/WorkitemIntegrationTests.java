@@ -227,6 +227,12 @@ class WorkitemIntegrationTests {
 	@Test
 	void edicaoComVersaoEStatusSoPelasTransicoes() throws Exception {
 		String init = initiative("paula", portfolioB);
+		// Campo customizado declarado na Iniciativa (#17): só os declarados são aceitos.
+		jdbc.update("""
+				insert into configuration.custom_field (type_id, key, label, field_type, position)
+				select id, 'canal', 'Canal', 'TEXT', 1 from configuration.artifact_type where key = 'INITIATIVE'
+				on conflict do nothing
+				""");
 		mvc.perform(json(patch("/api/v1/artifacts/{a}", init), user("paula"),
 				"{\"title\":\"Novo título\",\"size\":\"L\",\"customFields\":{\"canal\":\"app\"},\"version\":0}"))
 			.andExpect(status().isOk())

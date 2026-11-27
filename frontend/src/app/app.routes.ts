@@ -103,6 +103,12 @@ export const routes: Routes = [
             title: 'Gates · AQuA-QE',
             loadComponent: () => import('./admin/admin-gates').then((m) => m.AdminGates),
           },
+          // Campos customizados por tipo de artefato (#17; REV-12).
+          {
+            path: 'campos-customizados',
+            title: 'Campos customizados · AQuA-QE',
+            loadComponent: () => import('./admin/admin-custom-fields').then((m) => m.AdminCustomFields),
+          },
           // Responsável padrão por unidade e tipo (#43).
           {
             path: 'responsavel-padrao',

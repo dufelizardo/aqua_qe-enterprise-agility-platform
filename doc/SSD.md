@@ -320,6 +320,10 @@ O trabalho entre ramos acontece no artefato: o pai de uma Feature pode ser uma I
 | Método | Caminho | Descrição | Permissão | RF |
 |---|---|---|---|---|
 | GET | `/artifact-types` | Tipos de artefato, com nível e pais permitidos. | autenticado | 012, 016 |
+| GET | `/custom-fields` | Campos customizados declarados (filtro `artifactType`) (#17). | autenticado | 012, 016 |
+| POST | `/artifact-types/{key}/custom-fields` | Declara um campo customizado no tipo (#17). | gerir configuração | 012, 016 |
+| PATCH | `/custom-fields/{id}` | Muda rótulo, opções e ordem do campo (#17). | gerir configuração | 012, 016 |
+| DELETE | `/custom-fields/{id}` | Remove a declaração do campo (#17). | gerir configuração | 012, 016 |
 | GET | `/workflows` | Versões ativas dos workflows (filtros `artifactType` e `orgUnitId`: com a unidade, só os que valem para ela ou para as de baixo). | autenticado | 011 |
 | GET | `/workflows/{id}` | Versão do workflow com status e transições. | autenticado | 001, 011 |
 | POST | `/workflows/{id}/versions` | Publica nova versão do workflow (#49). | gerir configuração | 011 |
@@ -331,6 +335,22 @@ O trabalho entre ramos acontece no artefato: o pai de uma Feature pode ser uma I
 | GET | `/doc-templates` | Templates de documento (filtro `documentType`). | autenticado | 018 |
 | GET | `/doc-templates/{id}` | Template com seções. | autenticado | 018 |
 | POST | `/doc-templates/{id}/versions` | Publica nova versão do template. | gerir configuração | 018 |
+
+**Campos customizados (#17, implementado em 2026-11-27; REV-12).**
+- **Declaração por tipo de artefato**, valendo para a organização inteira. Só o administrador declara, altera e remove.
+- Cada campo tem:
+  - `key`: letra minúscula seguida de letras e números, até 40 (`canalDeVenda`); única no tipo;
+  - `label`: até 80 caracteres;
+  - `type`: `TEXT`, `NUMBER`, `DATE` (AAAA-MM-DD), `BOOLEAN` ou `SELECT`;
+  - `options`: de 1 a 30, só no `SELECT`;
+  - `position`: a ordem na página do item.
+- Até 30 campos por tipo. A chave e o tipo não mudam depois de criados (`400`); rótulo, opções e ordem mudam.
+- **Gravação no artefato** (`POST` e `PATCH /artifacts`): `customFields` só aceita campos declarados no tipo e com o tipo certo. Senão, `400` em `customFields.<chave>`.
+  - O `PATCH` segue JSON Merge Patch: só as chaves enviadas mudam, e `null` (ou texto vazio) limpa.
+  - Valores de campos que deixaram de ser declarados ficam gravados, mas não aparecem na tela e não podem ser alterados.
+- **Remover** um campo citado por um gate `REQUIRED_FIELD` de workflow ativo dá `422 FIELD_IN_USE`, com os gates no `detail`.
+- **Eventos:** `custom_field.created`, `custom_field.updated` e `custom_field.removed`, com antes e depois.
+- **Filtro de listagem:** ainda não existe filtro por campo customizado. Quando existir, valerá a mesma regra: só campos declarados.
 
 No MVP, os tipos de artefato são os da configuração padrão (seção 8.1) e não são editáveis pela API. Os workflows padrão (seção 8.2) ficam na unidade raiz, na versão 1; `Cancelado` não tem posição, porque está fora da sequência. `hasGate` vem sempre `false` aqui: os gates são do `governance` (`GET /gates`, #78).
 
@@ -987,7 +1007,7 @@ Definição de um gate (`PUT /workflow-transitions/{transitionId}/gate`):
 
 | Tipo | Categoria | Parâmetros | Atendida quando |
 |---|---|---|---|
-| `REQUIRED_FIELD` | Validação | `field` | O campo do artefato está preenchido. Campos aceitos: `description`, `ownerId`, `technicalLeadId`, `qaOwnerId`, `assigneeId`, `size`, `acceptanceCriteria` (ao menos um), `businessRuleRefs` (ao menos uma) e `customFields.<nome>`. |
+| `REQUIRED_FIELD` | Validação | `field` | O campo do artefato está preenchido. Campos aceitos: `description`, `ownerId`, `technicalLeadId`, `qaOwnerId`, `assigneeId`, `size`, `acceptanceCriteria` (ao menos um), `businessRuleRefs` (ao menos uma) e `customFields.<chave>`. O campo customizado precisa estar declarado em ao menos um tipo do workflow (seção 3.3, #17); senão, `400` em `rules[i].params.field`. Para os tipos do workflow que não declaram o campo, a regra não se aplica e conta como atendida. |
 | `DOCUMENT_SECTION_FILLED` | Validação | `documentType`, `sectionKey` | A seção está preenchida na versão atual do documento (seção 6.3). |
 | `DOCUMENT_APPROVED` | Validação | `documentType` | O documento tem status `APPROVED`. |
 | `MIN_CHILDREN` | Validação | `childType`, `min` | O artefato tem ao menos `min` filhos ativos do tipo. |
@@ -1306,6 +1326,7 @@ Convenções:
 | | `workflow_artifact_type` | `workflow_id`, `artifact_type_id` | PK composta. |
 | | `workflow_status` | `workflow_id`, `key`, `name`, `phase`, `category`, `position` | (`workflow_id`, `key`) único. |
 | | `workflow_transition` | `workflow_id`, `from_status_id`, `to_status_id` | Única por (`from_status_id`, `to_status_id`). |
+| | `custom_field` | `type_id`, `key`, `label`, `field_type`, `options` (JSON), `position`, `created_by` | (`type_id`, `key`) único (#17). |
 | | `doc_template` | `document_type`, `version_number`, `name`, `sections` (JSON), `approver_role`, `governed`, `org_unit_id` | (`document_type`, `org_unit_id`, `version_number`) único. Tipos: os cinco do artefato, `PAGE` e `REGIMENTO`. |
 | `workitem` | `default_owner_rule` (#43) | `org_unit_id`, `artifact_type_id`, `mode` (`NONE`, `CREATOR`, `ROLE`), `role`, `updated_by`, `updated_at` | Chave (`org_unit_id`, `artifact_type_id`); `role` preenchido só em `ROLE`. |
 | `workitem` | `artifact` | `key`, `type_id`, `parent_id`, `org_unit_id`, `status_id`, `title`, `description`, `owner_id`, `technical_lead_id`, `qa_owner_id`, `assignee_id`, `size`, `custom_fields` (JSON), `rank`, `archived`, `blocked`, `blocked_reason`, `version`, `search_vector` | `key` única; índices em `parent_id`, em (`org_unit_id`, `type_id`, `status_id`) e índice de texto em `search_vector`. |
@@ -1342,7 +1363,7 @@ A tabela `story_rule_ref` não aparece no diagrama do SAD; ela materializa a ref
 - **Editor de documentos:** a decisão de construir ou adotar pode alterar o formato de blocos da seção 6.
 - **Notificações:** só e-mail ao responsável em quatro eventos; faltam preferências do usuário, outros destinatários e outros canais.
 - **Eventos de autenticação** na trilha da plataforma.
-- **Campos customizados:** no MVP são um objeto livre em `customFields`; definição de tipos e validação entram com o Customization Engine.
+- **Campos customizados:** declarados por tipo de artefato e validados na gravação e nos gates desde a #17 (seção 3.3). Campos por unidade, obrigatórios na criação e com regras de exibição ficam para o Customization Engine.
 - **Limites operacionais:** tamanho máximo de anexo, retenção da outbox e limites de taxa da API dependem dos valores de qualidade ainda em aberto.
 - **Internacionalização:** os nomes de status e as mensagens de regra estão em português; não há mecanismo de tradução.
 - **Dados pessoais:** visibilidade de nome e e-mail de outros usuários, tratamento de contas desativadas na trilha de auditoria e retenção ([REV-14](REVIEW-01.md#rev-14--privacidade-e-dados-pessoais)).

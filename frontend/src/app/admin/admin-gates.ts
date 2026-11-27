@@ -14,6 +14,7 @@ import {
   WorkflowInfo,
   emptyParams,
 } from '../work/gates.service';
+import { CustomField, CustomFieldsService } from '../work/custom-fields.service';
 import { ArtifactType, WorkService } from '../work/work.service';
 
 /** Transição do workflow escolhido, com o gate dela, se houver. */
@@ -38,6 +39,7 @@ interface TransitionRow {
         <a routerLink="/admin/organizacao">Estrutura organizacional</a>
         <a routerLink="/admin/workflows" data-testid="admin-tab-workflows">Workflows</a>
         <a routerLink="/admin/gates" class="on" aria-current="page">Gates</a>
+        <a routerLink="/admin/campos-customizados">Campos customizados</a>
         <a routerLink="/admin/responsavel-padrao" data-testid="admin-tab-default-owner">Responsável padrão</a>
         <a routerLink="/admin/templates-de-quadro" data-testid="admin-tab-board-templates">Templates de quadro</a>
       </nav>
@@ -93,8 +95,8 @@ interface TransitionRow {
                   @switch (rule.type) {
                     @case ('REQUIRED_FIELD') {
                       <select [value]="param(rule, 'field')" (change)="setParam(i, 'field', $any($event.target).value)" aria-label="Campo" data-testid="gates-param-field">
-                        @for (f of fields; track f) {
-                          <option [value]="f">{{ fieldLabels[f] }}</option>
+                        @for (f of fieldOptions(); track f.value) {
+                          <option [value]="f.value" [selected]="f.value === param(rule, 'field')">{{ f.label }}</option>
                         }
                       </select>
                     }
@@ -186,6 +188,7 @@ interface TransitionRow {
 export class AdminGates {
   private readonly api = inject(GatesService);
   private readonly work = inject(WorkService);
+  private readonly customFieldsApi = inject(CustomFieldsService);
   private readonly snackBar = inject(MatSnackBar);
 
   protected readonly workflows = signal<WorkflowInfo[]>([]);
@@ -202,8 +205,20 @@ export class AdminGates {
 
   protected readonly ruleTypes = Object.keys(RULE_LABELS) as RuleType[];
   protected readonly ruleLabels = RULE_LABELS;
-  protected readonly fields = Object.keys(FIELD_LABELS);
-  protected readonly fieldLabels = FIELD_LABELS;
+  protected readonly customFields = signal<CustomField[]>([]);
+  /**
+   * Campos do "Campo preenchido": os fixos e os customizados declarados em algum tipo do workflow (#17). Para os tipos
+   * que não declaram o campo, a regra não se aplica.
+   */
+  protected readonly fieldOptions = computed(() => {
+    const w = this.workflows().find((x) => x.id === this.workflowId());
+    const fixed = Object.entries(FIELD_LABELS).map(([value, label]) => ({ value, label }));
+    const custom = new Map<string, string>();
+    for (const f of this.customFields().filter((c) => w?.artifactTypes.includes(c.artifactType))) {
+      custom.has(f.key) || custom.set(f.key, f.label);
+    }
+    return [...fixed, ...[...custom].map(([key, label]) => ({ value: `customFields.${key}`, label: `${label} (customizado)` }))];
+  });
   protected readonly roles = Object.keys(ROLE_LABELS);
   protected readonly roleLabels = ROLE_LABELS;
   protected readonly documentTypes = ['PRD', 'SAD', 'SSD', 'UX', 'QA'];
@@ -317,7 +332,13 @@ export class AdminGates {
 
   private async load(): Promise<void> {
     try {
-      const [workflows, gates, types] = await Promise.all([this.api.workflows(), this.api.gates(), this.work.artifactTypes()]);
+      const [workflows, gates, types, customFields] = await Promise.all([
+        this.api.workflows(),
+        this.api.gates(),
+        this.work.artifactTypes(),
+        this.customFieldsApi.list(),
+      ]);
+      this.customFields.set(customFields);
       this.workflows.set(workflows);
       this.gateList.set(gates);
       this.artifactTypes.set(types);
