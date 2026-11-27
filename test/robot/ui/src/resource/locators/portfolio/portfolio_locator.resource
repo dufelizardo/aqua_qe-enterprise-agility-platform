@@ -11,6 +11,11 @@ ${PORTFOLIO_NEW_TITLE}              css=[data-testid="new-item-title"]
 ${PORTFOLIO_NEW_DESCRIPTION}        css=[data-testid="new-item-description"]
 ${PORTFOLIO_NEW_UNIT}               css=[data-testid="new-item-unit"]
 ${PORTFOLIO_NEW_SUBMIT}             css=[data-testid="new-item-submit"]
+# Busca de pessoa do formulário (#12; REV-07): format com o campo (owner, tech-lead ou qa-owner).
+${PORTFOLIO_NEW_PERSON_PICKER}      css=[data-testid="new-item-{}-picker"]
+${PORTFOLIO_PERSON_SEARCH}          css=[data-testid="person-picker-search"]
+${PORTFOLIO_PERSON_OPTION}          css=[data-testid="person-picker-option"]
+${PORTFOLIO_PERSON_CHOSEN}          css=[data-testid="person-picker-chosen"]
 ${PORTFOLIO_MODE_LIST}              css=[data-testid="mode-list"]
 ${PORTFOLIO_LIST}                   css=[data-testid="board-list"]
 # Cartão pelo título exato, dentro da coluna do status: format com a chave do status e o título.

@@ -36,3 +36,8 @@ WORKITEM - PATCH ARTIFACT - PATCH - Versao Velha E Leitor
     [Documentation]    Cenário de PATCH /api/v1/artifacts/{artifact} com versão velha e de leitura sem edição.
     [Arguments]    ${initiative_title}
     PATCH Artifact - Status Code 409 - Versao Velha E Leitor    ${initiative_title}
+
+WORKITEM - GET UNIT PEOPLE - GET - Pessoas Para Item Novo
+    [Documentation]    Cenário de GET /api/v1/org-units/{id}/people no formulário de item novo (#12; REV-07).
+    [Arguments]    ${initiative_title}    ${unknown_type}
+    GET Unit People - Status Code 200 - Pessoas Para Item Novo    ${initiative_title}    ${unknown_type}

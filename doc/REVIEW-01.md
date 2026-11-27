@@ -35,7 +35,7 @@ Ao conferir a análise externa contra os documentos, três pontos foram ajustado
 | REV-04 | Alto | Modelo organizacional (ADR-14) | SAD 5.1 e 13, SSD 3.2 | Resolvido em 2026-11-20 ([SSD 2.1](SSD.md#21-escopo-entre-unidades-rev-01-rev-02-rev-04)) |
 | REV-05 | Alto | Contrato do documento independente do editor | SSD 6, UX/UI 6.6, PRD-RF-018 e 020 | Decidido (2026-11-20) |
 | REV-06 | Alto | Publicação de nova versão de workflow | SSD 3.3, PRD-RF-011 | Aberto |
-| REV-07 | Médio | Consulta de usuários para quem edita | SSD 3.1, UX/UI 13 | Aberto |
+| REV-07 | Médio | Consulta de usuários para quem edita | SSD 3.1, UX/UI 13 | Resolvido (#79, #12) |
 | REV-08 | Médio | Listagem de anexos | SSD 3.7, UX/UI 13, PRD-RF-018 | Aberto |
 | REV-09 | Médio | Consulta de quem pode aprovar | SSD 3.6, UX/UI 13, PRD-RF-024 | Aberto |
 | REV-10 | Baixo | Preferências do usuário | UX/UI 13, SSD 10 | Aberto |
@@ -156,6 +156,8 @@ Nota de 2026-11-20: a [Proposta 05](CONFIG-PROPOSAL.md#2-confronto-com-o-que-já
 **Evidência.** `GET /users` exige a permissão "gerir papéis" ([SSD, seção 3.1](SSD.md#31-identity-e-access)). Os campos Owner, Technical Lead, QA Owner e responsável precisam buscar pessoas ([UX/UI, seção 13](UX-UI.md#13-pendências)).
 
 **Recomendação.** Criar uma consulta de pessoas, por exemplo `GET /people?q=`, para quem tem permissão de editar artefatos. Ela devolve só identificador, nome e e-mail, filtrados pelo escopo do usuário (ver REV-01).
+
+**Decisão (2026-11-27, #12): aceita, com a busca por unidade em vez de uma global.** Quem edita escolhe pessoas a partir do lugar do item: `GET /artifacts/{artifact}/people` na página do item (#79) e `GET /org-units/{id}/people?artifactType=` no formulário de novo item ([SSD 3.4](SSD.md#34-workitem)). As duas devolvem quem tem papel vigente na unidade, nas de cima e nas de baixo, só com id e nome (sem e-mail), até 20, e exigem a permissão de editar o nível. Assim a busca nunca sai do escopo do item (REV-01), e `GET /users` continua administrativo. Testes no [QA](QA.md).
 
 ### REV-08 — Listagem de anexos
 

@@ -327,3 +327,18 @@ Remover Campo Customizado
     Remove Custom Field    ${key}
     ${left}=    Get Custom Field Row Count    ${key}
     Should Be Equal As Integers    ${left}    0
+
+Portfolio - Criar Iniciativa Com Tech Lead E QA
+    [Documentation]    #12 (REV-07): o formulário de nova Iniciativa busca pessoas pelo nome para Technical Lead e QA
+    ...    Owner; a página do item mostra as duas escolhas.
+    [Arguments]    ${title}    ${description}    ${unit_name}    ${person_name}
+    Fill New Initiative    ${title}    ${description}    ${unit_name}
+    Choose New Item Person    tech-lead    ${person_name}
+    Choose New Item Person    qa-owner    ${person_name}
+    Submit New Initiative
+    Wait For Card In Column    IDEA    ${title}
+    ${card}=    Card Locator    IDEA    ${title}
+    Open Card Page    ${card}
+    Wait For Artifact Title    ${title}
+    Wait For Artifact Field    technicalLeadId    ${person_name}
+    Wait For Artifact Field    qaOwnerId    ${person_name}

@@ -97,8 +97,28 @@ class ArtifactService {
 		Caller caller = caller();
 		Row row = readable(ref, caller);
 		requireEdit(caller, row, typeOf(row));
-		Set<UUID> units = new java.util.HashSet<>(orgUnits.lineage(row.orgUnitId()));
-		units.addAll(orgUnits.subtrees(List.of(row.orgUnitId())));
+		return peopleAround(row.orgUnitId(), query);
+	}
+
+	/**
+	 * Pessoas para os campos de pessoa de um item novo do tipo na unidade (#12; REV-07): a mesma regra da busca do
+	 * artefato, com a permissão de criar o tipo ali.
+	 */
+	List<ArtifactViews.Person> peopleForNew(UUID unitId, String artifactType, String query) {
+		Caller caller = caller();
+		ArtifactType type = configuration.type(artifactType)
+			.orElseThrow(() -> ApiException.validation("artifactType", "tipo de artefato inexistente"));
+		orgUnits.find(unitId).orElseThrow(ApiException::notFound);
+		if (!authorization.can(caller.userId(), Permission.editAt(type.level()), unitId)) {
+			throw ApiException.forbidden();
+		}
+		return peopleAround(unitId, query);
+	}
+
+	/** Quem tem papel vigente na unidade, nas de cima e nas de baixo, filtrado pelo nome; até {@link #PEOPLE_LIMIT}. */
+	private List<ArtifactViews.Person> peopleAround(UUID unitId, String query) {
+		Set<UUID> units = new java.util.HashSet<>(orgUnits.lineage(unitId));
+		units.addAll(orgUnits.subtrees(List.of(unitId)));
 		return users.search(authorization.peopleIn(units), query, PEOPLE_LIMIT).stream()
 			.map(ArtifactViews.Person::of)
 			.toList();

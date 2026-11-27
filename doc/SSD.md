@@ -204,7 +204,7 @@ Em cada tabela, a coluna **RF** indica o requisito do PRD atendido.
 | PUT | `/me/favorites/pages/{id}` | Marca a página com estrela (repetir não duplica). 204; 404 se o usuário não lê a página. | autenticado | — |
 | DELETE | `/me/favorites/pages/{id}` | Tira a estrela. 204. | autenticado | — |
 | GET | `/me/news` | Home, "Novidades" (#83): o último evento de cada artefato, documento ou página nas unidades em que o usuário lê tudo (SSD 2.1, regra 1), nos últimos 30 dias, até 20. Cada item traz `action` (tipo do evento, SSD 7.2), quem fez (`actor`), a unidade e `own` quando foi o próprio usuário. Base: o consumidor `activity` da outbox, que guarda os eventos com a unidade (a trilha de auditoria não guarda a unidade e só o administrador a consulta). | autenticado | — |
-| GET | `/users` | Lista usuários (filtro `q`). | gerir papéis | — |
+| GET | `/users` | Lista usuários (filtro `q`). Para escolher pessoas em artefatos, quem edita usa `GET /artifacts/{artifact}/people` e `GET /org-units/{id}/people` (seção 3.4; REV-07). | gerir papéis | — |
 | GET | `/roles` | Lista papéis. | autenticado | — |
 | GET | `/org-units/{id}/role-assignments` | Atribuições em uma unidade. | gerir papéis | — |
 | POST | `/role-assignments` | Atribui papel a usuário em uma unidade. | gerir papéis | — |
@@ -401,6 +401,7 @@ Regra ao publicar uma versão de template: documentos existentes mantêm a vers�
 | GET | `/artifacts/{artifact}/children` | Filhos diretos. | ler | 010, 031 |
 | GET | `/artifacts/{artifact}/context` | Resumo dos ancestrais. | ler | 017 |
 | GET | `/artifacts/{artifact}/people` | Pessoas que podem ser escolhidas nos campos de pessoa (filtro `q` pelo nome, até 20): quem tem papel vigente na unidade do artefato, nas de cima e nas de baixo. | editar no nível | 010 |
+| GET | `/org-units/{id}/people` | Pessoas para os campos de pessoa de um item novo (#12; REV-07): `artifactType` obrigatório (tipo inexistente dá 400), `q` filtra pelo nome, até 20; a mesma regra do `.../people` do artefato, a partir da unidade. Devolve só id e nome. Unidade inexistente dá 404. | editar o nível do tipo na unidade | 010 |
 | GET | `/artifacts/{artifact}/links` | Vínculos não hierárquicos. | ler | 031 |
 | POST | `/artifacts/{artifact}/links` | Cria vínculo. | editar no nível | 031 |
 | DELETE | `/artifacts/{artifact}/links/{linkId}` | Remove vínculo. | editar no nível | 031 |

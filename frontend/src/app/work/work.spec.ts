@@ -211,6 +211,21 @@ describe('WorkService — edição na página do artefato', () => {
     expect(await some).toEqual([]);
   });
 
+  it('a busca de pessoas do item novo vai à unidade com o tipo (#12)', async () => {
+    const found = work.peopleForNew('u-1', 'INITIATIVE', ' tia ');
+    const req = http.expectOne((r) => r.url.endsWith('/org-units/u-1/people'));
+    expect(req.request.params.get('artifactType')).toBe('INITIATIVE');
+    expect(req.request.params.get('q')).toBe('tia');
+    req.flush({ items: [{ id: '2', name: 'Tiago' }] });
+    expect(await found).toEqual([{ id: '2', name: 'Tiago' }]);
+
+    const all = work.peopleForNew('u-1', 'INITIATIVE', '');
+    const again = http.expectOne((r) => r.url.endsWith('/org-units/u-1/people'));
+    expect(again.request.params.has('q')).toBe(false);
+    again.flush({ items: [] });
+    expect(await all).toEqual([]);
+  });
+
   it('as estimativas são as aceitas pela API', () => {
     expect([...SIZES]).toEqual(['XS', 'S', 'M', 'L', 'XL']);
   });

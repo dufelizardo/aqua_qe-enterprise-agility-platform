@@ -98,3 +98,12 @@ CT-010 - SSD-3.3: Validate Campos customizados - declarar na Iniciativa e preenc
     ...    ${tactical_cadeia_label}    ${squad_unit_base}    ${squad_unit_label}    ${squad_level_name}
     ...    ${portfolio_initiative_base}    ${portfolio_initiative_description}    ${custom_field_ui_label}
     ...    ${custom_field_ui_key}    ${custom_field_ui_option}    @{custom_field_ui_options}
+
+CT-011 - REV-07: Validate Novo item - Technical Lead e QA Owner escolhidos pela busca de pessoas
+    [Documentation]    #12: no formulário de nova Iniciativa, a busca pelo nome escolhe Technical Lead e QA Owner; a
+    ...    página do item mostra as duas pessoas.
+    [Tags]    UI    Portfolio    People    REV-07
+    PORTFOLIO - PESSOAS NO NOVO ITEM    ${portfolio_admin_username}    ${portfolio_admin_display_name}
+    ...    ${portfolio_root_name}    ${portfolio_unit_base}    ${portfolio_unit_label}    ${tactical_cadeia_base}
+    ...    ${tactical_cadeia_label}    ${squad_unit_base}    ${squad_unit_label}    ${squad_level_name}
+    ...    ${portfolio_initiative_base}    ${portfolio_initiative_description}

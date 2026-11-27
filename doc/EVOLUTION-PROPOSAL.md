@@ -388,7 +388,7 @@ Cada ADR registra contexto, decisão, alternativas, consequências e status. Uma
 | [REV-04](REVIEW-01.md#rev-04--modelo-organizacional-adr-14) | Modelo organizacional (ADR-14) | F01, F08a |
 | [REV-05](REVIEW-01.md#rev-05--contrato-do-documento-independente-do-editor) | Contrato do documento independente do editor | F06 |
 | [REV-06](REVIEW-01.md#rev-06--publicação-de-nova-versão-de-workflow) | Nova versão de workflow | F05 |
-| [REV-07](REVIEW-01.md#rev-07--consulta-de-usuários-para-quem-edita) | Consulta de usuários | F06, F07 |
+| [REV-07](REVIEW-01.md#rev-07--consulta-de-usuários-para-quem-edita) | Consulta de usuários | F06, F07; resolvido nas #79 e #12 (2026-11-27) |
 | [REV-08](REVIEW-01.md#rev-08--listagem-de-anexos) | Listagem de anexos | F06, F03 |
 | [REV-09](REVIEW-01.md#rev-09--consulta-de-quem-pode-aprovar) | Quem pode aprovar | F06, F02 |
 | [REV-10](REVIEW-01.md#rev-10--preferências-do-usuário) | Preferências do usuário | F06 |

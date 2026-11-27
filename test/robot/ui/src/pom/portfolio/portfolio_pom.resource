@@ -186,3 +186,13 @@ Wait For Board Or Empty
 
 Wait For Unit Trail
     Wait For Elements State    ${LEVEL_UNIT_TRAIL}    visible    timeout=30s
+
+Choose New Item Person
+    [Documentation]    No formulário de novo item, busca a pessoa pelo nome no campo (owner, tech-lead ou qa-owner) e a
+    ...    escolhe (#12; REV-07).
+    [Arguments]    ${field}    ${name}
+    ${picker}=    Evaluate    $PORTFOLIO_NEW_PERSON_PICKER.replace('{}', $field)
+    Fill Text    ${picker} >> ${PORTFOLIO_PERSON_SEARCH}    ${name}
+    # Pode haver mais de uma conta com o mesmo nome (contas de teste): vale a primeira, na ordem da API.
+    Click    ${picker} >> ${PORTFOLIO_PERSON_OPTION} >> text="${name}" >> nth=0
+    Wait For Elements State    ${picker} >> ${PORTFOLIO_PERSON_CHOSEN}    visible    timeout=15s

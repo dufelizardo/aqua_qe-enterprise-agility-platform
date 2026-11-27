@@ -588,7 +588,8 @@ Visível apenas para `PLATFORM_ADMIN`. Uma página com seções no menu interno.
 **Responsável padrão (#43, 2026-11-26):** `/admin/responsavel-padrao`, terceira aba da Administração.
 - A pessoa escolhe a unidade (árvore indentada) e vê uma linha por tipo de artefato: a regra ("Sem responsável", "Quem criou" ou "Pessoa com o papel: …") e a origem ("Desta unidade", "Herdada de <unidade>" ou "Padrão").
 - "Alterar" abre a escolha do modo e, em "Pessoa com o papel", do papel, com a explicação de que vale a unidade acima mais próxima quando ninguém tem o papel na unidade do item. "Seguir a de cima" remove a regra própria.
-- **No formulário de novo item:** depois da unidade, o campo **Owner** já vem com a pessoa sugerida pela regra e a dica "Sugerido pela regra da unidade: …". Com mais de uma pessoa, começa em "Escolha…" e a dica pede a escolha. "Sem Owner" está sempre disponível. Sem regra (ou com "Sem responsável"), o campo não aparece.
+- **No formulário de novo item:** depois da unidade, o campo **Owner** já vem com a pessoa sugerida pela regra e a dica "Sugerido pela regra da unidade: …". Com mais de uma pessoa, começa em "Escolha…" e a dica pede a escolha. "Sem Owner" está sempre disponível, e "Outra pessoa…" abre a busca pelo nome. Sem regra (ou com "Sem responsável"), o Owner é só a busca; deixar em branco segue a regra.
+- **Technical Lead e QA Owner no novo item (#12, 2026-11-27):** depois do Owner, os dois campos opcionais buscam pelo nome entre as pessoas da unidade, das de cima e das de baixo (`GET /org-units/{id}/people`). A escolha mostra o nome com "Trocar"; mudar a unidade ou o tipo limpa as escolhas.
 
 **Situação (2026-11-20):** a seção Estrutura organizacional está implementada em `/admin/organizacao`; quem não é `PLATFORM_ADMIN` não vê o item Admin e, se abrir o endereço, volta para a home. As demais seções entram junto com os endpoints delas e, até lá, não aparecem.
 
@@ -813,7 +814,7 @@ A identidade (hexágono, azul e âmbar) é mantida.
 
 **Lacunas do SSD encontradas ao especificar as telas**
 
-- **Seleção de pessoas:** os campos Owner, Technical Lead, QA Owner e responsável precisam buscar usuários, mas `GET /users` exige permissão de gerir papéis. Falta uma consulta de usuários acessível a quem edita artefatos.
+- ~~**Seleção de pessoas:**~~ resolvida (REV-07): a página do item usa `GET /artifacts/{artifact}/people` (#79) e o formulário de novo item, `GET /org-units/{id}/people` (#12).
 - **Lista de anexos:** há envio e download de anexo, mas não há como listar os anexos de um artefato.
 - **Quem pode aprovar:** o painel de gates mostra só o papel aguardado; para mostrar os nomes das pessoas, falta uma consulta que não exija permissão administrativa.
 - **Itens recentes:** não há registro de itens visitados; por isso a home não tem esse bloco.

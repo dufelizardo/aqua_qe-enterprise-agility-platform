@@ -5,6 +5,7 @@ Resource            ../../common/aquaqe_api_common.resource
 *** Variables ***
 ${WORKITEM_ARTIFACTS_ENDPOINT}          /artifacts
 ${WORKITEM_ARTIFACT_TYPES_ENDPOINT}     /artifact-types
+${WORKITEM_ORG_UNITS_ENDPOINT}          /org-units
 
 *** Keywords ***
 GET Artifact Types As Persona
@@ -75,6 +76,19 @@ GET Artifact People As Persona
         Set To Dictionary    ${params}    q=${q}
     END
     ${response}=    GET On Session    ${session}    ${API_BASE_PATH}${WORKITEM_ARTIFACTS_ENDPOINT}/${artifact}/people
+    ...    params=${params}    expected_status=ANY
+    Log    ${response.status_code} ${response.text}
+    RETURN    ${response}
+
+GET Unit People As Persona
+    [Documentation]    GET /org-units/{id}/people: pessoas para os campos de pessoa de um item novo (#12; REV-07).
+    [Arguments]    ${persona}    ${unit}    ${artifact_type}    ${q}=${None}
+    ${session}=    Get AQuA-QE Session For Persona    ${persona}
+    ${params}=    Create Dictionary    artifactType=${artifact_type}
+    IF    $q is not None
+        Set To Dictionary    ${params}    q=${q}
+    END
+    ${response}=    GET On Session    ${session}    ${API_BASE_PATH}${WORKITEM_ORG_UNITS_ENDPOINT}/${unit}/people
     ...    params=${params}    expected_status=ANY
     Log    ${response.status_code} ${response.text}
     RETURN    ${response}

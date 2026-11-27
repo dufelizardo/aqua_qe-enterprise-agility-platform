@@ -13,6 +13,7 @@ import { WorkspaceService } from '../../core/workspace.service';
 import { DefaultOwnerService, OwnerSuggestion, ownerIdToSend, ruleSummary } from '../../work/default-owner.service';
 import { BoardConfig } from '../../work/board-config';
 import { BoardTemplate, BoardTemplatesService, columnsSummary } from '../../work/board-templates.service';
+import { PersonPicker } from '../../work/person-picker';
 import { SquadBacklog } from '../../work/squad-backlog';
 import { SquadSprints } from '../../work/squad-sprints';
 import { plural } from '../../core/context-nav';
@@ -25,6 +26,7 @@ import {
   BoardColumn,
   BoardView,
   Card,
+  PersonRef,
   Sprint,
   TransitionOption,
   WorkService,
@@ -51,6 +53,7 @@ import {
     SquadBacklog,
     SquadSprints,
     UnitHeader,
+    PersonPicker,
   ],
   templateUrl: './level-board.html',
   styleUrl: './level-board.scss',
@@ -141,6 +144,10 @@ export class LevelBoard {
   /** Owner sugerido pela regra da unidade para o tipo (#43); {@code newOwner} é a escolha: id, 'none' ou ''. */
   protected readonly ownerSuggestion = signal<OwnerSuggestion | null>(null);
   protected readonly newOwner = signal('');
+  /** Pessoas escolhidas pela busca (#12; REV-07): o Owner fora da lista da regra, o Technical Lead e o QA Owner. */
+  protected readonly newOwnerPerson = signal<PersonRef | null>(null);
+  protected readonly newTechLead = signal<PersonRef | null>(null);
+  protected readonly newQaOwner = signal<PersonRef | null>(null);
   protected readonly createError = signal<ApiError | null>(null);
   protected readonly levelUnits = signal<OrgUnit[]>([]);
   /** Itens que podem ser pai do tipo escolhido e que o usuário lê. */
@@ -310,6 +317,9 @@ export class LevelBoard {
     const type = this.newType();
     this.ownerSuggestion.set(null);
     this.newOwner.set('');
+    this.newOwnerPerson.set(null);
+    this.newTechLead.set(null);
+    this.newQaOwner.set(null);
     if (!unit || !type) {
       return;
     }
@@ -357,7 +367,9 @@ export class LevelBoard {
         description: this.newDescription() || undefined,
         orgUnitId: this.newUnit(),
         parentId: this.newParent() || undefined,
-        ownerId: this.ownerSuggestion()?.candidates.length ? ownerIdToSend(this.newOwner()) : undefined,
+        ownerId: this.ownerIdForCreate(),
+        technicalLeadId: this.newTechLead()?.id,
+        qaOwnerId: this.newQaOwner()?.id,
       });
       this.creating.set(false);
       this.newTitle.set('');
@@ -374,6 +386,12 @@ export class LevelBoard {
     } finally {
       this.busy.set(false);
     }
+  }
+
+  /** A escolha da lista da regra ou, em "Outra pessoa…" ou sem lista, a pessoa da busca; nada escolhido: a regra decide. */
+  private ownerIdForCreate(): string | null | undefined {
+    const fromList = (this.ownerSuggestion()?.candidates.length ?? 0) > 0 && this.newOwner() !== 'other';
+    return fromList ? ownerIdToSend(this.newOwner()) : this.newOwnerPerson()?.id;
   }
 
   // ---------------------------------------------------------------------------------------- mover
