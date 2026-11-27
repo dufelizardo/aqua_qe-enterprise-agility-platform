@@ -262,6 +262,10 @@ A aba ativa faz parte da rota, para que um link leve direto ao documento ou ao h
 - Ao soltar, executa `POST /artifacts/{artifact}/transitions`. O cartão só muda de coluna depois da resposta de sucesso; em caso de erro, volta à origem e a tela mostra o motivo (seção 9).
 - Reordenar dentro da mesma coluna usa `POST /artifacts/{artifact}/rank`.
 - **Configurar quadro**, visível a quem pode gerir quadros, abre um painel para renomear o quadro, definir as colunas, a fase de cada uma e os status que ela agrupa (`GET /boards/{id}`, `PATCH /boards/{id}`). Um status do workflow que não esteja em nenhuma coluna gera aviso, porque os itens nele ficariam invisíveis.
+- **Templates de quadro (#50, 2026-11-27).**
+  - No estado vazio, antes de "Criar quadro", o campo **Modelo** oferece "Colunas do workflow (padrão)" e os templates do nível. Ao escolher um, aparecem a descrição, as colunas ("Triagem → Em atendimento (WIP 5) → …") e o aviso de que é uma cópia.
+  - No fim de "Configurar quadro", **Salvar como template** pede nome e descrição e grava as colunas já salvas do quadro no catálogo.
+  - O catálogo fica em Administração › **Templates de quadro**, agrupado por nível, onde o administrador renomeia e remove (com confirmação). Os prontos da instalação têm o selo "Da instalação".
 - **Configurar quadro** (implementado em 2026-11-20): nome do quadro; para cada coluna, nome, fase, status agrupados (caixas de seleção), limite de WIP (vazio = sem limite) e "Quando atingir" (Avisar ou Impedir a entrada); subir, descer, remover e adicionar coluna. Problemas (status repetido, Upstream depois de Downstream, coluna sem status) aparecem antes de salvar. O quadro também mostra o aviso de status sem coluna a quem pode configurá-lo.
 
 ### 6.3 Etiqueta de status

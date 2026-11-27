@@ -79,3 +79,12 @@ CT-008 - SSD-3.4: Validate Responsável padrão - "Quem criou" preenche o Owner 
     ...    ${portfolio_root_name}    ${portfolio_unit_base}    ${portfolio_unit_label}    ${tactical_cadeia_base}
     ...    ${tactical_cadeia_label}    ${squad_unit_base}    ${squad_unit_label}    ${squad_level_name}
     ...    ${portfolio_initiative_base}    ${portfolio_initiative_description}
+
+CT-009 - SSD-3.9: Validate Templates de quadro - criar pelo template, salvar como template e remover
+    [Documentation]    #50: o quadro da Squad nasce com as colunas do "Kanban — Sustentação"; o quadro vira template;
+    ...    o administrador o remove no catálogo.
+    [Tags]    UI    Portfolio    BoardTemplates    SSD-3.9
+    PORTFOLIO - TEMPLATES DE QUADRO    ${portfolio_admin_username}    ${portfolio_admin_display_name}
+    ...    ${portfolio_root_name}    ${portfolio_unit_base}    ${portfolio_unit_label}    ${tactical_cadeia_base}
+    ...    ${tactical_cadeia_label}    ${squad_unit_base}    ${squad_unit_label}    ${board_template_ui_name}
+    ...    ${board_template_ui_first_key}    ${board_template_ui_first_column}    ${board_template_ui_new_base}

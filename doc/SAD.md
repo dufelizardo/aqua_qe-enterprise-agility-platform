@@ -167,7 +167,7 @@ flowchart TB
 | `governance` | D05 | Gates, validações e aprovações; implementa o guarda de transição (`GateGuard`, #78). Cada tipo de regra é um `GateRuleEvaluator`; usa as APIs públicas `ArtifactDocuments` (`livingdocs`), `Artifacts` (`workitem`) e `ArtifactConfiguration.transition` (`configuration`). | Gate, Regra, Aprovação |
 | `livingdocs` | D04 | Motor de documentos com dono genérico: documentos do artefato (PRD, SAD, SSD, UX/UI, QA) e páginas de conhecimento por unidade ([Proposta 07](KNOWLEDGE-PROPOSAL.md)), versões e status. Cria os documentos da Iniciativa e da Feature ao receber o evento em memória `ArtifactCreated`, publicado pelo `workitem` na transação da criação; assim `workitem` não conhece documentos. | Documento, Versão |
 | `portfolio` | D01 | Dados próprios da Iniciativa: business case. | Business case |
-| `board` | D02, D03 | Quadros por nível, colunas Upstream e Downstream, sprints. | Quadro, Sprint |
+| `board` | D02, D03 | Quadros por nível, colunas Upstream e Downstream, sprints. Catálogo de templates de quadro, aplicados por cópia (#50). | Quadro, Sprint, Template de quadro |
 | `notification` | — | Avisos de cada pessoa (#85): consome `knowledge_page.commented` da outbox e cria os avisos de menção e de resposta; `/me/notifications`. | Notificação |
 | `search` | — | Busca textual (ADR-11; #84): compõe as buscas públicas de `workitem` (`Artifacts.search`) e `livingdocs` (`DocumentSearch`), cada uma com as próprias regras de leitura. Sem tabelas; a comparação sem acento usa `translate` do PostgreSQL, sem extensão. | — |
 | `activity` | — | Home (#83): itens abertos por último por pessoa e, como consumidor da outbox, os eventos de artefatos, documentos e páginas guardados com a unidade, base das "Novidades". Usa as APIs públicas de `workitem` (`Artifacts`) e `livingdocs` (`Pages`) para conferir a leitura. | Visita recente, Evento da unidade |
@@ -478,7 +478,7 @@ Os valores-alvo são provisórios; o PRD lista sua definição como pendência.
 - **Valores definitivos dos atributos de qualidade** da seção 11 e volumes esperados (usuários, artefatos).
 - **Especificações ausentes** que afetam módulos da Fase 2 e 3: OKRs, dependências, capacity planning, IA.
 - **Contratos de API:** especificados no [SSD](SSD.md).
-- **Modelos de trabalho e templates de quadro** ([Proposta 05](CONFIG-PROPOSAL.md#3-decisões-tomadas-2026-11-20)): o modelo (Kanban, Scrum) fica implícito no MVP (quadro configurável + sprint opcional); templates de quadro serão aplicados por cópia; herança e publicação seguem na Fase 3 (RF-CE04 a 10). Falta o Workflow Designer (UI-26) para cada unidade ter o próprio fluxo.
+- **Modelos de trabalho e templates de quadro** ([Proposta 05](CONFIG-PROPOSAL.md#3-decisões-tomadas-2026-11-20)): o modelo (Kanban, Scrum) fica implícito no MVP (quadro configurável + sprint opcional); templates de quadro aplicados por cópia (#50, implementado em 2026-11-27); herança e publicação seguem na Fase 3 (RF-CE04 a 10). O Workflow Designer (UI-26) dá a cada unidade o próprio fluxo (#49).
 - **Privacidade e dados pessoais:** inventário, finalidade, visibilidade e retenção dos dados pessoais, e a convivência da eliminação com a auditoria imutável ([REV-14](REVIEW-01.md#rev-14--privacidade-e-dados-pessoais)).
 
 ## 14. Rastreabilidade — requisitos do MVP

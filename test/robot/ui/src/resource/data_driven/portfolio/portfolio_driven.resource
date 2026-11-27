@@ -30,3 +30,7 @@ ${gate_ui_message}              Aguardando a aprovação de arquitetura.
 ${gate_ui_path}                 Ideia → Cancelado
 ${gate_ui_to_key}               CANCELLED
 ${gate_ui_to_name}              Cancelado
+${board_template_ui_name}           Kanban — Sustentação
+${board_template_ui_first_key}      OPEN
+${board_template_ui_first_column}   Triagem
+${board_template_ui_new_base}       Robot UI Template

@@ -38,6 +38,7 @@ import { OrganizationService, TreeRow, buildTree } from './organization.service'
         <a routerLink="/admin/workflows" class="on" aria-current="page">Workflows</a>
         <a routerLink="/admin/gates">Gates</a>
         <a routerLink="/admin/responsavel-padrao">Responsável padrão</a>
+        <a routerLink="/admin/templates-de-quadro">Templates de quadro</a>
       </nav>
       <h1 data-testid="page-title">Workflows</h1>
       <p class="lead">

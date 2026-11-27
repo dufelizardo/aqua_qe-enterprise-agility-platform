@@ -7,6 +7,7 @@ Resource            ../../pom/navigation/navigation_pom.resource
 Resource            ../../pom/artifact/artifact_pom.resource
 Resource            ../../pom/gates/gates_pom.resource
 Resource            ../../pom/default_owner/default_owner_pom.resource
+Resource            ../../pom/board_templates/board_templates_pom.resource
 
 *** Keywords ***
 Portfolio - Preparar Portfólio
@@ -256,3 +257,32 @@ Artifact Status Should Be
     [Arguments]    ${name}
     ${status}=    Get Artifact Status Text
     Should Be Equal    ${status}    ${name}
+
+Templates De Quadro - Criar Pelo Template E Salvar
+    [Documentation]    #50: o quadro de Histórias da Squad nasce pelo template escolhido, com as colunas dele; o quadro
+    ...    é salvo como template; na Administração, o template aparece no catálogo e é removido.
+    [Arguments]    ${squad}    ${template_name}    ${first_status_key}    ${first_column}    ${new_template_base}
+    Go To AQuA-QE Path    /home
+    Wait For Nav Org Tree
+    Search Nav Org Tree    ${squad}
+    Click Org Node    ${squad}
+    Wait For Current Workspace    ${squad}
+    Click Current Unit View    nav-squad
+    Wait For Level Board Page    ${squad}
+    Click Board Level    squad
+    Wait For Board Or Empty
+    Choose Board Template    ${template_name}
+    Click Create Board
+    Wait For Portfolio Board
+    ${title}=    Get Board Column Title    ${first_status_key}
+    Should Contain    ${title}    ${first_column}
+    Open Board Configuration
+    ${new_template}=    Unique Name    ${new_template_base}
+    Save Board As Template    ${new_template}
+    ${saved}=    Get Board Template Saved Text
+    Should Contain    ${saved}    ${new_template}
+    Go To AQuA-QE Path    /admin/templates-de-quadro
+    Wait For Board Template Row    ${new_template}
+    Remove Board Template    ${new_template}
+    ${left}=    Get Board Template Row Count    ${new_template}
+    Should Be Equal As Integers    ${left}    0

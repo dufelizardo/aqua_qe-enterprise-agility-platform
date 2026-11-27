@@ -736,6 +736,10 @@ Outras passagens: `TRANSITION_NOT_ALLOWED`. Gravar em `IN_REVIEW` ou `APPROVED`:
 | GET | `/boards/{id}` | Definição do quadro. | ler | 011 |
 | PATCH | `/boards/{id}` | Altera nome, colunas e filtros. | gerir quadros | 011 |
 | GET | `/boards/{id}/view` | Colunas com os cartões. | ler | 011, 015 |
+| POST | `/boards/{id}/template` | Salva as colunas do quadro como template do catálogo (#50). | gerir quadros | 011 |
+| GET | `/board-templates` | Catálogo de templates de quadro (filtro `level`) (#50). | autenticado | 011 |
+| PATCH | `/board-templates/{id}` | Renomeia o template e altera a descrição (#50). | gerir configuração | 011 |
+| DELETE | `/board-templates/{id}` | Remove o template do catálogo (#50). | gerir configuração | 011 |
 | GET | `/org-units/{squadId}/sprints` | Sprints de uma squad. | ler | 015 |
 | POST | `/sprints` | Cria sprint. | gerir quadros | 015 |
 | PATCH | `/sprints/{id}` | Altera nome, datas e objetivo. | gerir quadros | 015 |
@@ -772,6 +776,20 @@ Configuração (`PATCH /boards/{id}`, gerir quadros; [Proposta 04](BOARDS-PROPOS
 - Pelo menos uma coluna. Cada status do nível (e `CANCELLED`) fica em no máximo uma coluna. As colunas `UPSTREAM` vêm antes das `DOWNSTREAM`.
 - `wipLimit`: inteiro maior ou igual a 1, ou ausente (sem limite). `wipPolicy`: `WARN` (padrão; só avisa) ou `BLOCK` (impede a entrada).
 - A resposta, e também `GET /boards` e `GET /boards/{id}`, traz `unmappedStatusKeys`: os status do nível fora de qualquer coluna, cujos itens não aparecem no quadro.
+
+**Templates de quadro (#50, implementado em 2026-11-27; [Proposta 05](CONFIG-PROPOSAL.md#3-decisões-tomadas-2026-11-20), MDL-07 e CFG-006).**
+- **Catálogo único** na organização, visível para todos. Cada template tem nome (único no nível, sem diferenciar maiúsculas), nível, descrição opcional e as colunas (nome, fase, status, `wipLimit` e `wipPolicy`).
+- **Prontos da instalação** (`builtin`), dois por nível, com os status dos workflows padrão:
+  - FL1: "Kanban simples" e "Kanban — Sustentação";
+  - FL2: "Kanban simples" e "Fluxo de Feature agrupado";
+  - FL3: "Kanban simples" e "Funil de Portfólio".
+- **Aplicado por cópia:** `POST /boards` aceita `templateId`, e as colunas do quadro novo são uma cópia das do template. Mudar ou remover o template não altera os quadros existentes; a herança viva fica para a Fase 3 (RF-CE04 a 10).
+  - O template precisa ser do nível do quadro; senão, `400` em `templateId`.
+  - Status que não valem para a unidade do quadro (seção 3.3, workflow próprio por unidade) são ignorados, e a coluna que fica sem status é omitida. Se nenhuma sobra, `400` em `templateId`.
+  - Os status da unidade que o template não cobre aparecem em `unmappedStatusKeys`, como em qualquer quadro.
+- **Salvar como template** (`POST /boards/{id}/template`, corpo `{ "name", "description" }`): copia as colunas já gravadas do quadro. Exige gerir quadros na unidade do quadro.
+- **Renomear e remover** (`PATCH` e `DELETE /board-templates/{id}`): só o administrador. Os prontos da instalação também podem ser renomeados ou removidos.
+- **Eventos:** `board_template.created`, `board_template.updated` e `board_template.removed`.
 
 Limite de WIP na visão: cada coluna traz `wipLimit`, `wipPolicy`, `wipCount` e `wipState`. `wipCount` conta **todos** os itens não arquivados da coluna no escopo do quadro, não só os que o usuário enxerga, porque o limite vale para a coluna inteira. `wipState` é `NONE` (sem limite), `UNDER`, `AT` (atingido) ou `OVER` (ultrapassado). Com `BLOCK`, um guarda de transição do módulo `board` recusa a entrada (`422 GATE_BLOCKED`, regra `WIP_LIMIT`) quando a coluna de destino está no limite em **qualquer** quadro do nível que contenha o item. Mover dentro da mesma coluna não conta. A regra aparece também em `failedRules` de `GET /artifacts/{artifact}/transitions`.
 
@@ -1306,6 +1324,7 @@ Convenções:
 | `portfolio` | `business_case` | `initiative_id`, `problem`, `expected_outcome`, `estimated_cost`, `currency`, `expected_benefit`, `risks`, `status`, `validated_by`, `validated_at`, `version` | `initiative_id` único. |
 | `board` | `board` | `org_unit_id`, `level`, `name`, `filters` (JSON) | Índice em `org_unit_id`. |
 | | `board_column` | `board_id`, `position`, `name`, `phase`, `status_keys`, `wip_limit`, `wip_policy` | (`board_id`, `position`) único; `wip_limit` ≥ 1 ou nulo; `wip_policy` `WARN` ou `BLOCK`. |
+| | `board_template` | `name`, `level`, `description`, `columns` (JSON), `builtin`, `created_by`, `created_at`, `updated_at` | (`level`, `lower(name)`) único (#50). |
 | | `sprint` | `squad_id`, `name`, `goal`, `start_date`, `end_date`, `state` | No máximo uma `ACTIVE` por `squad_id`. |
 | | `sprint_item` | `sprint_id`, `artifact_id` | PK composta. |
 | `events` | `outbox_event` | `event_id`, `type`, `occurred_at`, `envelope` (JSON), `published_at` | Índice parcial nos não publicados; limpeza periódica dos publicados. |

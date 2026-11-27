@@ -118,3 +118,13 @@ PORTFOLIO - RESPONSAVEL PADRAO
     ${title}=    Unique Name    ${initiative_base}
     Responsavel Padrao - Quem Criou    ${squad}    ${squad_level_name}    ${title}    ${initiative_description}
     ...    ${display_name}
+
+PORTFOLIO - TEMPLATES DE QUADRO
+    [Documentation]    Prepara a Squad, cria o quadro pelo template, salva como template e remove no catálogo (#50).
+    [Arguments]    ${username}    ${display_name}    ${root_name}    ${portfolio_base}    ${portfolio_label}
+    ...    ${cadeia_base}    ${cadeia_label}    ${squad_base}    ${squad_label}    ${template_name}    ${first_status_key}
+    ...    ${first_column}    ${new_template_base}
+    ${squad}=    Squad - Preparar Squad    ${username}    ${display_name}    ${root_name}    ${portfolio_base}
+    ...    ${portfolio_label}    ${cadeia_base}    ${cadeia_label}    ${squad_base}    ${squad_label}
+    Templates De Quadro - Criar Pelo Template E Salvar    ${squad}    ${template_name}    ${first_status_key}
+    ...    ${first_column}    ${new_template_base}

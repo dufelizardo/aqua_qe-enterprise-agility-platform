@@ -43,7 +43,7 @@ O princípio que resume a proposta: **"a organização define os padrões; o con
 | Princípio dos três níveis | [UX/UI 7.11](UX-UI.md#711-níveis-de-configuração) (Proposta 03). | **Já adotado.** |
 | "Workspace" como contexto de trabalho | O contexto do AQuA-QE é a **unidade organizacional** (Squad, Cadeia, Portfólio): quadros por unidade e nível, e workflow por unidade (`workflow.org_unit_id`, [SSD 9](SSD.md#9-esquema-físico)). | "Configuração do workspace" passa a **configuração da unidade**. Sem entidade nova ([EXP-09](EXPERIENCE-PROPOSAL.md#4-decisões-tomadas); [Proposta 04](BOARDS-PROPOSAL.md#2-confronto-com-o-que-já-existe)). |
 | Modelo de trabalho como entidade | Implícito: quadro configurável (colunas, WIP e fases) + sprint opcional por squad (PRD-RF-015; SSD 3.9: "squads em fluxo contínuo simplesmente não criam sprints"). | Decidido: implícito no MVP (MDL-01). |
-| Templates de quadro (CFG-006) | O quadro novo nasce das colunas do workflow do nível. | **Novo.** Decidido: aplicado por cópia (MDL-07). |
+| Templates de quadro (CFG-006) | O quadro novo nasce das colunas do workflow do nível. | **Novo.** Decidido: aplicado por cópia (MDL-07). **Implementado em 2026-11-27 (#50):** catálogo único, com dois prontos por nível e "Salvar como template" a partir de um quadro ([SSD 3.9](SSD.md#39-board)). |
 | Herança (CFG-010, 011) | RF-CE04 a 10: herança, publicação e rollback, **Fase 3** ([SAD 5.2](SAD.md#52-módulos-das-fases-seguintes); faseamento do PRD). | **Já previsto para a Fase 3.** Os três comportamentos detalham o RF-CE e ficam como insumo. |
 | Versionamento e publicação (CFG-012, 013, 015) | SSD 3.3: versões de workflow e de template. [REV-06](REVIEW-01.md#rev-06--publicação-de-nova-versão-de-workflow) aberto e divergência D-01 da [proposta 01](EVOLUTION-PROPOSAL.md): o SSD diz que os artefatos **passam** à nova versão; a F05 diz que **ficam** na original. | **Com decisão aberta.** "Não sobrescrever em silêncio" reforça a F05/D-01; nota registrada no REV-06. |
 | Papéis de configuração | [ADM-02](ADMIN-PROPOSAL.md#4-decisões-tomadas): um único `PLATFORM_ADMIN` com escopo por unidade; "gerir quadros" para ADMIN, PM e TL (SSD 2). | Sem papéis novos: Organization e Configuration Admin = `PLATFORM_ADMIN`; Workspace e Board Admin = gerir quadros na unidade; Member e Viewer = papéis de negócio. |
@@ -87,7 +87,7 @@ O princípio que resume a proposta: **"a organização define os padrões; o con
 | CFG-001, 002 | Modelos de trabalho e Kanban | Implícitos (quadro configurável) |
 | CFG-003, 004 | Scrum e híbrido | Scrum com a tela Squad (MVP); híbrido = MDL-08 |
 | CFG-005 | Modelos personalizados | Fase 3 |
-| CFG-006 | Templates de quadro | Decidido (cópia); backlog depois das telas Tactical e Squad |
+| CFG-006 | Templates de quadro | Implementado (#50, 2026-11-27): por cópia, catálogo único |
 | CFG-007, 008, 009 | Associar ao contexto, configurar e personalizar | Quadro por unidade e nível, configurável (já implementado) |
 | CFG-010, 011 | Herdado bloqueado ou personalizável | Fase 3 |
 | CFG-012 a 015, 018 | Versionar, publicar, consultar uso, diferenças e compatibilidade | REV-06 / D-01 e Fase 3 |
