@@ -59,3 +59,10 @@ CT-009 - PRD-RF-010: Validate PATCH Artifact - HTTP 409 VERSION_CONFLICT e 403 d
     [Documentation]    A versão velha é recusada; o leitor não edita nem busca pessoas.
     [Tags]    PATCH    PatchArtifact    GetArtifactPeople    HTTP409    HTTP403    PRD-RF-010    security    ASVS-V4
     WORKITEM - PATCH ARTIFACT - PATCH - Versao Velha E Leitor    ${post_artifact_initiative_title}
+
+CT-010 - REV-07: Validate GET Unit People - HTTP 200/403/400 (pessoas para o item novo)
+    [Documentation]    Quem cria o tipo na unidade busca as pessoas e as usa como Technical Lead e QA Owner; o leitor
+    ...    não busca; o tipo inexistente é recusado.
+    [Tags]    GET    GetUnitPeople    PostArtifact    HTTP200    HTTP201    HTTP403    HTTP400    REV-07    security
+    WORKITEM - GET UNIT PEOPLE - GET - Pessoas Para Item Novo    ${unit_people_initiative_title}
+    ...    ${unit_people_unknown_type}

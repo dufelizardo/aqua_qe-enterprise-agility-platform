@@ -92,6 +92,26 @@ class ArtifactEditIntegrationTests {
 	}
 
 	@Test
+	void pessoasParaItemNovoNaUnidade() throws Exception {
+		String url = "/api/v1/org-units/{u}/people";
+		mvc.perform(get(url, portfolio).param("artifactType", "INITIATIVE").with(user("paula")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.items[*].name").value(hasItems("paula", "tiago", "valeria", "sabrina")))
+			.andExpect(jsonPath("$.items[*].name").value(not(hasItem("osvaldo"))));
+		mvc.perform(get(url, portfolio).param("artifactType", "INITIATIVE").param("q", "sab").with(user("paula")))
+			.andExpect(jsonPath("$.items[*].name").value(contains("sabrina")));
+		mvc.perform(get(url, portfolio).param("artifactType", "INITIATIVE").with(user("valeria")))
+			.andExpect(status().isForbidden());
+		mvc.perform(get(url, portfolio).param("artifactType", "INITIATIVE").with(user("osvaldo")))
+			.andExpect(status().isForbidden());
+		mvc.perform(get(url, portfolio).param("artifactType", "NAO_EXISTE").with(user("paula")))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.errors[0].field").value("artifactType"));
+		mvc.perform(get(url, UUID.randomUUID()).param("artifactType", "INITIATIVE").with(user("paula")))
+			.andExpect(status().isNotFound());
+	}
+
+	@Test
 	void trocarTituloEResponsavelComAVersao() throws Exception {
 		String init = artifact("Antes");
 		String tiago = jdbc.queryForObject("select id::text from identity.user_account where username = 'tiago'", String.class);

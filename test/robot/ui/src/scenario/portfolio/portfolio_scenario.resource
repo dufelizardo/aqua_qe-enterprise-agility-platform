@@ -141,3 +141,14 @@ PORTFOLIO - CAMPO CUSTOMIZADO
     Portfolio - Criar Iniciativa    ${title}    ${initiative_description}    ${squad}
     Artefato - Campo Customizado Declarado E Preenchido    IDEA    ${title}    ${label_base}    ${key_base}    ${option}
     ...    @{options}
+
+PORTFOLIO - PESSOAS NO NOVO ITEM
+    [Documentation]    Cria a Iniciativa no Quadro da Squad escolhendo Technical Lead e QA Owner pela busca (#12; REV-07).
+    [Arguments]    ${username}    ${display_name}    ${root_name}    ${portfolio_base}    ${portfolio_label}
+    ...    ${cadeia_base}    ${cadeia_label}    ${squad_base}    ${squad_label}    ${squad_level_name}
+    ...    ${initiative_base}    ${initiative_description}
+    ${squad}=    Squad - Preparar Squad    ${username}    ${display_name}    ${root_name}    ${portfolio_base}
+    ...    ${portfolio_label}    ${cadeia_base}    ${cadeia_label}    ${squad_base}    ${squad_label}
+    ${title}=    Unique Name    ${initiative_base}
+    Squad - Abrir Quadro Do Nivel    ${squad}    ${squad_level_name}    portfolio
+    Portfolio - Criar Iniciativa Com Tech Lead E QA    ${title}    ${initiative_description}    ${squad}    ${display_name}

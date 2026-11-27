@@ -202,6 +202,13 @@ export class WorkService {
     return (await firstValueFrom(this.http.get<{ items: PersonRef[] }>(`${API}/artifacts/${ref}/people`, { params }))).items;
   }
 
+  /** Pessoas para os campos de pessoa de um item novo do tipo na unidade (#12; REV-07). */
+  async peopleForNew(unitId: string, artifactType: string, q: string): Promise<PersonRef[]> {
+    const params: Record<string, string> = { artifactType, ...(q.trim() ? { q: q.trim() } : {}) };
+    return (await firstValueFrom(this.http.get<{ items: PersonRef[] }>(`${API}/org-units/${unitId}/people`, { params })))
+      .items;
+  }
+
   setBlocked(artifact: string, blocked: boolean, reason: string | null, version: number): Promise<Artifact> {
     return firstValueFrom(
       this.http.patch<Artifact>(`${API}/artifacts/${artifact}`, { blocked, blockedReason: reason, version }),
@@ -277,6 +284,8 @@ export class WorkService {
     parentId?: string;
     /** Omitido: vale o responsável padrão (#43); {@code null}: sem Owner. */
     ownerId?: string | null;
+    technicalLeadId?: string;
+    qaOwnerId?: string;
   }): Promise<Artifact> {
     return firstValueFrom(this.http.post<Artifact>(`${API}/artifacts`, body));
   }

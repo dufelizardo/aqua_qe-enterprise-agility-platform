@@ -155,3 +155,24 @@ PATCH Artifact - Status Code 409 - Versao Velha E Leitor
     Should Not Be True    ${read.json()}[canEdit]
     ${people}=    GET Artifact People As Persona    viewer    ${init}[key]
     Should Be Equal As Integers    ${people.status_code}    403
+
+GET Unit People - Status Code 200 - Pessoas Para Item Novo
+    [Documentation]    Quem cria o tipo na unidade busca as pessoas e cria o item com Technical Lead e QA Owner; o leitor
+    ...    recebe 403 e o tipo inexistente, 400 (#12; REV-07).
+    [Arguments]    ${initiative_title}    ${unknown_type}
+    ${portfolio}    ${cadeia}=    Create Portfolio And Cadeia
+    ${people}=    GET Unit People As Persona    pm    ${portfolio}    INITIATIVE
+    Should Be Equal As Integers    ${people.status_code}    200
+    Should Not Be Empty    ${people.json()}[items]
+    ${person}=    Set Variable    ${people.json()}[items][0]
+    ${payload}=    Create Dictionary    type=INITIATIVE    title=${initiative_title}    orgUnitId=${portfolio}
+    ...    technicalLeadId=${person}[id]    qaOwnerId=${person}[id]
+    ${created}=    POST Artifact As Persona    pm    ${payload}
+    Should Be Equal As Integers    ${created.status_code}    201
+    Validate Object Schema    ${created.json()}    ${WORKITEM_ARTIFACT_SCHEMA}
+    Should Be Equal    ${created.json()}[technicalLead][id]    ${person}[id]
+    Should Be Equal    ${created.json()}[qaOwner][id]    ${person}[id]
+    ${viewer}=    GET Unit People As Persona    viewer    ${portfolio}    INITIATIVE
+    Should Be Equal As Integers    ${viewer.status_code}    403
+    ${invalid}=    GET Unit People As Persona    pm    ${portfolio}    ${unknown_type}
+    Validate Error Body    ${invalid}    400    VALIDATION_FAILED

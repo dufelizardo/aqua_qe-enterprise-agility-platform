@@ -149,9 +149,10 @@
     @if (levelUnits().length === 0) {
       <p class="hint">Não há unidade de {{ levelName() }} ({{ routeSetup().level }}) neste workspace. Peça ao administrador.</p>
     }
-    @if (ownerSuggestion(); as suggestion) {
-      @if (suggestion.candidates.length > 0) {
-        <label for="item-owner">Owner</label>
+    @if (newUnit() && newType()) {
+      @let suggestion = ownerSuggestion();
+      <label for="item-owner">Owner</label>
+      @if (suggestion && suggestion.candidates.length > 0) {
         <select id="item-owner" [value]="newOwner()" (change)="newOwner.set(value($event))" data-testid="new-item-owner">
           @if (suggestion.candidates.length > 1) {
             <option value="" [selected]="newOwner() === ''">Escolha…</option>
@@ -159,6 +160,7 @@
           @for (person of suggestion.candidates; track person.id) {
             <option [value]="person.id" [selected]="person.id === newOwner()">{{ person.name }}</option>
           }
+          <option value="other" [selected]="newOwner() === 'other'">Outra pessoa…</option>
           <option value="none" [selected]="newOwner() === 'none'">Sem Owner</option>
         </select>
         <p class="hint" data-testid="new-item-owner-hint">
@@ -169,6 +171,31 @@
           }
         </p>
       }
+      @if (!suggestion || suggestion.candidates.length === 0 || newOwner() === 'other') {
+        <app-person-picker
+          [unitId]="newUnit()"
+          [artifactType]="newType()"
+          inputId="item-owner-search"
+          testId="new-item-owner-picker"
+          [(person)]="newOwnerPerson"
+        />
+      }
+      <label for="item-tech-lead">Technical Lead (opcional)</label>
+      <app-person-picker
+        [unitId]="newUnit()"
+        [artifactType]="newType()"
+        inputId="item-tech-lead"
+        testId="new-item-tech-lead-picker"
+        [(person)]="newTechLead"
+      />
+      <label for="item-qa-owner">QA Owner (opcional)</label>
+      <app-person-picker
+        [unitId]="newUnit()"
+        [artifactType]="newType()"
+        inputId="item-qa-owner"
+        testId="new-item-qa-owner-picker"
+        [(person)]="newQaOwner"
+      />
     }
     @if (createError(); as error) {
       <p class="field-error" data-testid="new-item-error">{{ messageOf(error) }}</p>
