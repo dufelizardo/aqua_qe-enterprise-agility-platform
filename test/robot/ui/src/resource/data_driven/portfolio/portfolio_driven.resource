@@ -34,3 +34,7 @@ ${board_template_ui_name}           Kanban — Sustentação
 ${board_template_ui_first_key}      OPEN
 ${board_template_ui_first_column}   Triagem
 ${board_template_ui_new_base}       Robot UI Template
+${custom_field_ui_label}            Canal Robot UI
+${custom_field_ui_key}              robotUiCanal
+${custom_field_ui_option}           Web
+@{custom_field_ui_options}          App    Web

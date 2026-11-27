@@ -578,6 +578,13 @@ Visível apenas para `PLATFORM_ADMIN`. Uma página com seções no menu interno.
 - **Voltar a herdar** (fora da raiz) pede confirmação e avisa que os itens ficam na versão até a migração.
 - Na aba Gates, o seletor de fluxo mostra também a unidade dona de cada workflow.
 
+**Campos customizados (#17, 2026-11-27):** `/admin/campos-customizados`, aba "Campos customizados" da Administração.
+- A pessoa escolhe o tipo de item e vê os campos em ordem: rótulo, tipo, chave (`customFields.<chave>`) e opções. Cada um tem ↑ e ↓, **Editar** (rótulo e, na lista, as opções) e **Remover**, com confirmação.
+- Remover um campo citado por um gate mostra a mensagem da API, com o nome do gate, em vez de remover.
+- **Novo campo** pede rótulo, chave (preenchida a partir do rótulo, editável), tipo e, em "Lista de opções", as opções, uma por linha.
+- **Na página do item**, a Visão geral mostra os campos do tipo depois de Estimativa, um por linha, editáveis ao clicar: texto, número e data com Salvar; lista e Sim/Não gravam ao escolher.
+- **Em Gates**, o "Campo preenchido" oferece também os campos customizados declarados em algum tipo do fluxo, com "(customizado)" no nome.
+
 **Responsável padrão (#43, 2026-11-26):** `/admin/responsavel-padrao`, terceira aba da Administração.
 - A pessoa escolhe a unidade (árvore indentada) e vê uma linha por tipo de artefato: a regra ("Sem responsável", "Quem criou" ou "Pessoa com o papel: …") e a origem ("Desta unidade", "Herdada de <unidade>" ou "Padrão").
 - "Alterar" abre a escolha do modo e, em "Pessoa com o papel", do papel, com a explicação de que vale a unidade acima mais próxima quando ninguém tem o papel na unidade do item. "Seguir a de cima" remove a regra própria.

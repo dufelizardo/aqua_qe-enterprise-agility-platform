@@ -64,6 +64,23 @@ class ConfigurationRepository implements ArtifactConfiguration {
 	}
 
 	@Override
+	public List<CustomField> customFields(String typeKey) {
+		return jdbc.sql("""
+				select f.id, t.key as type_key, f.key, f.label, f.field_type, f.position,
+				       array(select jsonb_array_elements_text(f.options)) as options
+				  from configuration.custom_field f
+				  join configuration.artifact_type t on t.id = f.type_id
+				 where cast(:type as varchar) is null or t.key = cast(:type as varchar)
+				 order by t.key, f.position, f.key
+				""")
+			.param("type", typeKey)
+			.query((rs, n) -> new CustomField(rs.getObject("id", UUID.class), rs.getString("type_key"), rs.getString("key"),
+				rs.getString("label"), rs.getString("field_type"), List.of((String[]) rs.getArray("options").getArray()),
+				rs.getInt("position")))
+			.list();
+	}
+
+	@Override
 	public Status initialStatus(String typeKey, UUID orgUnitId) {
 		UUID workflowId = effectiveWorkflowId(orgUnitId, typeKey)
 			.orElseThrow(() -> new IllegalStateException("Sem workflow para " + typeKey));

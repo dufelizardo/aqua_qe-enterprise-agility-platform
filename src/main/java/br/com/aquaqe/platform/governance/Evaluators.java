@@ -44,13 +44,24 @@ final class Evaluators {
 		return type;
 	}
 
-	/** {@code REQUIRED_FIELD}: o campo do artefato está preenchido. */
+	/**
+	 * {@code REQUIRED_FIELD}: o campo do artefato está preenchido. Um {@code customFields.<chave>} precisa estar declarado
+	 * em ao menos um tipo do workflow (#17; REV-12); para os tipos do workflow que não declaram o campo, a regra não se
+	 * aplica e conta como atendida.
+	 */
 	@Component
 	static class RequiredField implements GateRuleEvaluator {
 
 		static final Set<String> FIELDS = Set.of("description", "ownerId", "technicalLeadId", "qaOwnerId", "assigneeId",
 			"size");
 		static final Set<String> NOT_YET = Set.of("acceptanceCriteria", "businessRuleRefs");
+		static final String CUSTOM = "customFields.";
+
+		private final ArtifactConfiguration configuration;
+
+		RequiredField(ArtifactConfiguration configuration) {
+			this.configuration = configuration;
+		}
 
 		@Override
 		public String type() {
@@ -63,10 +74,20 @@ final class Evaluators {
 			if (NOT_YET.contains(name)) {
 				throw ApiException.validation(field + ".field", name + " ainda não existe nos artefatos");
 			}
-			boolean custom = name.startsWith("customFields.") && name.length() > "customFields.".length();
+			boolean custom = name.startsWith(CUSTOM) && name.length() > CUSTOM.length();
 			if (!FIELDS.contains(name) && !custom) {
 				throw ApiException.validation(field + ".field",
-					"use description, ownerId, technicalLeadId, qaOwnerId, assigneeId, size ou customFields.<nome>");
+					"use description, ownerId, technicalLeadId, qaOwnerId, assigneeId, size ou customFields.<chave>");
+			}
+			if (custom) {
+				String key = name.substring(CUSTOM.length());
+				boolean declared = scope.artifactTypes().stream()
+					.anyMatch(type -> configuration.customFields(type).stream().anyMatch(f -> f.key().equals(key)));
+				if (!declared) {
+					throw ApiException.validation(field + ".field", "o campo " + key
+						+ " não está declarado em nenhum tipo do workflow " + scope.workflowName()
+						+ "; declare em Administração › Campos customizados");
+				}
 			}
 			return Map.of("field", name);
 		}
@@ -74,6 +95,10 @@ final class Evaluators {
 		@Override
 		public boolean satisfied(Map<String, Object> params, Context context) {
 			String name = String.valueOf(params.get("field"));
+			if (name.startsWith(CUSTOM) && configuration.customFields(context.artifact().type()).stream()
+				.noneMatch(f -> f.key().equals(name.substring(CUSTOM.length())))) {
+				return true;
+			}
 			ArtifactView a = context.view().get();
 			Object value = switch (name) {
 				case "description" -> a.description();

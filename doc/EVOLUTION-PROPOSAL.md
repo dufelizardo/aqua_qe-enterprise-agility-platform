@@ -393,7 +393,7 @@ Cada ADR registra contexto, decisão, alternativas, consequências e status. Uma
 | [REV-09](REVIEW-01.md#rev-09--consulta-de-quem-pode-aprovar) | Quem pode aprovar | F06, F02 |
 | [REV-10](REVIEW-01.md#rev-10--preferências-do-usuário) | Preferências do usuário | F06 |
 | [REV-11](REVIEW-01.md#rev-11--exportação-de-documentos) | Exportação de documentos | F06, F03 |
-| [REV-12](REVIEW-01.md#rev-12--campos-customizados-usados-em-gates) | Campos customizados em gates | **nenhuma** (seção 8) |
+| [REV-12](REVIEW-01.md#rev-12--campos-customizados-usados-em-gates) | Campos customizados em gates | nenhuma; resolvido na #17 (2026-11-27) |
 | [REV-13](REVIEW-01.md#rev-13--baseline-de-segurança-por-framework) | Baseline de segurança | parcial: F08c (seção 8) |
 | [Q-01](REVIEW-01.md#3-questões-em-aberto) | Nome AQuA-QE e "integração futura" | **nenhuma** (seção 8) |
 
@@ -411,7 +411,7 @@ Frentes que não nascem de um REV, mas de pendências já registradas nos docume
 | Achado | O que falta | Sugestão |
 |---|---|---|
 | REV-02 | Nenhuma frente trata o contexto herdado quando a Iniciativa está em outro ramo. | Incluir em F01 a regra de leitura de resumo dos ancestrais (título, status, início da descrição e status dos documentos). |
-| REV-12 | `customFields` livres citados em gates. | Incluir em F05 ou F06 a exigência de declarar o campo no tipo de artefato antes de usá-lo em gate ou filtro. |
+| REV-12 | `customFields` livres citados em gates. | **Resolvido (#17, 2026-11-27):** campos declarados por tipo, validados na gravação e nos gates ([SSD 3.3](SSD.md#33-configuration)). |
 | REV-13 | Baseline ASVS L2, SSDF e mapeamento ao NIST CSF 2.0. A F08c cobre só parte da função Detect. | Nova frente F09, ou incorporar em F08c com escopo ampliado. A verificação ASVS já está prevista no [QA](QA.md). |
 | Q-01 | Esclarecer a "integração futura com AQuA-QE" citada na análise externa. | Decisão do responsável pelo produto. |
 

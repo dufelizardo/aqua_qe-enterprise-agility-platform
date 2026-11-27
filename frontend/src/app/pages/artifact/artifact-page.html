@@ -101,6 +101,49 @@
               <span data-testid="artifact-field-size">{{ a.size ?? '—' }}</span>
             }
           </dd>
+          @for (f of customFieldDefs(); track f.id) {
+            <dt>{{ f.label }}</dt>
+            <dd>
+              @if (editing() === 'custom:' + f.key) {
+                <span class="field-edit">
+                  @switch (f.type) {
+                    @case ('SELECT') {
+                      <select (change)="saveCustom(f, value($event))" (keydown.escape)="cancelField()" [disabled]="busy()" [attr.aria-label]="f.label" data-testid="artifact-custom-select">
+                        <option value="" [selected]="!textDraft()">—</option>
+                        @for (o of f.options; track o) {
+                          <option [value]="o" [selected]="textDraft() === o">{{ o }}</option>
+                        }
+                      </select>
+                    }
+                    @case ('BOOLEAN') {
+                      <select (change)="saveCustom(f, value($event))" (keydown.escape)="cancelField()" [disabled]="busy()" [attr.aria-label]="f.label" data-testid="artifact-custom-select">
+                        <option value="" [selected]="!textDraft()">—</option>
+                        <option value="true" [selected]="textDraft() === 'true'">Sim</option>
+                        <option value="false" [selected]="textDraft() === 'false'">Não</option>
+                      </select>
+                    }
+                    @default {
+                      <input
+                        [type]="f.type === 'NUMBER' ? 'number' : f.type === 'DATE' ? 'date' : 'text'"
+                        [value]="textDraft()"
+                        (input)="textDraft.set(value($event))"
+                        (keydown.enter)="saveCustom(f, textDraft())"
+                        (keydown.escape)="cancelField()"
+                        [attr.aria-label]="f.label"
+                        data-testid="artifact-custom-input"
+                      />
+                      <button type="button" class="btn primary" (click)="saveCustom(f, textDraft())" [disabled]="busy()" data-testid="artifact-custom-save">Salvar</button>
+                    }
+                  }
+                  <button type="button" class="btn" (click)="cancelField()">Cancelar</button>
+                </span>
+              } @else if (a.canEdit) {
+                <button type="button" class="editable" (click)="startCustom(f)" [attr.data-testid]="'artifact-custom-' + f.key">{{ customValue(f, a) }}</button>
+              } @else {
+                <span [attr.data-testid]="'artifact-custom-' + f.key">{{ customValue(f, a) }}</span>
+              }
+            </dd>
+          }
           <dt>Descrição</dt>
           <dd>
             @if (editing() === 'description') {

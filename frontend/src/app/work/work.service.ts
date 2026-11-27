@@ -29,6 +29,8 @@ export interface Artifact {
   technicalLead?: PersonRef | null;
   qaOwner?: PersonRef | null;
   size: string | null;
+  /** Valores dos campos customizados do tipo (#17), pela chave. */
+  customFields?: Record<string, unknown>;
   childCount: number;
   version: number;
   blocked: boolean;
@@ -45,6 +47,8 @@ export interface ArtifactPatch {
   ownerId?: string | null;
   technicalLeadId?: string | null;
   qaOwnerId?: string | null;
+  /** Merge Patch (#17): só as chaves enviadas mudam; null limpa. */
+  customFields?: Record<string, unknown>;
 }
 
 /** Estimativas aceitas pela API. */

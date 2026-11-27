@@ -120,7 +120,7 @@ export function ruleSummary(rule: { type: RuleType; params: Record<string, unkno
   switch (rule.type) {
     case 'REQUIRED_FIELD': {
       const field = String(p['field'] ?? '');
-      return `Campo: ${FIELD_LABELS[field] ?? field}`;
+      return `Campo: ${FIELD_LABELS[field] ?? field.replace(/^customFields\./, '')}`;
     }
     case 'DOCUMENT_SECTION_FILLED':
       return `${String(p['documentType'])}: seção ${String(p['sectionKey'])}`;

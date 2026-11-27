@@ -40,11 +40,11 @@ Ao conferir a análise externa contra os documentos, três pontos foram ajustado
 | REV-09 | Médio | Consulta de quem pode aprovar | SSD 3.6, UX/UI 13, PRD-RF-024 | Aberto |
 | REV-10 | Baixo | Preferências do usuário | UX/UI 13, SSD 10 | Aberto |
 | REV-11 | Baixo | Exportação de documentos | PRD, SSD 6 | Aberto |
-| REV-12 | Baixo | Campos customizados usados em gates | SSD 5.2 e 10 | Aberto |
+| REV-12 | Baixo | Campos customizados usados em gates | SSD 5.2 e 10 | Resolvido (#17) |
 | REV-13 | Alto | Baseline de segurança por framework | Spec. Segurança V2.0 (RF-SC, RNF-SC), SAD 7 e 13 | Aberto |
 | REV-14 | Alto | Privacidade e dados pessoais | SAD 13, SSD 9 e 10, [Proposta de experiência](EXPERIENCE-PROPOSAL.md) | Aberto |
 
-A frente de trabalho que trata cada achado está na [Proposta de evolução, seção 7](EVOLUTION-PROPOSAL.md#7-relação-entre-achados-e-frentes). REV-02, REV-12, REV-14 e Q-01 ainda não têm frente, e REV-13 tem só cobertura parcial ([seção 8 da proposta](EVOLUTION-PROPOSAL.md#8-lacunas-desta-proposta)).
+A frente de trabalho que trata cada achado está na [Proposta de evolução, seção 7](EVOLUTION-PROPOSAL.md#7-relação-entre-achados-e-frentes). REV-02, REV-14 e Q-01 ainda não têm frente (REV-12 foi resolvido direto, na #17), e REV-13 tem só cobertura parcial ([seção 8 da proposta](EVOLUTION-PROPOSAL.md#8-lacunas-desta-proposta)).
 
 ### REV-01 — Regras de autorização entre unidades
 
@@ -186,6 +186,8 @@ Nota de 2026-11-20: a [Proposta 05](CONFIG-PROPOSAL.md#2-confronto-com-o-que-já
 **Evidência.** No MVP, `customFields` é um objeto livre, e a regra `REQUIRED_FIELD` aceita `customFields.<nome>` ([SSD, seções 5.2 e 10](SSD.md#52-tipos-de-regra-do-mvp)).
 
 **Recomendação.** Exigir que um campo customizado citado em gate ou usado como filtro esteja declarado na configuração do tipo de artefato, com nome e tipo, mesmo antes do Customization Engine. Isso evita gates que nunca passam por um erro de digitação no nome do campo.
+
+**Decisão (2026-11-27, #17): aceita.** Os campos são declarados por tipo de artefato, valendo para a organização inteira ([SSD 3.3](SSD.md#33-configuration)). A declaração vale também na gravação: o artefato só aceita campos declarados, com o tipo certo, e a página do item mostra e edita os campos do tipo. A regra `REQUIRED_FIELD` só cita campo declarado em algum tipo do workflow, e a remoção de um campo citado por gate é recusada. Ainda não há filtro por campo customizado; quando houver, seguirá a mesma regra. Testes no [QA](QA.md).
 
 ### REV-13 — Baseline de segurança por framework
 

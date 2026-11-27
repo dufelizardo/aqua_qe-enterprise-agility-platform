@@ -8,6 +8,7 @@ Resource            ../../pom/artifact/artifact_pom.resource
 Resource            ../../pom/gates/gates_pom.resource
 Resource            ../../pom/default_owner/default_owner_pom.resource
 Resource            ../../pom/board_templates/board_templates_pom.resource
+Resource            ../../pom/custom_fields/custom_fields_pom.resource
 
 *** Keywords ***
 Portfolio - Preparar Portfólio
@@ -285,4 +286,44 @@ Templates De Quadro - Criar Pelo Template E Salvar
     Wait For Board Template Row    ${new_template}
     Remove Board Template    ${new_template}
     ${left}=    Get Board Template Row Count    ${new_template}
+    Should Be Equal As Integers    ${left}    0
+
+Artefato - Campo Customizado Declarado E Preenchido
+    [Documentation]    #17: o administrador declara um campo "Lista de opções" na Iniciativa; a página da Iniciativa
+    ...    mostra o campo, e escolher a opção grava o valor. O campo é removido no fim, mesmo se o teste falhar.
+    [Arguments]    ${status}    ${title}    ${label_base}    ${key_base}    ${option}    @{options}
+    ${card}=    Card Locator    ${status}    ${title}
+    Open Card Page    ${card}
+    Wait For Artifact Title    ${title}
+    ${artifact_url}=    Get Current Page Url
+    ${suffix}=    Generate Random String    6    [LOWER][NUMBERS]
+    ${key}=    Set Variable    ${key_base}${suffix}
+    Go To AQuA-QE Path    /admin/campos-customizados
+    Choose Custom Fields Type    INITIATIVE
+    Add Select Custom Field    ${label_base} ${suffix}    ${key}    @{options}
+    Wait For Custom Field Row    ${key}
+    TRY
+        Open Saved Page    ${artifact_url}
+        Wait For Artifact Title    ${title}
+        ${empty}=    Get Artifact Custom Field Text    ${key}
+        Should Be Equal    ${empty}    —
+        Choose Artifact Custom Option    ${key}    ${option}
+        Wait Until Keyword Succeeds    10s    500ms    Artifact Custom Field Should Be    ${key}    ${option}
+    FINALLY
+        Run Keyword And Ignore Error    Remover Campo Customizado    ${key}
+    END
+
+Artifact Custom Field Should Be
+    [Arguments]    ${key}    ${expected}
+    ${text}=    Get Artifact Custom Field Text    ${key}
+    Should Be Equal    ${text}    ${expected}
+
+Remover Campo Customizado
+    [Documentation]    Remove o campo no catálogo e confere que a linha sumiu.
+    [Arguments]    ${key}
+    Go To AQuA-QE Path    /admin/campos-customizados
+    Choose Custom Fields Type    INITIATIVE
+    Wait For Custom Field Row    ${key}
+    Remove Custom Field    ${key}
+    ${left}=    Get Custom Field Row Count    ${key}
     Should Be Equal As Integers    ${left}    0
