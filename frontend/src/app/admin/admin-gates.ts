@@ -36,6 +36,7 @@ interface TransitionRow {
       <p class="eyebrow">Administração</p>
       <nav class="admin-tabs" aria-label="Seções da administração">
         <a routerLink="/admin/organizacao">Estrutura organizacional</a>
+        <a routerLink="/admin/workflows" data-testid="admin-tab-workflows">Workflows</a>
         <a routerLink="/admin/gates" class="on" aria-current="page">Gates</a>
         <a routerLink="/admin/responsavel-padrao" data-testid="admin-tab-default-owner">Responsável padrão</a>
       </nav>
@@ -53,7 +54,7 @@ interface TransitionRow {
           Fluxo
           <select [value]="workflowId() ?? ''" (change)="chooseWorkflow($any($event.target).value)" data-testid="gates-workflow">
             @for (w of workflows(); track w.id) {
-              <option [value]="w.id">{{ w.name }} ({{ w.artifactTypes.join(', ') }})</option>
+              <option [value]="w.id">{{ w.name }} ({{ w.artifactTypes.join(', ') }}){{ w.orgUnit ? ' · ' + w.orgUnit.name : '' }}</option>
             }
           </select>
         </label>

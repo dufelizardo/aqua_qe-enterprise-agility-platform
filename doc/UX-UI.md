@@ -562,6 +562,18 @@ Visível apenas para `PLATFORM_ADMIN`. Uma página com seções no menu interno.
   - papel e rótulo.
 - "Salvar gate" mostra o erro da API apontando a regra ("Regra 2: …"). "Remover gate" pede confirmação.
 
+**Workflows (#49, 2026-11-27):** `/admin/workflows`, aba "Workflows" da Administração (UI-26, Workflow Designer).
+- A pessoa escolhe a unidade e vê um cartão por workflow vigente: nome, versão, tipos e origem ("Desta unidade" ou "Herdado de <unidade>").
+- **Personalizar nesta unidade** copia o workflow herdado; a cópia passa a valer para a unidade e para as de baixo, e o editor abre.
+- **Editar** mostra:
+  - os status em ordem, com nome, chave, fase, categoria e "na sequência", mais os botões ↑, ↓ e remover;
+  - o campo para acrescentar um status, que recebe a chave a partir do nome;
+  - a matriz de transições (linha = de, coluna = para).
+- **Publicar nova versão** pede confirmação: os itens novos nascem nela, os existentes continuam na versão atual, e os status removidos vão precisar de destino na migração.
+- Quando há itens em outra versão, o cartão avisa "N itens estão em outra versão de workflow" com **Migrar itens**. A migração lista cada status atual, com o número de itens e o destino; a mesma chave já vem marcada. O botão só fica ativo com todos os destinos escolhidos.
+- **Voltar a herdar** (fora da raiz) pede confirmação e avisa que os itens ficam na versão até a migração.
+- Na aba Gates, o seletor de fluxo mostra também a unidade dona de cada workflow.
+
 **Responsável padrão (#43, 2026-11-26):** `/admin/responsavel-padrao`, terceira aba da Administração.
 - A pessoa escolhe a unidade (árvore indentada) e vê uma linha por tipo de artefato: a regra ("Sem responsável", "Quem criou" ou "Pessoa com o papel: …") e a origem ("Desta unidade", "Herdada de <unidade>" ou "Padrão").
 - "Alterar" abre a escolha do modo e, em "Pessoa com o papel", do papel, com a explicação de que vale a unidade acima mais próxima quando ninguém tem o papel na unidade do item. "Seguir a de cima" remove a regra própria.
@@ -591,7 +603,7 @@ No celular as duas colunas se empilham, e escolher uma unidade rola a tela até 
 |---|---|---|
 | Estrutura organizacional | Árvore das unidades com o nível de cada uma; criar, renomear, desativar; vínculos "atende a" de cada unidade. Os níveis são exibidos somente para leitura. | `GET /org-levels`, `GET /org-units`, `GET /org-units/{id}`, `POST /org-units`, `PATCH /org-units/{id}`, `GET /org-units/{id}/deactivation-impact`, `GET /org-units/{id}/links`, `PUT /org-units/{id}/links/{targetId}`, `DELETE /org-units/{id}/links/{targetId}` |
 | Usuários e papéis | Por unidade, quem tem qual papel; atribuir e revogar. | `GET /users`, `GET /roles`, `GET /org-units/{id}/role-assignments`, `POST /role-assignments`, `DELETE /role-assignments/{id}` |
-| Workflows e gates | Lista de workflows; no detalhe, status em ordem com fase e categoria, transições e o gate de cada transição, editável regra a regra. | `GET /workflows`, `GET /workflows/{id}`, `POST /workflows/{id}/versions`, `GET /gates`, `PUT /workflow-transitions/{transitionId}/gate`, `DELETE /workflow-transitions/{transitionId}/gate` |
+| Workflows e gates | Por unidade, os workflows vigentes e de onde vêm; personalizar, editar status e transições, publicar versão, voltar a herdar e migrar itens (#49). Na aba Gates, o gate de cada transição, editável regra a regra. | `GET /org-units/{id}/workflows`, `POST /org-units/{id}/workflows`, `GET /workflows`, `GET /workflows/{id}`, `POST /workflows/{id}/versions`, `DELETE /workflows/{id}`, `GET`/`POST /workflows/{id}/migration`, `GET /gates`, `PUT /workflow-transitions/{transitionId}/gate`, `DELETE /workflow-transitions/{transitionId}/gate` |
 | Templates de documento | Seções de cada tipo de documento, obrigatoriedade e papel aprovador. | `GET /doc-templates`, `GET /doc-templates/{id}`, `POST /doc-templates/{id}/versions` |
 | Auditoria | Consulta por período, pessoa, ação e item; detalhe com valores anterior e posterior; verificação de integridade da trilha. | `GET /audit-events`, `GET /audit-events/verification` |
 

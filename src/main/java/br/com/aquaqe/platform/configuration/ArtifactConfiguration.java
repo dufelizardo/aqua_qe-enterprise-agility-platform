@@ -16,8 +16,17 @@ public interface ArtifactConfiguration {
 
 	Optional<ArtifactType> type(UUID id);
 
-	/** Primeiro status do workflow ativo do tipo; todo artefato nasce nele (SSD 3.4). */
-	Status initialStatus(String typeKey);
+	/**
+	 * Primeiro status do workflow vigente do tipo na unidade; todo artefato nasce nele (SSD 3.4). O vigente é o ativo da
+	 * unidade mais funda da linhagem que tenha um para o tipo (#49); a raiz sempre tem.
+	 */
+	Status initialStatus(String typeKey, UUID orgUnitId);
+
+	/** O workflow vigente do tipo na unidade (#49). */
+	Optional<UUID> effectiveWorkflowId(UUID orgUnitId, String typeKey);
+
+	/** A versão de workflow, com tipos e status; vazio se não existe (migração explícita, #49). */
+	Optional<WorkflowScope> workflowScope(UUID workflowId);
 
 	Map<UUID, Status> statuses(Collection<UUID> ids);
 
@@ -25,11 +34,12 @@ public interface ArtifactConfiguration {
 	Set<UUID> statusIds(String key, String category);
 
 	/**
-	 * Status em sequência dos workflows ativos de um nível, sem repetir a chave e sem os de fora da sequência
-	 * (Cancelado), na ordem da posição. É a base das colunas padrão dos quadros (SSD 3.9). {@code id} vem nulo, porque
-	 * a mesma chave pode existir em mais de um workflow.
+	 * Status em sequência dos workflows ativos de um nível que valem para a unidade ou para as de baixo (os da linhagem
+	 * e os das unidades da subárvore, #49), sem repetir a chave e sem os de fora da sequência (Cancelado), na ordem da
+	 * posição. É a base das colunas dos quadros da unidade (SSD 3.9). {@code id} vem nulo, porque a mesma chave pode
+	 * existir em mais de um workflow.
 	 */
-	List<Status> sequenceOfLevel(String level);
+	List<Status> sequenceOfLevel(String level, UUID orgUnitId);
 
 	/** Transições do workflow que saem do status informado (SSD 8.2). */
 	List<StatusTransition> transitionsFrom(UUID statusId);
@@ -42,6 +52,11 @@ public interface ArtifactConfiguration {
 	}
 
 	record StatusTransition(UUID id, Status from, Status to) {
+	}
+
+	/** Uma versão de workflow: {@code active} só na mais recente da família. */
+	record WorkflowScope(UUID id, UUID familyId, UUID orgUnitId, boolean active, int versionNumber, String name,
+			List<String> artifactTypes, List<Status> statuses) {
 	}
 
 	record ArtifactType(UUID id, String key, String level, String name, String keyPrefix, boolean parentRequired,

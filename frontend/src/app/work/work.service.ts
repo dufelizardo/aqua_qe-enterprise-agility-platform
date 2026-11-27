@@ -157,12 +157,17 @@ export class WorkService {
     return firstValueFrom(this.http.patch<Board>(`${API}/boards/${id}`, body));
   }
 
-  /** Status de um nível (chave e nome), a partir dos workflows dos tipos desse nível (SSD 3.3). */
-  async levelStatuses(level: string): Promise<{ key: string; name: string }[]> {
+  /**
+   * Status de um nível (chave e nome), a partir dos workflows dos tipos desse nível (SSD 3.3). Com a unidade, só os
+   * workflows que valem para ela ou para as de baixo (#49).
+   */
+  async levelStatuses(level: string, orgUnitId?: string): Promise<{ key: string; name: string }[]> {
     const [types, workflows] = await Promise.all([
       firstValueFrom(this.http.get<{ items: { key: string; level: string }[] }>(`${API}/artifact-types`)),
       firstValueFrom(
-        this.http.get<{ items: { artifactTypes: string[]; statuses: { key: string; name: string }[] }[] }>(`${API}/workflows`),
+        this.http.get<{ items: { artifactTypes: string[]; statuses: { key: string; name: string }[] }[] }>(`${API}/workflows`, {
+          params: orgUnitId ? { orgUnitId } : {},
+        }),
       ),
     ]);
     const ofLevel = new Set(types.items.filter((t) => t.level === level).map((t) => t.key));

@@ -116,7 +116,7 @@ class BoardService {
 			.param("id", id).param("unit", orgUnitId).param("level", level).param("name", boardName).param("by", userId)
 			.update();
 		List<Column> columns = new ArrayList<>();
-		for (Status status : configuration.sequenceOfLevel(level)) {
+		for (Status status : configuration.sequenceOfLevel(level, orgUnitId)) {
 			columns.add(new Column(null, columns.size() + 1, status.name(), phaseOf(status), List.of(status.key()), null,
 				"WARN"));
 		}
@@ -138,7 +138,7 @@ class BoardService {
 				.update();
 		}
 		if (columns != null) {
-			List<Column> valid = validate(board.level(), columns);
+			List<Column> valid = validate(board.level(), board.orgUnitId(), columns);
 			jdbc.sql("delete from board.board_column where board_id = :board").param("board", id).update();
 			insertColumns(id, valid);
 		}
@@ -189,11 +189,11 @@ class BoardService {
 
 	// ---------------------------------------------------------------------------------------------- validação
 
-	private List<Column> validate(String level, List<ColumnInput> inputs) {
+	private List<Column> validate(String level, UUID orgUnitId, List<ColumnInput> inputs) {
 		if (inputs.isEmpty()) {
 			throw ApiException.validation("columns", "o quadro precisa de ao menos uma coluna");
 		}
-		Set<String> allowed = new HashSet<>(levelStatusKeys(level));
+		Set<String> allowed = new HashSet<>(levelStatusKeys(level, orgUnitId));
 		allowed.add(CANCELLED);
 		Set<String> used = new HashSet<>();
 		boolean downstreamSeen = false;
@@ -236,8 +236,8 @@ class BoardService {
 		return result;
 	}
 
-	private List<String> levelStatusKeys(String level) {
-		return configuration.sequenceOfLevel(level).stream().map(Status::key).toList();
+	private List<String> levelStatusKeys(String level, UUID orgUnitId) {
+		return configuration.sequenceOfLevel(level, orgUnitId).stream().map(Status::key).toList();
 	}
 
 	private void requireManage(UUID userId, UUID orgUnitId) {
@@ -291,7 +291,7 @@ class BoardService {
 			.list();
 		Set<String> mapped = new HashSet<>();
 		columns.forEach(c -> mapped.addAll(c.statusKeys()));
-		List<String> unmapped = levelStatusKeys(board.level()).stream().filter(k -> !mapped.contains(k)).toList();
+		List<String> unmapped = levelStatusKeys(board.level(), board.orgUnitId()).stream().filter(k -> !mapped.contains(k)).toList();
 		return new Board(board.id(), board.orgUnitId(), board.level(), board.name(), columns, unmapped);
 	}
 

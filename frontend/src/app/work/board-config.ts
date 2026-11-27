@@ -36,7 +36,7 @@ export class BoardConfig {
     const board = this.board();
     this.name.set(board.name);
     this.columns.set(board.columns.map((c) => ({ ...c, statusKeys: [...c.statusKeys] })));
-    this.statuses.set(await this.work.levelStatuses(board.level));
+    this.statuses.set(await this.work.levelStatuses(board.level, board.orgUnitId));
   }
 
   protected statusName(key: string): string {

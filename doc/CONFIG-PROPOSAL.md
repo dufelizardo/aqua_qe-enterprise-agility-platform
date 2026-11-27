@@ -50,7 +50,7 @@ O princípio que resume a proposta: **"a organização define os padrões; o con
 | Vários quadros por contexto (CFG-019) | A API já aceita vários quadros por unidade e nível; a tela mostra o primeiro. | Escolher o quadro na tela fica para depois. |
 | Preferências pessoais (CFG-020) | REV-10. | Já previsto. |
 | Responsável padrão configurável | Issue #43 (decidido configurável em 2026-11-20). | É configuração organizacional por tipo e unidade; entra no mesmo desenho. |
-| Fluxos próprios por equipe (Sustentação, QA) | Workflows padrão (SSD 8.2), só da raiz e só leitura. | Dependem do **Workflow Designer (UI-26)**, que edita o workflow por unidade. É o que destrava "cada equipe com seu fluxo". |
+| Fluxos próprios por equipe (Sustentação, QA) | Workflows padrão (SSD 8.2), só da raiz e só leitura. | Dependem do **Workflow Designer (UI-26)**, que edita o workflow por unidade. É o que destrava "cada equipe com seu fluxo". **Implementado em 2026-11-27 (#49):** workflow próprio por unidade, herdado pelas de baixo, com versões e migração explícita ([SSD 3.3](SSD.md#33-configuration)). |
 
 **Ajustes de forma**
 - **IDs:** DEC-01 a DEC-12 passam a **MDL-01 a MDL-12**. CFG-001 a CFG-020 mantêm o número.

@@ -147,6 +147,8 @@ Também não está dito se uma aprovação dada sob a versão anterior continua 
 2. As aprovações registradas continuam válidas se a regra correspondente não mudou e são marcadas `superseded` se mudou.
 3. A publicação mostra antes um relatório de impacto: artefatos afetados e aprovações que serão invalidadas.
 
+Nota de 2026-11-27 (#49): decidido a favor da F05. Os itens ficam na versão em que estão e são avaliados com os gates dela; a migração é explícita e mostra antes, por status, quantos itens serão levados. As aprovações não acompanham o item migrado (valem no status em que foram dadas). Ver [SSD 3.3](SSD.md#33-configuration).
+
 Nota de 2026-11-20: a [Proposta 05](CONFIG-PROPOSAL.md#2-confronto-com-o-que-já-existe) pede que novas versões de modelos e configurações **não sobrescrevam em silêncio** o que está em uso, o que reforça a F05 e a divergência D-01 da [proposta de evolução](EVOLUTION-PROPOSAL.md). Os templates de quadro já foram decididos como cópia na criação (MDL-07).
 
 ### REV-07 — Consulta de usuários para quem edita

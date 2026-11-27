@@ -197,7 +197,7 @@ class ArtifactService {
 		String key = type.keyPrefix() + "-" + repository.nextNumber(type.keyPrefix());
 		String path = (parent == null ? "/" : parent.path()) + id + "/";
 		Row row = new Row(id, key, type.id(), parent == null ? null : parent.id(), path, unitId,
-			configuration.initialStatus(type.key()).id(), title, text(body, "description"), people.get("ownerId"),
+			configuration.initialStatus(type.key(), unitId).id(), title, text(body, "description"), people.get("ownerId"),
 			people.get("technicalLeadId"), people.get("qaOwnerId"), people.get("assigneeId"),
 			size(body.get("size")), customFields(body.get("customFields")), false, 0, null, null, 0, false, null);
 		repository.insert(row, caller.userId());

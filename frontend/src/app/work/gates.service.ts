@@ -65,6 +65,8 @@ export interface WorkflowInfo {
   id: string;
   name: string;
   artifactTypes: string[];
+  /** Unidade dona do workflow (#49): a raiz para os padrões. */
+  orgUnit?: { id: string; name: string } | null;
   statuses: { id: string; key: string; name: string }[];
   transitions: { id: string; from: string; to: string }[];
 }

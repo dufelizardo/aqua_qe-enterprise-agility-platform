@@ -26,6 +26,7 @@ import { OrganizationService, TreeRow, buildTree } from './organization.service'
       <p class="eyebrow">Administração</p>
       <nav class="admin-tabs" aria-label="Seções da administração">
         <a routerLink="/admin/organizacao">Estrutura organizacional</a>
+        <a routerLink="/admin/workflows">Workflows</a>
         <a routerLink="/admin/gates">Gates</a>
         <a routerLink="/admin/responsavel-padrao" class="on" aria-current="page">Responsável padrão</a>
       </nav>

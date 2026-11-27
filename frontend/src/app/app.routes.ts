@@ -85,6 +85,12 @@ export const routes: Routes = [
             title: 'Estrutura organizacional · AQuA-QE',
             loadComponent: () => import('./admin/admin-organization').then((m) => m.AdminOrganization),
           },
+          // Workflow Designer: workflow próprio por unidade, versões e migração explícita (#49; UI-26).
+          {
+            path: 'workflows',
+            title: 'Workflows · AQuA-QE',
+            loadComponent: () => import('./admin/admin-workflows').then((m) => m.AdminWorkflows),
+          },
           // Gates por transição do workflow (SSD 5; #78).
           {
             path: 'gates',

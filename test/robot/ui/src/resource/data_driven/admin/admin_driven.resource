@@ -13,3 +13,7 @@ ${admin_portfolio_label}    Portfólio
 ${admin_cadeia_base}        Robot UI Cadeia
 ${admin_cadeia_label}       Cadeia
 ${admin_deactivate_impact}  1 subunidade ativa abaixo
+${admin_workflow_name}      Fluxo padrão de Feature
+${admin_workflow_status}    Em Triagem UI
+${admin_workflow_key}       EM_TRIAGEM_UI
+${admin_workflow_from}      BACKLOG

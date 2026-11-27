@@ -1,27 +1,37 @@
 package br.com.aquaqe.platform.configuration;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.aquaqe.platform.configuration.ArtifactConfiguration.ArtifactType;
 import br.com.aquaqe.platform.configuration.ConfigurationRepository.Workflow;
+import br.com.aquaqe.platform.configuration.WorkflowDesigner.UnitWorkflow;
 import br.com.aquaqe.platform.shared.ApiException;
 
-/** Leitura da configuração padrão (SSD 3.3). Publicar versões de workflow e template entra depois. */
+/** Configuração (SSD 3.3): tipos de artefato e workflows, com o Workflow Designer por unidade (#49). */
 @RestController
 @RequestMapping("/api/v1")
 class ConfigurationController {
 
 	private final ConfigurationRepository repository;
+	private final WorkflowDesigner designer;
 
-	ConfigurationController(ConfigurationRepository repository) {
+	ConfigurationController(ConfigurationRepository repository, WorkflowDesigner designer) {
 		this.repository = repository;
+		this.designer = designer;
 	}
 
 	@GetMapping("/artifact-types")
@@ -29,14 +39,41 @@ class ConfigurationController {
 		return new Items<>(repository.types());
 	}
 
+	/** Versões ativas; com {@code orgUnitId}, só as que valem para a unidade ou para as de baixo. */
 	@GetMapping("/workflows")
-	Items<Workflow> workflows(@RequestParam(required = false) String artifactType) {
-		return new Items<>(repository.workflows(artifactType));
+	@Transactional(readOnly = true)
+	Items<Workflow> workflows(@RequestParam(required = false) String artifactType,
+			@RequestParam(required = false) UUID orgUnitId) {
+		return new Items<>(repository.workflows(artifactType, orgUnitId));
 	}
 
 	@GetMapping("/workflows/{id}")
+	@Transactional(readOnly = true)
 	Workflow workflow(@PathVariable UUID id) {
 		return repository.workflow(id).orElseThrow(ApiException::notFound);
+	}
+
+	@PostMapping("/workflows/{id}/versions")
+	@ResponseStatus(HttpStatus.CREATED)
+	Workflow publish(@PathVariable UUID id, @RequestBody Map<String, Object> body) {
+		return designer.publish(id, body);
+	}
+
+	@DeleteMapping("/workflows/{id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	void revert(@PathVariable UUID id) {
+		designer.revert(id);
+	}
+
+	@GetMapping("/org-units/{unitId}/workflows")
+	Items<UnitWorkflow> ofUnit(@PathVariable UUID unitId) {
+		return new Items<>(designer.ofUnit(unitId));
+	}
+
+	@PostMapping("/org-units/{unitId}/workflows")
+	@ResponseStatus(HttpStatus.CREATED)
+	Workflow customize(@PathVariable UUID unitId, @RequestBody Map<String, Object> body) {
+		return designer.customize(unitId, body);
 	}
 
 	record Items<T>(List<T> items) {

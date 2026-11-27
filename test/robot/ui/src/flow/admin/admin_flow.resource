@@ -3,6 +3,7 @@ Documentation       Administração › Estrutura organizacional (UX/UI 7.10): e
 Library             String
 Resource            ../../pom/common/aquaqe_ui_common.resource
 Resource            ../../pom/admin/admin_pom.resource
+Resource            ../../pom/workflows/workflows_pom.resource
 Resource            ../login/login_flow.resource
 
 *** Keywords ***
@@ -69,6 +70,28 @@ Admin - Desativar Com Confirmacao
     Wait For Detail Status    desativada
     ${status}=    Get Detail Status Text
     Should Be Equal    ${status}    desativada
+
+Admin - Personalizar Workflow Da Unidade
+    [Documentation]    #49: na aba Workflows, a unidade personaliza o workflow herdado, acrescenta um status com
+    ...    transição, publica a versão 2 e volta a herdar o de cima.
+    [Arguments]    ${unit_name}    ${workflow_name}    ${status_name}    ${status_key}    ${from_key}
+    Click Workflows Tab
+    Wait For Workflows Page
+    Choose Workflows Unit    ${unit_name}
+    Wait For Workflow Origin    ${workflow_name}    Herdado de
+    Click Customize Workflow    ${workflow_name}
+    Wait For Workflow Editor
+    Wait For Workflow Origin    ${workflow_name}    Desta unidade
+    Add Workflow Status    ${status_name}    ${status_key}
+    Check Workflow Transition    ${from_key}    ${status_key}
+    Publish Workflow Version
+    Wait For Workflow Version    ${workflow_name}    v2
+    ${version}=    Get Workflow Version Text    ${workflow_name}
+    Should Be Equal    ${version}    v2
+    Revert Workflow    ${workflow_name}
+    Wait For Workflow Origin    ${workflow_name}    Herdado de
+    ${origin}=    Get Workflow Origin Text    ${workflow_name}
+    Should Contain    ${origin}    Herdado de
 
 Admin - Sem Acesso
     [Documentation]    Quem não é PLATFORM_ADMIN não vê o item Admin e, se abrir o endereço, volta para a home.
