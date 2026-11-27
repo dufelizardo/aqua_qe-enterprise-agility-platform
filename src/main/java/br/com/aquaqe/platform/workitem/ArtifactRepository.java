@@ -268,6 +268,27 @@ class ArtifactRepository {
 			.update() == 1;
 	}
 
+	/** Itens fora dos status informados (ver {@link Artifacts#outsideStatuses}). */
+	List<Artifacts.StatusSnapshot> outsideStatuses(java.util.Collection<UUID> orgUnitIds,
+			java.util.Collection<UUID> typeIds, java.util.Collection<UUID> statusIds) {
+		if (orgUnitIds.isEmpty() || typeIds.isEmpty()) {
+			return List.of();
+		}
+		return jdbc.sql("""
+				select a.id, a.key, a.type_id, a.org_unit_id, a.status_id, a.version from workitem.artifact a
+				 where not a.archived and a.org_unit_id in (:units) and a.type_id in (:types)
+				   and not (a.status_id = any (cast(:statuses as uuid[])))
+				 order by a.key
+				""")
+			.param("units", orgUnitIds)
+			.param("types", typeIds)
+			.param("statuses", statusIds.toArray(UUID[]::new))
+			.query((rs, n) -> new Artifacts.StatusSnapshot(rs.getObject("id", UUID.class), rs.getString("key"),
+				rs.getObject("type_id", UUID.class), rs.getObject("org_unit_id", UUID.class), rs.getObject("status_id", UUID.class),
+				rs.getInt("version")))
+			.list();
+	}
+
 	/** Troca o prefixo do caminho de toda a subárvore quando o pai muda. */
 	void movePaths(String oldPath, String newPath) {
 		jdbc.sql("""

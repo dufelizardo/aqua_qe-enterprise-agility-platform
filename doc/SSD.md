@@ -320,14 +320,19 @@ O trabalho entre ramos acontece no artefato: o pai de uma Feature pode ser uma I
 | Método | Caminho | Descrição | Permissão | RF |
 |---|---|---|---|---|
 | GET | `/artifact-types` | Tipos de artefato, com nível e pais permitidos. | autenticado | 012, 016 |
-| GET | `/workflows` | Workflows (filtro `artifactType`). | autenticado | 011 |
-| GET | `/workflows/{id}` | Workflow com status e transições. | autenticado | 001, 011 |
-| POST | `/workflows/{id}/versions` | Publica nova versão do workflow. | gerir configuração | 011 |
+| GET | `/workflows` | Versões ativas dos workflows (filtros `artifactType` e `orgUnitId`: com a unidade, só os que valem para ela ou para as de baixo). | autenticado | 011 |
+| GET | `/workflows/{id}` | Versão do workflow com status e transições. | autenticado | 001, 011 |
+| POST | `/workflows/{id}/versions` | Publica nova versão do workflow (#49). | gerir configuração | 011 |
+| DELETE | `/workflows/{id}` | A unidade deixa de ter workflow próprio e volta a herdar o de cima (#49). | gerir configuração | 011 |
+| GET | `/org-units/{id}/workflows` | Workflows vigentes na unidade, com a unidade de onde cada um vem (#49). | autenticado | 011 |
+| POST | `/org-units/{id}/workflows` | Personaliza: copia o workflow herdado para a unidade (#49). | gerir configuração | 011 |
+| GET | `/workflows/{id}/migration` | Itens que estão em outra versão, por status, com o destino sugerido (#49). | gerir configuração | 011 |
+| POST | `/workflows/{id}/migration` | Migra, de forma explícita, esses itens para a versão ativa (#49). | gerir configuração | 011 |
 | GET | `/doc-templates` | Templates de documento (filtro `documentType`). | autenticado | 018 |
 | GET | `/doc-templates/{id}` | Template com seções. | autenticado | 018 |
 | POST | `/doc-templates/{id}/versions` | Publica nova versão do template. | gerir configuração | 018 |
 
-No MVP, os tipos de artefato são os da configuração padrão (seção 8.1) e não são editáveis pela API. Os workflows padrão (seção 8.2) ficam na unidade raiz, na versão 1; `Cancelado` não tem posição, porque está fora da sequência. `hasGate` vem sempre `false` até o módulo `governance` existir. Publicar versões ainda não está implementado.
+No MVP, os tipos de artefato são os da configuração padrão (seção 8.1) e não são editáveis pela API. Os workflows padrão (seção 8.2) ficam na unidade raiz, na versão 1; `Cancelado` não tem posição, porque está fora da sequência. `hasGate` vem sempre `false` aqui: os gates são do `governance` (`GET /gates`, #78).
 
 `GET /workflows/{id}` (trecho):
 
@@ -347,9 +352,20 @@ No MVP, os tipos de artefato são os da configuração padrão (seção 8.1) e n
 }
 ```
 
-Regras ao publicar uma versão de workflow:
-- Um status não pode ser removido enquanto houver artefatos nele (`CONFIG_IN_USE`).
-- Artefatos existentes passam a usar a nova versão; o status atual é preservado pela `key`.
+**Workflow próprio por unidade (#49, decidido em 2026-11-27; F05 e D-01).**
+- **Versões.** Cada versão é imutável e tem status e transições próprios. As versões de um mesmo workflow têm o mesmo `familyId`, e só a mais recente fica `active`.
+- **Vigente.** O workflow vigente de um tipo numa unidade é o ativo da unidade mais funda da linhagem que tenha um para o tipo. A raiz sempre tem um (os padrões da seção 8.2). Assim, o workflow próprio de uma unidade vale para ela e para as de baixo que não tenham o seu. Todo artefato nasce no primeiro status da sequência do workflow vigente na unidade dele.
+- **Personalizar** (`POST /org-units/{id}/workflows`, corpo `{"from": "<id do vigente>"}`): copia o workflow herdado para a unidade, como versão 1 de uma família nova, com os mesmos tipos. É recusado se a unidade já for dona de um workflow desses tipos.
+- **Publicar** (`POST /workflows/{id}/versions`): o corpo traz `name` (opcional), `statuses` e `transitions` por inteiro. Cada status tem `key`, `name`, `phase` (`UPSTREAM`, `DOWNSTREAM` ou nulo), `category` e `inSequence`; a ordem da lista é a da sequência. Cada transição tem `from` e `to` (chaves). O `{id}` precisa ser a versão ativa; senão, `409 VERSION_CONFLICT`. Validações (`400`):
+  - de 1 a 30 status, com ao menos um na sequência;
+  - chave única, de letras maiúsculas, números e `_`, começando por letra (até 40);
+  - transição entre dois status diferentes da versão, sem repetir.
+- **Nenhuma migração é silenciosa.** Publicar não move nenhum artefato: os existentes ficam na versão em que estão, com as transições e os gates dela, e os novos nascem na nova. Remover um status é permitido; os itens nele ficam na versão anterior até a migração.
+- **Migração explícita** (`GET` e `POST /workflows/{id}/migration`): mostra e leva para a versão ativa os itens dos tipos do workflow, na subárvore da unidade dona, para os quais ele é o vigente e que estão num status de outra versão. Isso inclui as versões anteriores e o workflow herdado de antes de a unidade ter o próprio. O `POST` recebe `mapping` (chave atual → chave de destino); sem mapeamento, vale a mesma chave quando existe na versão ativa. Faltar destino dá `400` em `mapping.<chave>`. A migração roda numa transação, gera um `artifact.workflow_migrated` por item e é idempotente: os itens já migrados não aparecem mais.
+- **Gates.** Ao publicar ou personalizar, cada transição com os mesmos status de saída e de chegada (pela chave) recebe uma cópia do gate e das regras da transição de origem. A versão de origem mantém os dela. As aprovações não acompanham o item na migração: valem no status em que foram dadas (seção 4.3).
+- **Voltar a herdar** (`DELETE /workflows/{id}`): desativa o workflow próprio da unidade; os itens ficam na versão até a migração para o de cima. Os workflows da raiz não podem ser removidos.
+- **Quadros.** As colunas padrão e os status aceitos nas colunas de um quadro vêm dos workflows que valem para a unidade do quadro e para as de baixo. Um status novo que não está em nenhuma coluna aparece no aviso de status sem coluna (UX/UI 6.2).
+- **Eventos:** `workflow.customized`, `workflow.version_published` (com os status acrescentados e removidos), `workflow.removed` e `artifact.workflow_migrated`.
 
 Regra ao publicar uma versão de template: documentos existentes mantêm a versão de template com que foram criados; documentos novos usam a mais recente.
 
@@ -1268,7 +1284,7 @@ Convenções:
 | | `org_unit_link` | `unit_id`, `serves_unit_id`, `created_by`, `created_at` | PK composta; as duas unidades não podem estar na mesma linha da árvore. |
 | `configuration` | `artifact_type` | `key`, `level`, `name`, `key_prefix`, `parent_required` | `key` e `key_prefix` únicos. |
 | | `artifact_type_parent` | `type_id`, `parent_type_id` | PK composta. |
-| | `workflow` | `name`, `version_number`, `org_unit_id`, `active` | Um ativo por (`org_unit_id`, tipo de artefato). |
+| | `workflow` | `name`, `version_number`, `org_unit_id`, `active`, `family_id`, `published_by`, `published_at` | Cada linha é uma versão imutável (#49). Uma ativa por `family_id`; uma ativa por (`org_unit_id`, tipo de artefato). |
 | | `workflow_artifact_type` | `workflow_id`, `artifact_type_id` | PK composta. |
 | | `workflow_status` | `workflow_id`, `key`, `name`, `phase`, `category`, `position` | (`workflow_id`, `key`) único. |
 | | `workflow_transition` | `workflow_id`, `from_status_id`, `to_status_id` | Única por (`from_status_id`, `to_status_id`). |

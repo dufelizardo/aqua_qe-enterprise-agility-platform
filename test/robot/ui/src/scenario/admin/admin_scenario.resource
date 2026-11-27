@@ -49,6 +49,17 @@ ADMIN ORG - DESATIVAR COM CONFIRMACAO
     Admin - Criar Unidade Sob    ${portfolio}    ${cadeia}    ${cadeia_label}
     Admin - Desativar Com Confirmacao    ${portfolio}    ${expected_impact}
 
+ADMIN WORKFLOWS - PERSONALIZAR E PUBLICAR
+    [Documentation]    Portfólio e Cadeia novos; a Cadeia personaliza o fluxo de Feature, publica a v2 e volta a herdar.
+    [Arguments]    ${username}    ${display_name}    ${root_name}    ${portfolio_base}    ${portfolio_label}
+    ...    ${cadeia_base}    ${cadeia_label}    ${workflow_name}    ${status_name}    ${status_key}    ${from_key}
+    Admin - Abrir Estrutura Organizacional    ${username}    ${display_name}
+    ${portfolio}=    Unique Name    ${portfolio_base}
+    ${cadeia}=    Unique Name    ${cadeia_base}
+    Admin - Criar Unidade Sob    ${root_name}    ${portfolio}    ${portfolio_label}
+    Admin - Criar Unidade Sob    ${portfolio}    ${cadeia}    ${cadeia_label}
+    Admin - Personalizar Workflow Da Unidade    ${cadeia}    ${workflow_name}    ${status_name}    ${status_key}    ${from_key}
+
 ADMIN ORG - SEM ACESSO
     [Documentation]    Quem não administra a plataforma não chega à Administração.
     [Arguments]    ${username}    ${display_name}

@@ -100,9 +100,27 @@ public class Artifacts {
 			.count();
 	}
 
+	/**
+	 * Itens não arquivados dos tipos informados, nas unidades informadas, cujo status não está entre os informados:
+	 * os que estão em outra versão de workflow (migração explícita, #49). Sem verificar leitura.
+	 */
+	public List<StatusSnapshot> outsideStatuses(Collection<UUID> orgUnitIds, Collection<UUID> typeIds,
+			Collection<UUID> statusIds) {
+		return repository.outsideStatuses(orgUnitIds, typeIds, statusIds);
+	}
+
+	/** Leva o item para o status da nova versão (migração explícita, #49). @return false se a versão não confere */
+	public boolean migrateStatus(UUID artifactId, UUID statusId, int expectedVersion) {
+		return repository.changeStatus(artifactId, statusId, expectedVersion);
+	}
+
 	/** O artefato no formato da API (SSD 3.4). */
 	public ArtifactView view(UUID artifactId) {
 		return service.views(List.of(repository.find(artifactId).orElseThrow(ApiException::notFound))).getFirst();
+	}
+
+	/** Status atual de um item, para a migração explícita entre versões de workflow (#49). */
+	public record StatusSnapshot(UUID id, String key, UUID typeId, UUID orgUnitId, UUID statusId, int version) {
 	}
 
 	/** Referência a um artefato legível pelo usuário corrente ({@code actorId}). */
