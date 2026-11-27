@@ -54,9 +54,10 @@ class BoardService {
 	private final ArtifactConfiguration configuration;
 	private final Artifacts artifacts;
 	private final SprintService sprints;
+	private final BoardTemplates templates;
 
 	BoardService(JdbcClient jdbc, OrgUnits orgUnits, Authorization authorization, CurrentUser currentUser,
-			ArtifactConfiguration configuration, Artifacts artifacts, SprintService sprints) {
+			ArtifactConfiguration configuration, Artifacts artifacts, SprintService sprints, BoardTemplates templates) {
 		this.jdbc = jdbc;
 		this.orgUnits = orgUnits;
 		this.authorization = authorization;
@@ -64,6 +65,7 @@ class BoardService {
 		this.configuration = configuration;
 		this.artifacts = artifacts;
 		this.sprints = sprints;
+		this.templates = templates;
 	}
 
 	List<Board> boards(UUID orgUnitId, String level) {
@@ -97,6 +99,15 @@ class BoardService {
 	/** Cria o quadro com as colunas padrão: um status por coluna, na ordem do workflow do nível, sem limite de WIP. */
 	@Transactional
 	Board create(UUID orgUnitId, String level, String name) {
+		return create(orgUnitId, level, name, null);
+	}
+
+	/**
+	 * Cria o quadro. Com {@code templateId}, as colunas são uma cópia das do template (#50; MDL-07), sem os status que
+	 * não valem para a unidade; colunas que ficam sem status são omitidas. Sem template, as colunas padrão.
+	 */
+	@Transactional
+	Board create(UUID orgUnitId, String level, String name, UUID templateId) {
 		UUID userId = currentUser.require().id();
 		if (orgUnitId == null) {
 			throw ApiException.validation("orgUnitId", "obrigatório");
@@ -115,13 +126,50 @@ class BoardService {
 		jdbc.sql("insert into board.board (id, org_unit_id, level, name, created_by) values (:id, :unit, :level, :name, :by)")
 			.param("id", id).param("unit", orgUnitId).param("level", level).param("name", boardName).param("by", userId)
 			.update();
+		List<Column> columns = templateId == null ? defaultColumns(level, orgUnitId)
+				: templateColumns(templateId, level, orgUnitId);
+		insertColumns(id, columns);
+		return find(id).orElseThrow();
+	}
+
+	private List<Column> defaultColumns(String level, UUID orgUnitId) {
 		List<Column> columns = new ArrayList<>();
 		for (Status status : configuration.sequenceOfLevel(level, orgUnitId)) {
 			columns.add(new Column(null, columns.size() + 1, status.name(), phaseOf(status), List.of(status.key()), null,
 				"WARN"));
 		}
-		insertColumns(id, columns);
-		return find(id).orElseThrow();
+		return columns;
+	}
+
+	private List<Column> templateColumns(UUID templateId, String level, UUID orgUnitId) {
+		BoardTemplates.Template template = templates.find(templateId)
+			.orElseThrow(() -> ApiException.validation("templateId", "template inexistente"));
+		if (!template.level().equals(level)) {
+			throw ApiException.validation("templateId", "o template é de " + template.level() + ", e o quadro, de " + level);
+		}
+		Set<String> allowed = new HashSet<>(levelStatusKeys(level, orgUnitId));
+		allowed.add(CANCELLED);
+		List<Column> columns = new ArrayList<>();
+		for (BoardTemplates.TemplateColumn c : template.columns()) {
+			List<String> keys = c.statusKeys().stream().filter(allowed::contains).distinct().toList();
+			if (!keys.isEmpty()) {
+				columns.add(new Column(null, columns.size() + 1, c.name(), c.phase(), keys, c.wipLimit(),
+					c.wipPolicy() == null ? "WARN" : c.wipPolicy()));
+			}
+		}
+		if (columns.isEmpty()) {
+			throw ApiException.validation("templateId", "nenhum status do template vale para esta unidade");
+		}
+		return columns;
+	}
+
+	/** Salva as colunas do quadro como template do catálogo (#50). Quem gere o quadro. */
+	@Transactional
+	BoardTemplates.Template saveAsTemplate(UUID boardId, String name, String description) {
+		UUID userId = currentUser.require().id();
+		Board board = find(boardId).orElseThrow(ApiException::notFound);
+		requireManage(userId, board.orgUnitId());
+		return templates.insert(name, board.level(), description, board.columns(), userId, board.orgUnitId(), board.id());
 	}
 
 	/**

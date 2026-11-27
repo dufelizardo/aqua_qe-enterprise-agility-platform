@@ -12,6 +12,7 @@ import { ApiError, fieldError, messageOf, toApiError } from '../../core/api-erro
 import { WorkspaceService } from '../../core/workspace.service';
 import { DefaultOwnerService, OwnerSuggestion, ownerIdToSend, ruleSummary } from '../../work/default-owner.service';
 import { BoardConfig } from '../../work/board-config';
+import { BoardTemplate, BoardTemplatesService, columnsSummary } from '../../work/board-templates.service';
 import { SquadBacklog } from '../../work/squad-backlog';
 import { SquadSprints } from '../../work/squad-sprints';
 import { plural } from '../../core/context-nav';
@@ -59,6 +60,7 @@ export class LevelBoard {
   private readonly defaultOwners = inject(DefaultOwnerService);
   private readonly organization = inject(OrganizationService);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly templates = inject(BoardTemplatesService);
   protected readonly workspace = inject(WorkspaceService);
   protected readonly levels = inject(LevelsService);
   private readonly router = inject(Router);
@@ -113,6 +115,13 @@ export class LevelBoard {
   protected readonly list = signal<Artifact[]>([]);
   protected readonly busy = signal(false);
   protected readonly configuring = signal(false);
+  /** Templates do nível para criar o quadro (#50); vazio = colunas do workflow. */
+  protected readonly boardTemplates = signal<BoardTemplate[]>([]);
+  protected readonly boardTemplateId = signal('');
+  protected readonly chosenTemplate = computed(
+    () => this.boardTemplates().find((t) => t.id === this.boardTemplateId()) ?? null,
+  );
+  protected readonly columnsSummary = columnsSummary;
   protected readonly onlyBlocked = signal(false);
   /** Cartão sendo marcado como bloqueado, com o motivo digitado. */
   protected readonly blocking = signal<Card | null>(null);
@@ -232,6 +241,8 @@ export class LevelBoard {
       await this.loadSprintOptions(workspaceId);
       const boards = await this.work.boards(workspaceId, this.setup().level);
       this.board.set(boards[0] ?? null);
+      this.boardTemplateId.set('');
+      this.boardTemplates.set(boards.length === 0 ? await this.templates.list(this.setup().level) : []);
       await this.refresh();
     } catch (error) {
       this.loadError.set(messageOf(toApiError(error)));
@@ -256,7 +267,7 @@ export class LevelBoard {
       return;
     }
     await this.run(async () => {
-      this.board.set(await this.work.createBoard(workspaceId, this.setup().level));
+      this.board.set(await this.work.createBoard(workspaceId, this.setup().level, this.boardTemplateId() || null));
       await this.refresh();
       this.toast('Quadro criado.');
     });

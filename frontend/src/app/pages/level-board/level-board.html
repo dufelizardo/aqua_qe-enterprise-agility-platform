@@ -220,6 +220,25 @@
   <div class="card empty" data-testid="board-empty">
     @if (canManageBoards()) {
       <p>Este workspace ainda não tem quadro de {{ boardLevelName() }} ({{ setup().level }}).</p>
+      @if (boardTemplates().length > 0) {
+        <label class="template-field">
+          Modelo
+          <select (change)="boardTemplateId.set($any($event.target).value)" data-testid="board-template">
+            <option value="" [selected]="!boardTemplateId()">Colunas do workflow (padrão)</option>
+            @for (t of boardTemplates(); track t.id) {
+              <option [value]="t.id" [selected]="t.id === boardTemplateId()">{{ t.name }}</option>
+            }
+          </select>
+        </label>
+        @if (chosenTemplate(); as t) {
+          <p class="muted" data-testid="board-template-summary">
+            @if (t.description) {
+              {{ t.description }}
+            }
+            Colunas: {{ columnsSummary(t) }}. É uma cópia: mudar o modelo depois não altera este quadro.
+          </p>
+        }
+      }
       <button type="button" class="btn primary" [disabled]="busy()" (click)="createBoard()" data-testid="create-board">
         Criar quadro
       </button>

@@ -36,7 +36,8 @@ class BoardController {
 
 	@PostMapping
 	ResponseEntity<Board> create(@RequestBody CreateBoard body) {
-		return ResponseEntity.status(HttpStatus.CREATED).body(service.create(body.orgUnitId(), body.level(), body.name()));
+		return ResponseEntity.status(HttpStatus.CREATED)
+			.body(service.create(body.orgUnitId(), body.level(), body.name(), body.templateId()));
 	}
 
 	@GetMapping("/{id}")
@@ -56,7 +57,16 @@ class BoardController {
 		return service.view(id, type, assigneeId, blocked, sprintId);
 	}
 
-	record CreateBoard(UUID orgUnitId, String level, String name) {
+	/** Salva as colunas do quadro como template do catálogo (#50). */
+	@PostMapping("/{id}/template")
+	ResponseEntity<BoardTemplates.Template> saveAsTemplate(@PathVariable UUID id, @RequestBody SaveTemplate body) {
+		return ResponseEntity.status(HttpStatus.CREATED).body(service.saveAsTemplate(id, body.name(), body.description()));
+	}
+
+	record CreateBoard(UUID orgUnitId, String level, String name, UUID templateId) {
+	}
+
+	record SaveTemplate(String name, String description) {
 	}
 
 	record UpdateBoard(String name, List<ColumnInput> columns) {

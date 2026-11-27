@@ -39,6 +39,7 @@ interface TransitionRow {
         <a routerLink="/admin/workflows" data-testid="admin-tab-workflows">Workflows</a>
         <a routerLink="/admin/gates" class="on" aria-current="page">Gates</a>
         <a routerLink="/admin/responsavel-padrao" data-testid="admin-tab-default-owner">Responsável padrão</a>
+        <a routerLink="/admin/templates-de-quadro" data-testid="admin-tab-board-templates">Templates de quadro</a>
       </nav>
       <h1 data-testid="page-title">Gates</h1>
       <p class="lead">Regras que um item precisa cumprir para mudar de status. Cada transição do fluxo pode ter um gate.</p>

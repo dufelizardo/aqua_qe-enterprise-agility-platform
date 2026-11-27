@@ -91,6 +91,12 @@ export const routes: Routes = [
             title: 'Workflows · AQuA-QE',
             loadComponent: () => import('./admin/admin-workflows').then((m) => m.AdminWorkflows),
           },
+          // Catálogo de templates de quadro (#50; MDL-07).
+          {
+            path: 'templates-de-quadro',
+            title: 'Templates de quadro · AQuA-QE',
+            loadComponent: () => import('./admin/admin-board-templates').then((m) => m.AdminBoardTemplates),
+          },
           // Gates por transição do workflow (SSD 5; #78).
           {
             path: 'gates',

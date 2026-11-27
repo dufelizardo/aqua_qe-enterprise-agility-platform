@@ -96,4 +96,35 @@
     </button>
     <button type="button" class="btn" (click)="closed.emit()">Cancelar</button>
   </div>
+
+  <div class="template" data-testid="board-template-area">
+    @if (savingTemplate()) {
+      <p class="hint">Salva as colunas já gravadas deste quadro no catálogo, para outras equipes usarem ao criar um quadro.</p>
+      <label class="field">
+        <span>Nome do template</span>
+        <input [value]="templateName()" (input)="templateName.set(value($event))" maxlength="120" data-testid="board-template-name" />
+      </label>
+      <label class="field">
+        <span>Descrição (opcional)</span>
+        <input [value]="templateDescription()" (input)="templateDescription.set(value($event))" maxlength="300" />
+      </label>
+      @if (templateError(); as e) {
+        <p class="field-error" data-testid="board-template-error">{{ e }}</p>
+      }
+      <div class="actions">
+        <button type="button" class="btn primary" [disabled]="busy() || !templateName().trim()" (click)="saveAsTemplate()"
+                data-testid="board-template-save">
+          Salvar template
+        </button>
+        <button type="button" class="btn" (click)="savingTemplate.set(false)">Cancelar</button>
+      </div>
+    } @else {
+      <button type="button" class="btn" (click)="savingTemplate.set(true); templateSaved.set(null)" data-testid="board-save-as-template">
+        Salvar como template
+      </button>
+      @if (templateSaved(); as name) {
+        <p class="hint" role="status" data-testid="board-template-saved">Template "{{ name }}" salvo no catálogo.</p>
+      }
+    }
+  </div>
 </section>

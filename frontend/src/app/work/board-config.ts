@@ -1,6 +1,7 @@
 import { Component, computed, inject, input, output, signal } from '@angular/core';
 
 import { ApiError, messageOf, toApiError } from '../core/api-error';
+import { BoardTemplatesService } from './board-templates.service';
 import { Board, ColumnConfig, WipPolicy, WorkService, configProblems } from './work.service';
 
 /**
@@ -14,6 +15,7 @@ import { Board, ColumnConfig, WipPolicy, WorkService, configProblems } from './w
 })
 export class BoardConfig {
   private readonly work = inject(WorkService);
+  private readonly templates = inject(BoardTemplatesService);
 
   readonly board = input.required<Board>();
   readonly saved = output<Board>();
@@ -24,6 +26,13 @@ export class BoardConfig {
   protected readonly statuses = signal<{ key: string; name: string }[]>([]);
   protected readonly busy = signal(false);
   protected readonly error = signal<ApiError | null>(null);
+
+  // Salvar como template (#50)
+  protected readonly savingTemplate = signal(false);
+  protected readonly templateName = signal('');
+  protected readonly templateDescription = signal('');
+  protected readonly templateError = signal<string | null>(null);
+  protected readonly templateSaved = signal<string | null>(null);
 
   protected readonly problems = computed(() => configProblems(this.columns()));
   protected readonly unmapped = computed(() => {
@@ -95,6 +104,24 @@ export class BoardConfig {
       this.saved.emit(await this.work.updateBoard(this.board().id, { name: this.name(), columns: this.columns() }));
     } catch (error) {
       this.error.set(toApiError(error));
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
+  /** Grava as colunas já salvas do quadro como template do catálogo (#50). */
+  protected async saveAsTemplate(): Promise<void> {
+    this.busy.set(true);
+    this.templateError.set(null);
+    try {
+      const template = await this.templates.saveFromBoard(this.board().id, this.templateName(), this.templateDescription());
+      this.templateSaved.set(template.name);
+      this.savingTemplate.set(false);
+      this.templateName.set('');
+      this.templateDescription.set('');
+    } catch (error) {
+      const api = toApiError(error);
+      this.templateError.set(api.errors[0]?.message ?? messageOf(api));
     } finally {
       this.busy.set(false);
     }

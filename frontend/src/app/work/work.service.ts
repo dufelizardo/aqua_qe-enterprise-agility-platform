@@ -149,8 +149,11 @@ export class WorkService {
     return response.items;
   }
 
-  createBoard(orgUnitId: string, level: string): Promise<Board> {
-    return firstValueFrom(this.http.post<Board>(`${API}/boards`, { orgUnitId, level }));
+  /** Cria o quadro; com {@code templateId}, as colunas são uma cópia das do template (#50). */
+  createBoard(orgUnitId: string, level: string, templateId?: string | null): Promise<Board> {
+    return firstValueFrom(
+      this.http.post<Board>(`${API}/boards`, templateId ? { orgUnitId, level, templateId } : { orgUnitId, level }),
+    );
   }
 
   updateBoard(id: string, body: { name?: string; columns?: ColumnConfig[] }): Promise<Board> {
