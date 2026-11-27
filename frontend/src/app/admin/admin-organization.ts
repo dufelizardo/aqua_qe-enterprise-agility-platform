@@ -4,11 +4,13 @@ import { RouterLink } from '@angular/router';
 
 import { ApiError, fieldError, messageOf, toApiError } from '../core/api-error';
 import {
+  DeactivationImpact,
   OrgLevel,
   OrgUnit,
   OrgUnitDetail,
   OrganizationService,
   buildTree,
+  impactLines,
   linkCandidates,
 } from './organization.service';
 
@@ -41,6 +43,13 @@ export class AdminOrganization {
   protected readonly renameName = signal('');
   protected readonly renameError = signal<ApiError | null>(null);
   protected readonly conflict = signal(false);
+
+  // Confirmação antes de desativar (#35): o que ainda está ligado à unidade.
+  protected readonly confirmingDeactivation = signal<DeactivationImpact | null>(null);
+  protected readonly impactLines = computed(() => {
+    const impact = this.confirmingDeactivation();
+    return impact ? impactLines(impact) : [];
+  });
 
   // Nova unidade abaixo da escolhida
   protected readonly newName = signal('');
@@ -128,13 +137,32 @@ export class AdminOrganization {
     });
   }
 
+  /** Reativar é direto; desativar pede confirmação, com o que ainda está ligado à unidade (#35; SSD 3.2). */
   protected async toggleActive(): Promise<void> {
     const unit = this.detail();
     if (!unit) {
       return;
     }
+    if (!unit.active) {
+      await this.setActive(unit, true);
+      return;
+    }
     await this.run(this.renameError, async () => {
-      const updated = await this.api.update(unit.id, { active: !unit.active, version: unit.version });
+      this.confirmingDeactivation.set(await this.api.deactivationImpact(unit.id));
+    });
+  }
+
+  protected async confirmDeactivation(): Promise<void> {
+    const unit = this.detail();
+    this.confirmingDeactivation.set(null);
+    if (unit) {
+      await this.setActive(unit, false);
+    }
+  }
+
+  private async setActive(unit: OrgUnitDetail, active: boolean): Promise<void> {
+    await this.run(this.renameError, async () => {
+      const updated = await this.api.update(unit.id, { active, version: unit.version });
       await this.afterChange(updated, updated.active ? 'Unidade reativada.' : 'Unidade desativada.');
     });
   }
@@ -183,6 +211,7 @@ export class AdminOrganization {
 
   private showDetail(detail: OrgUnitDetail): void {
     this.detail.set(detail);
+    this.confirmingDeactivation.set(null);
     this.renameName.set(detail.name);
     this.renameError.set(null);
     this.conflict.set(false);

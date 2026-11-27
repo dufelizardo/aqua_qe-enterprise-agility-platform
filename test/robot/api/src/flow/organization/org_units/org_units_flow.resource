@@ -116,6 +116,41 @@ PUT Org Unit Link - Status Code 403
     ${response}=    PUT Org Unit Link As Persona    ${persona}    ${portfolio_a}    ${portfolio_b}
     Validate Error Body    ${response}    403    FORBIDDEN
 
+GET Org Unit Deactivation Impact - Status Code 200
+    [Documentation]    #35 (SSD 3.2): o aviso conta a Cadeia ativa abaixo e o vínculo; desativar continua permitido.
+    [Arguments]    ${persona}    ${portfolio_name}    ${cadeia_name}
+    ${root}=    Get Root Org Unit Id
+    ${portfolio_a}=    Create Org Unit As Admin    ${portfolio_name} A    PORTFOLIO    ${root}
+    ${portfolio_b}=    Create Org Unit As Admin    ${portfolio_name} B    PORTFOLIO    ${root}
+    ${cadeia}=    Create Org Unit As Admin    ${cadeia_name}    CADEIA    ${portfolio_a}
+    ${linked}=    PUT Org Unit Link As Persona    admin    ${portfolio_a}    ${portfolio_b}
+    Should Be Equal As Integers    ${linked.status_code}    204
+    ${response}=    GET Org Unit Deactivation Impact As Persona    ${persona}    ${portfolio_a}
+    Should Be Equal As Integers    ${response.status_code}    200
+    Should Be Equal As Integers    ${response.json()}[activeSubunits]    1
+    Should Be Equal As Integers    ${response.json()}[openArtifacts]    0
+    Should Be Equal As Integers    ${response.json()}[activeRoleAssignments]    0
+    Should Be Equal As Integers    ${response.json()}[links]    1
+
+GET Org Unit Deactivation Impact - Status Code 403
+    [Documentation]    Só quem gere configuração (e pode desativar) vê o aviso.
+    [Arguments]    ${persona}    ${portfolio_name}    ${cadeia_name}
+    ${root}=    Get Root Org Unit Id
+    ${portfolio}=    Create Org Unit As Admin    ${portfolio_name}    PORTFOLIO    ${root}
+    ${response}=    GET Org Unit Deactivation Impact As Persona    ${persona}    ${portfolio}
+    Validate Error Body    ${response}    403    FORBIDDEN
+
+Organization - Get Deactivation Impact - GET - By HTTP Status Code
+    [Documentation]    Executa o cenário de GET /org-units/{id}/deactivation-impact correspondente ao status esperado.
+    [Arguments]    ${meuHTTP}    ${persona}    ${portfolio_name}    ${cadeia_name}
+    IF    '${meuHTTP}' == '200'
+        GET Org Unit Deactivation Impact - Status Code 200    ${persona}    ${portfolio_name}    ${cadeia_name}
+    ELSE IF    '${meuHTTP}' == '403'
+        GET Org Unit Deactivation Impact - Status Code 403    ${persona}    ${portfolio_name}    ${cadeia_name}
+    ELSE
+        Fail    Status HTTP '${meuHTTP}' não previsto para GET /org-units/{id}/deactivation-impact.
+    END
+
 Organization - Post Org Unit - POST - By HTTP Status Code
     [Documentation]    Executa o cenário de POST /org-units correspondente ao status esperado.
     [Arguments]    ${meuHTTP}    ${persona}    ${name}

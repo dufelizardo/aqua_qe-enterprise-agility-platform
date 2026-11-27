@@ -195,6 +195,25 @@ class OrganizationRepository implements OrgUnits {
 			.single();
 	}
 
+	@Override
+	public int activeDescendants(UUID id) {
+		return jdbc.sql("""
+				select count(*) from organization.org_unit u join organization.org_unit r on r.id = :id
+				 where u.active and u.id <> r.id and u.path like r.path || '%'
+				""")
+			.param("id", id)
+			.query(Integer.class)
+			.single();
+	}
+
+	@Override
+	public int linkCount(UUID id) {
+		return jdbc.sql("select count(*) from organization.org_unit_link where unit_id = :id or serves_unit_id = :id")
+			.param("id", id)
+			.query(Integer.class)
+			.single();
+	}
+
 	private List<UnitRef> linkRefs(String shownColumn, String filterColumn, UUID unitId) {
 		return jdbc.sql("select u.id, u.name, l.key as level_key from organization.org_unit_link k"
 				+ " join organization.org_unit u on u.id = " + shownColumn

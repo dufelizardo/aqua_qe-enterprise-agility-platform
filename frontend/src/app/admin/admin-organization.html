@@ -107,9 +107,37 @@
         </form>
 
         @if (unit.parentId) {
-          <button type="button" class="btn" [disabled]="busy()" (click)="toggleActive()" data-testid="org-toggle-active">
-            {{ unit.active ? 'Desativar unidade' : 'Reativar unidade' }}
-          </button>
+          @if (confirmingDeactivation()) {
+            <div class="notice confirm" role="alertdialog" aria-labelledby="deactivate-title" data-testid="org-deactivate-confirm">
+              <p id="deactivate-title"><strong>Desativar {{ unit.name }}?</strong></p>
+              <p>
+                A unidade sai das escolhas de unidade pai, de vínculo e de criação de itens. Nada é movido nem apagado, e ela
+                pode ser reativada depois.
+              </p>
+              @if (impactLines().length > 0) {
+                <p>Ainda estão ligados a ela:</p>
+                <ul data-testid="org-deactivate-impact">
+                  @for (line of impactLines(); track line) {
+                    <li>{{ line }}</li>
+                  }
+                </ul>
+              } @else {
+                <p data-testid="org-deactivate-impact-none">Nada mais está ligado a ela.</p>
+              }
+              <div class="actions">
+                <button type="button" class="btn danger" [disabled]="busy()" (click)="confirmDeactivation()" data-testid="org-deactivate-confirm-button">
+                  Desativar
+                </button>
+                <button type="button" class="btn" (click)="confirmingDeactivation.set(null)" data-testid="org-deactivate-cancel">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          } @else {
+            <button type="button" class="btn" [disabled]="busy()" (click)="toggleActive()" data-testid="org-toggle-active">
+              {{ unit.active ? 'Desativar unidade' : 'Reativar unidade' }}
+            </button>
+          }
         }
 
         @if (unit.active && childLevels().length > 0) {

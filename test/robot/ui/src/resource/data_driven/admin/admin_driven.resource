@@ -12,3 +12,4 @@ ${admin_portfolio_base}     Robot UI Portfólio
 ${admin_portfolio_label}    Portfólio
 ${admin_cadeia_base}        Robot UI Cadeia
 ${admin_cadeia_label}       Cadeia
+${admin_deactivate_impact}  1 subunidade ativa abaixo

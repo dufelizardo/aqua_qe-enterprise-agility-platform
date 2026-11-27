@@ -248,6 +248,25 @@ h4 {
   color: var(--text);
 }
 
+.notice.confirm {
+  display: block;
+  margin-top: 4px;
+
+  p,
+  ul {
+    margin: 0 0 8px;
+  }
+
+  ul {
+    padding-left: 18px;
+  }
+
+  .actions {
+    display: flex;
+    gap: 8px;
+  }
+}
+
 .links {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

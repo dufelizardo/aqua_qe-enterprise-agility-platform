@@ -25,6 +25,12 @@ public interface OrgUnits {
 	 */
 	boolean anyServes(Collection<UUID> from, Collection<UUID> to);
 
+	/** Unidades ativas abaixo da unidade, em qualquer profundidade (#35, aviso ao desativar). */
+	int activeDescendants(UUID id);
+
+	/** Vínculos "atende a" da unidade, nos dois sentidos (#35). */
+	int linkCount(UUID id);
+
 	record OrgUnitSummary(UUID id, String name, String levelKey, String flightLevel, UUID parentId, boolean active) {
 	}
 }

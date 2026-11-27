@@ -50,6 +50,26 @@ Admin - Vincular Unidade
     ${serves}=    Get Serves List Text
     Should Contain    ${serves}    ${target_name}
 
+Admin - Desativar Com Confirmacao
+    [Documentation]    Desativar pede confirmação e mostra o que ainda está ligado à unidade (#35). Cancelar deixa a
+    ...    unidade ativa; confirmar a desativa.
+    [Arguments]    ${name}    ${expected_impact}
+    Select Tree Unit    ${name}
+    Click Toggle Active
+    Wait For Deactivation Panel
+    ${impact}=    Get Deactivation Impact Text
+    Should Contain    ${impact}    ${expected_impact}
+    Cancel Deactivation
+    Wait For Deactivation Panel Hidden
+    ${status}=    Get Detail Status Text
+    Should Be Equal    ${status}    ativa
+    Click Toggle Active
+    Wait For Deactivation Panel
+    Confirm Deactivation
+    Wait For Detail Status    desativada
+    ${status}=    Get Detail Status Text
+    Should Be Equal    ${status}    desativada
+
 Admin - Sem Acesso
     [Documentation]    Quem não é PLATFORM_ADMIN não vê o item Admin e, se abrir o endereço, volta para a home.
     [Arguments]    ${username}    ${display_name}

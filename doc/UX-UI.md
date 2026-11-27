@@ -583,11 +583,13 @@ Visível apenas para `PLATFORM_ADMIN`. Uma página com seções no menu interno.
 +---------------------------+--------------------------------------------------------+
 ```
 
+**Desativar unidade (#35, 2026-11-27):** o botão abre, no lugar dele, um aviso "Desativar <unidade>?". O aviso explica que a unidade sai das escolhas de pai, de vínculo e de criação, que nada é movido nem apagado e que ela pode ser reativada. Em seguida lista só o que existe: subunidades ativas abaixo, artefatos abertos, papéis vigentes e vínculos "atende a"; sem nada, diz "Nada mais está ligado a ela". Os botões são **Desativar** e **Cancelar**. Reativar continua direto, sem aviso.
+
 No celular as duas colunas se empilham, e escolher uma unidade rola a tela até o detalhe. "Nova unidade aqui" só oferece níveis de posição maior que o da unidade escolhida, e "Passa a atender a" só oferece unidades ativas de outro ramo (SSD 3.2).
 
 | Seção | Conteúdo | Dados e ações |
 |---|---|---|
-| Estrutura organizacional | Árvore das unidades com o nível de cada uma; criar, renomear, desativar; vínculos "atende a" de cada unidade. Os níveis são exibidos somente para leitura. | `GET /org-levels`, `GET /org-units`, `GET /org-units/{id}`, `POST /org-units`, `PATCH /org-units/{id}`, `GET /org-units/{id}/links`, `PUT /org-units/{id}/links/{targetId}`, `DELETE /org-units/{id}/links/{targetId}` |
+| Estrutura organizacional | Árvore das unidades com o nível de cada uma; criar, renomear, desativar; vínculos "atende a" de cada unidade. Os níveis são exibidos somente para leitura. | `GET /org-levels`, `GET /org-units`, `GET /org-units/{id}`, `POST /org-units`, `PATCH /org-units/{id}`, `GET /org-units/{id}/deactivation-impact`, `GET /org-units/{id}/links`, `PUT /org-units/{id}/links/{targetId}`, `DELETE /org-units/{id}/links/{targetId}` |
 | Usuários e papéis | Por unidade, quem tem qual papel; atribuir e revogar. | `GET /users`, `GET /roles`, `GET /org-units/{id}/role-assignments`, `POST /role-assignments`, `DELETE /role-assignments/{id}` |
 | Workflows e gates | Lista de workflows; no detalhe, status em ordem com fase e categoria, transições e o gate de cada transição, editável regra a regra. | `GET /workflows`, `GET /workflows/{id}`, `POST /workflows/{id}/versions`, `GET /gates`, `PUT /workflow-transitions/{transitionId}/gate`, `DELETE /workflow-transitions/{transitionId}/gate` |
 | Templates de documento | Seções de cada tipo de documento, obrigatoriedade e papel aprovador. | `GET /doc-templates`, `GET /doc-templates/{id}`, `POST /doc-templates/{id}/versions` |

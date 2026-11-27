@@ -31,6 +31,35 @@ export interface OrgUnitDetail extends OrgUnit {
   links: { serves: OrgUnitRef[]; servedBy: OrgUnitRef[] };
 }
 
+/** O que ainda está ligado à unidade, para o aviso antes de desativá-la (#35). */
+export interface DeactivationImpact {
+  activeSubunits: number;
+  openArtifacts: number;
+  activeRoleAssignments: number;
+  links: number;
+}
+
+/** As linhas do aviso, só com o que existe: "2 subunidades ativas", "1 artefato aberto"... */
+export function impactLines(impact: DeactivationImpact): string[] {
+  const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+  const lines: string[] = [];
+  if (impact.activeSubunits > 0) {
+    lines.push(
+      plural(impact.activeSubunits, 'subunidade ativa abaixo (continua ativa)', 'subunidades ativas abaixo (continuam ativas)'),
+    );
+  }
+  if (impact.openArtifacts > 0) {
+    lines.push(plural(impact.openArtifacts, 'artefato aberto (continua na unidade)', 'artefatos abertos (continuam na unidade)'));
+  }
+  if (impact.activeRoleAssignments > 0) {
+    lines.push(plural(impact.activeRoleAssignments, 'papel vigente (não é revogado)', 'papéis vigentes (não são revogados)'));
+  }
+  if (impact.links > 0) {
+    lines.push(plural(impact.links, 'vínculo "atende a" (é mantido)', 'vínculos "atende a" (são mantidos)'));
+  }
+  return lines;
+}
+
 /** Linha da árvore já achatada para exibição: a unidade e a profundidade. */
 export interface TreeRow {
   unit: OrgUnit;
@@ -79,6 +108,10 @@ export class OrganizationService {
 
   update(id: string, changes: { name?: string; active?: boolean; version: number }): Promise<OrgUnitDetail> {
     return firstValueFrom(this.http.patch<OrgUnitDetail>(`${API}/org-units/${id}`, changes));
+  }
+
+  deactivationImpact(id: string): Promise<DeactivationImpact> {
+    return firstValueFrom(this.http.get<DeactivationImpact>(`${API}/org-units/${id}/deactivation-impact`));
   }
 
   link(id: string, targetId: string): Promise<unknown> {

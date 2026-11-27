@@ -1,4 +1,4 @@
-import { OrgLevel, OrgUnit, OrgUnitDetail, buildTree, linkCandidates } from './organization.service';
+import { OrgLevel, OrgUnit, OrgUnitDetail, buildTree, impactLines, linkCandidates } from './organization.service';
 
 const level = (key: string, position: number): OrgLevel => ({ key, name: key, position, flightLevel: null });
 const ENTERPRISE = level('ENTERPRISE', 1);
@@ -56,5 +56,19 @@ describe('linkCandidates', () => {
   it('não oferece descendentes da própria unidade', () => {
     const portfolioA = detailOf(units[3]!);
     expect(linkCandidates(portfolioA, units).map((u) => u.id)).toEqual(['b']);
+  });
+});
+
+describe('impactLines (#35)', () => {
+  it('lista só o que existe, no singular ou no plural', () => {
+    expect(impactLines({ activeSubunits: 2, openArtifacts: 1, activeRoleAssignments: 0, links: 1 })).toEqual([
+      '2 subunidades ativas abaixo (continuam ativas)',
+      '1 artefato aberto (continua na unidade)',
+      '1 vínculo "atende a" (é mantido)',
+    ]);
+  });
+
+  it('fica vazia quando nada está ligado à unidade', () => {
+    expect(impactLines({ activeSubunits: 0, openArtifacts: 0, activeRoleAssignments: 0, links: 0 })).toEqual([]);
   });
 });

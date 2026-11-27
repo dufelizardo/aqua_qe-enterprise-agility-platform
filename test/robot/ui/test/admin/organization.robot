@@ -33,3 +33,10 @@ CT-004 - REV-01: Validate Admin - sem PLATFORM_ADMIN não há acesso à Administ
     [Documentation]    O item Admin não aparece e o endereço leva de volta à home.
     [Tags]    UI    Admin    REV-01    security    ASVS-V4
     ADMIN ORG - SEM ACESSO    ${admin_pm_username}    ${admin_pm_display_name}
+
+CT-005 - SSD-3.2: Validate Admin - desativar unidade pede confirmação com o que está ligado
+    [Documentation]    #35: o aviso lista a subunidade ativa; Cancelar mantém a unidade ativa; Desativar a desativa.
+    [Tags]    UI    Admin    SSD-3.2
+    ADMIN ORG - DESATIVAR COM CONFIRMACAO    ${admin_username}    ${admin_display_name}    ${admin_root_name}
+    ...    ${admin_portfolio_base}    ${admin_portfolio_label}    ${admin_cadeia_base}    ${admin_cadeia_label}
+    ...    ${admin_deactivate_impact}

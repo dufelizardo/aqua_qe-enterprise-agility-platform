@@ -77,7 +77,7 @@ A área comercial, o quarto contexto da proposta, fica fora (ADM-08).
 ## 6. O que a análise revelou no produto atual
 
 1. **Operações administrativas sem evento.** O catálogo do SSD 7.2 cobria papéis e configuração, mas não a estrutura organizacional. Foram incluídos `org_unit.created`, `org_unit.updated` e `org_unit.link_added` / `org_unit.link_removed`, marcados "a validar". Hoje nenhuma operação administrativa é auditada ainda, porque os módulos `events` e `audit` não existem; isso entra com eles (REV-03).
-2. **Desativar unidade sem confirmação nem verificação de dependências.** Hoje não há artefatos, mas, com o `workitem`, uma unidade com itens ativos não deveria ser desativada sem aviso. Ficou registrado como pendência no [SSD 3.2](SSD.md#32-organization) e como débito técnico na tela (confirmação).
+2. **Desativar unidade sem confirmação nem verificação de dependências.** Hoje não há artefatos, mas, com o `workitem`, uma unidade com itens ativos não deveria ser desativada sem aviso. Ficou registrado como pendência no [SSD 3.2](SSD.md#32-organization) e como débito técnico na tela (confirmação). **Resolvido em 2026-11-27 (#35):** a tela pede confirmação e avisa o que ainda está ligado à unidade, e a desativação continua permitida.
 3. **Três níveis de configuração:** princípio adotado (seção 1).
 
 <!-- aqeap-adminpro-ef9e4c4a0a -->

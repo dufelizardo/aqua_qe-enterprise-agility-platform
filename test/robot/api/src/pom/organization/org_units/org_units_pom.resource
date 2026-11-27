@@ -54,3 +54,11 @@ GET Org Unit Links As Persona
     ...    expected_status=ANY
     Log    ${response.status_code} ${response.text}
     RETURN    ${response}
+
+GET Org Unit Deactivation Impact As Persona
+    [Arguments]    ${persona}    ${unit_id}
+    ${session}=    Get AQuA-QE Session For Persona    ${persona}
+    ${response}=    GET On Session    ${session}
+    ...    ${API_BASE_PATH}${ORGANIZATION_UNITS_ENDPOINT}/${unit_id}/deactivation-impact    expected_status=ANY
+    Log    ${response.status_code} ${response.text}
+    RETURN    ${response}
