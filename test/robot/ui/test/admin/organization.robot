@@ -48,3 +48,8 @@ CT-006 - SSD-3.3: Validate Admin - workflow próprio da unidade, nova versão e 
     ADMIN WORKFLOWS - PERSONALIZAR E PUBLICAR    ${admin_username}    ${admin_display_name}    ${admin_root_name}
     ...    ${admin_portfolio_base}    ${admin_portfolio_label}    ${admin_cadeia_base}    ${admin_cadeia_label}
     ...    ${admin_workflow_name}    ${admin_workflow_status}    ${admin_workflow_key}    ${admin_workflow_from}
+
+CT-007 - REV-14: Validate Admin - pessoas e privacidade, baixar dados e confirmar anonimização
+    [Documentation]    #32: o administrador baixa os dados da pessoa em JSON; "Anonimizar" só libera com o nome digitado.
+    [Tags]    UI    Admin    Privacy    REV-14
+    ADMIN PEOPLE - EXPORTAR E CONFIRMAR ANONIMIZACAO    ${admin_username}    ${admin_display_name}    ${admin_people_search}

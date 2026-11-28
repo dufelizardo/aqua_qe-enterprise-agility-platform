@@ -48,6 +48,38 @@ public class UserDirectory {
 			.list();
 	}
 
+	/**
+	 * Diretório para a Administração (#32; REV-14): todas as contas cujo nome, usuário ou e-mail contém {@code query}, com
+	 * o e-mail e a última atividade. Só para quem gere dados pessoais; as outras telas veem só o nome.
+	 */
+	public java.util.List<Account> directory(String query, int limit) {
+		String term = query == null ? "" : query.strip();
+		return jdbc.sql("""
+				select id, coalesce(name, username, subject) as name, username, email, active,
+				       subject like 'anonimizado:%' as anonymized, last_seen_at
+				  from identity.user_account
+				 where cast(:term as text) = '' or name ilike '%' || cast(:term as text) || '%'
+				    or username ilike '%' || cast(:term as text) || '%' or email ilike '%' || cast(:term as text) || '%'
+				 order by anonymized, name, id limit :limit
+				""")
+			.param("term", term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_"))
+			.param("limit", limit)
+			.query((rs, n) -> new Account(rs.getObject("id", UUID.class), rs.getString("name"), rs.getString("username"),
+				rs.getString("email"), rs.getBoolean("active"), rs.getBoolean("anonymized"),
+				rs.getObject("last_seen_at", java.time.OffsetDateTime.class).toInstant()))
+			.list();
+	}
+
+	/** Se a conta já foi anonimizada (#32). Vazio se a conta não existe. */
+	public java.util.Optional<Boolean> anonymized(UUID id) {
+		return jdbc.sql("select subject like 'anonimizado:%' from identity.user_account where id = :id")
+			.param("id", id).query(Boolean.class).optional();
+	}
+
 	public record UserRef(UUID id, String name, boolean active) {
+	}
+
+	public record Account(UUID id, String name, String username, String email, boolean active, boolean anonymized,
+			java.time.Instant lastSeenAt) {
 	}
 }

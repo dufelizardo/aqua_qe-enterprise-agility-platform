@@ -34,7 +34,7 @@ Cada requisito da especificação aparece com o capítulo do ASVS que o verifica
 | RF-SC09 e 10: auditoria protegida | V7 | PR.PS-04, DE.CM-03, DE.AE-03 | **Coberto, com pendências da #8.** Consulta restrita (`GET /audit-events`) e verificação da cadeia (`GET /audit-events/verification`). Pendentes: usuário de banco só com `INSERT` e `SELECT` e ancoragem externa do hash ([REV-03](REVIEW-01.md#rev-03--garantias-da-auditoria-assíncrona)). |
 | RF-SC11 e 12: classificação e mascaramento | V8 | ID.AM-07, PR.DS-01 | **Parcial.** A classificação do documento é registrada (SSD 6.1); políticas por classificação e mascaramento na Fase 2. |
 | RF-SC13: gestão de segredos | V6, V14 | PR.AA-01, PR.DS-01 | **Parcial.** Segredos de infraestrutura no mecanismo do cluster; nenhum segredo no repositório (o lint LKDF recusa segredo literal nos testes). Credenciais de integração, com rotação, na Fase 2 ([SAD 7.10](SAD.md#710-segredos-e-criptografia)). |
-| RF-SC14: retenção e descarte | V8 | ID.AM-08 | **Lacuna.** Depende do inventário de dados pessoais ([REV-14](REVIEW-01.md#rev-14--privacidade-e-dados-pessoais), #32). |
+| RF-SC14: retenção e descarte | V8 | ID.AM-08 | **Parcial.** Inventário, retenção e anonimização decididos na #32 ([SSD 2.2](SSD.md#22-dados-pessoais-rev-14)); falta a retenção automática dos avisos e das contas inativas. |
 | RF-SC15: disaster recovery | — | PR.DS-11, RC.RP-01 | **Parcial.** Meta provisória RPO 1 h e RTO 4 h ([SAD 11](SAD.md#11-atributos-de-qualidade)); falta o procedimento testado de restauração ([OPERACAO](OPERACAO.md)). |
 | RF-SC16 e 18: monitoramento de eventos de segurança, expiração e revogação de tokens | V3, V7 | DE.CM-03, DE.AE-02, PR.AA-03 | **Parcial.** Sessão por cookie no backend e logout que encerra a sessão no IdP (testes `ASVS-V3`). Faltam os eventos de autenticação na trilha e a revogação em massa (lacunas S-03 e S-04). |
 | RF-SC17: integridade referencial | V11 | PR.DS-01 | **Coberto.** Chaves estrangeiras no banco e validações no serviço; um schema por módulo (ADR-05). |
@@ -104,7 +104,7 @@ Cada lacuna é uma issue no Backlog. As que já tinham issue apontam para ela.
 | S-04 | Capacidades de resposta a incidentes: revogar as sessões de um usuário ou de todos, e exportar a trilha de um período | CSF RS.MA-01, RS.MI-01 | #110 |
 | S-05 | Limites de taxa da API, por usuário e por origem | ASVS V11.1 e V13 | #111 |
 | — | Garantias da auditoria: usuário de banco só com `INSERT` e `SELECT`, ancoragem externa do hash | RF-SC09, RNF-SC02 | #8 (REV-03) |
-| — | Privacidade, dados pessoais e retenção | RF-SC14; LGPD | #32 (REV-14) |
+| — | Privacidade, dados pessoais e retenção | RF-SC14; LGPD | resolvido na #32 (REV-14), menos a retenção automática |
 | — | TLS, realm de produção e política de MFA | RNF-SC05, RF-SC05; ASVS V9 | #25 |
 
 ## 6. Pendências deste documento

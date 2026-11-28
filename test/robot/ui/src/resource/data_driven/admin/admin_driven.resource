@@ -17,3 +17,4 @@ ${admin_workflow_name}      Fluxo padrão de Feature
 ${admin_workflow_status}    Em Triagem UI
 ${admin_workflow_key}       EM_TRIAGEM_UI
 ${admin_workflow_from}      BACKLOG
+${admin_people_search}      robot.qa

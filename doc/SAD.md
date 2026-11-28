@@ -171,6 +171,7 @@ flowchart TB
 | `notification` | — | Avisos de cada pessoa (#85): consome `knowledge_page.commented` da outbox e cria os avisos de menção e de resposta; `/me/notifications`. | Notificação |
 | `search` | — | Busca textual (ADR-11; #84): compõe as buscas públicas de `workitem` (`Artifacts.search`) e `livingdocs` (`DocumentSearch`), cada uma com as próprias regras de leitura. Sem tabelas; a comparação sem acento usa `translate` do PostgreSQL, sem extensão. | — |
 | `activity` | — | Home (#83): itens abertos por último por pessoa e, como consumidor da outbox, os eventos de artefatos, documentos e páginas guardados com a unidade, base das "Novidades". Usa as APIs públicas de `workitem` (`Artifacts`) e `livingdocs` (`Pages`) para conferir a leitura. | Visita recente, Evento da unidade |
+| `privacy` | — | Dados pessoais (#32; [SSD 2.2](SSD.md#22-dados-pessoais-rev-14)): diretório de pessoas da Administração, exportação e anonimização. Não tem tabelas: cada módulo que guarda algo de uma pessoa implementa `PersonalData` (no módulo aberto `shared`), e o `privacy` junta as respostas. | — |
 
 **Como o gate bloqueia uma transição sem criar dependência circular.** O módulo `workflow` define uma interface `TransitionGuard` e a chama antes de qualquer mudança de status. O módulo `governance` implementa essa interface: avalia as regras do gate consultando campos do artefato (`workitem`) e status dos documentos (`livingdocs`). Assim, `workflow` não conhece gates nem documentos, e novos tipos de regra (cobertura de testes, na Fase 2) entram como novas implementações.
 
@@ -484,7 +485,7 @@ Os valores-alvo são provisórios; o PRD lista sua definição como pendência.
 - **Especificações ausentes** que afetam módulos da Fase 2 e 3: OKRs, dependências, capacity planning, IA.
 - **Contratos de API:** especificados no [SSD](SSD.md).
 - **Modelos de trabalho e templates de quadro** ([Proposta 05](CONFIG-PROPOSAL.md#3-decisões-tomadas-2026-11-20)): o modelo (Kanban, Scrum) fica implícito no MVP (quadro configurável + sprint opcional); templates de quadro aplicados por cópia (#50, implementado em 2026-11-27); herança e publicação seguem na Fase 3 (RF-CE04 a 10). O Workflow Designer (UI-26) dá a cada unidade o próprio fluxo (#49).
-- **Privacidade e dados pessoais:** inventário, finalidade, visibilidade e retenção dos dados pessoais, e a convivência da eliminação com a auditoria imutável ([REV-14](REVIEW-01.md#rev-14--privacidade-e-dados-pessoais)).
+- ~~**Privacidade e dados pessoais**~~: decididos na #32 ([SSD 2.2](SSD.md#22-dados-pessoais-rev-14)): só o `identity` identifica a pessoa, e a anonimização pseudonimiza a conta sem tocar na trilha. Pendente: retenção automática dos avisos e das contas inativas.
 
 ## 14. Rastreabilidade — requisitos do MVP
 

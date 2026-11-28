@@ -42,9 +42,9 @@ Ao conferir a análise externa contra os documentos, três pontos foram ajustado
 | REV-11 | Baixo | Exportação de documentos | PRD, SSD 6 | Resolvido (#16) |
 | REV-12 | Baixo | Campos customizados usados em gates | SSD 5.2 e 10 | Resolvido (#17) |
 | REV-13 | Alto | Baseline de segurança por framework | Spec. Segurança V2.0 (RF-SC, RNF-SC), SAD 7 e 13 | Resolvido (#18) |
-| REV-14 | Alto | Privacidade e dados pessoais | SAD 13, SSD 9 e 10, [Proposta de experiência](EXPERIENCE-PROPOSAL.md) | Aberto |
+| REV-14 | Alto | Privacidade e dados pessoais | SAD 13, SSD 9 e 10, [Proposta de experiência](EXPERIENCE-PROPOSAL.md) | Resolvido (#32) |
 
-A frente de trabalho que trata cada achado está na [Proposta de evolução, seção 7](EVOLUTION-PROPOSAL.md#7-relação-entre-achados-e-frentes). REV-02 e REV-14 ainda não têm frente (Q-01 foi respondida na #19) (REV-12 foi resolvido direto, na #17), e REV-13 foi resolvido direto, na #18, com o [baseline de segurança](SECURITY.md).
+A frente de trabalho que trata cada achado está na [Proposta de evolução, seção 7](EVOLUTION-PROPOSAL.md#7-relação-entre-achados-e-frentes). REV-02 ainda não tem frente (REV-14 foi resolvido direto, na #32) (Q-01 foi respondida na #19) (REV-12 foi resolvido direto, na #17), e REV-13 foi resolvido direto, na #18, com o [baseline de segurança](SECURITY.md).
 
 ### REV-01 — Regras de autorização entre unidades
 
@@ -242,6 +242,8 @@ Achado incluído em 2026-11-20, a partir da análise da [Proposta de experiênci
 - as capacidades que o produto oferece a quem o opera para atender pedidos dos titulares, como exportar e anonimizar.
 
 Assim como no REV-13, o produto fornece capacidades e quem opera a instalação responde pela conformidade. Nunca alegar "conforme a LGPD" (DEC-05 do PRD).
+
+**Decisão (2026-11-28, #32): aceita.** O inventário, a finalidade, a visibilidade e a retenção de cada dado estão no [SSD, seção 2.2](SSD.md#22-dados-pessoais-rev-14). Só o módulo `identity` identifica a pessoa; os outros módulos e a trilha guardam só o id. Por isso, anonimizar pseudonimiza a conta sem alterar a trilha imutável. O nome vira "Pessoa removida (XXXX)", usuário e e-mail saem, os papéis são revogados e visitas, favoritos, avisos e preferências são apagados. O e-mail das outras pessoas só aparece para o administrador. Para atender titulares, o administrador da raiz exporta os dados da pessoa em JSON e anonimiza a conta (Administração › Pessoas e privacidade). As duas ações vão para a trilha sem o nome. Ficam pendentes a retenção automática dos avisos e das contas inativas e a anonimização do texto livre que cita a pessoa. Testes no [QA](QA.md).
 
 ## 3. Questões em aberto
 

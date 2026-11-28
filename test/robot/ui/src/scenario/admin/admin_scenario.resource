@@ -64,3 +64,9 @@ ADMIN ORG - SEM ACESSO
     [Documentation]    Quem não administra a plataforma não chega à Administração.
     [Arguments]    ${username}    ${display_name}
     Admin - Sem Acesso    ${username}    ${display_name}
+
+ADMIN PEOPLE - EXPORTAR E CONFIRMAR ANONIMIZACAO
+    [Documentation]    Pessoas e privacidade (#32; REV-14): exportar os dados e a confirmação da anonimização.
+    [Arguments]    ${username}    ${display_name}    ${search}
+    Admin - Abrir Estrutura Organizacional    ${username}    ${display_name}
+    Admin - Pessoas Exportar E Confirmar Anonimizacao    ${search}

@@ -24,6 +24,7 @@ const LEVEL_NAMES: Record<string, string> = { FL3: 'Portfólio (FL3)', FL2: 'Tá
         <a routerLink="/admin/campos-customizados">Campos customizados</a>
         <a routerLink="/admin/responsavel-padrao">Responsável padrão</a>
         <a routerLink="/admin/templates-de-quadro" class="on" aria-current="page">Templates de quadro</a>
+        <a routerLink="/admin/pessoas">Pessoas e privacidade</a>
       </nav>
       <h1 data-testid="page-title">Templates de quadro</h1>
       <p class="lead">

@@ -184,6 +184,35 @@ Decidido em 2026-11-20. A matriz acima diz **o que** cada papel faz; esta seçã
 
 O vínculo é sempre declarado por quem tem o papel de gerir configuração (SSD, seção 3.2); nenhum papel de negócio cria vínculos.
 
+### 2.2 Dados pessoais (REV-14)
+
+Decidido em 2026-11-28 (#32). O produto oferece as capacidades; quem opera a instalação responde pela conformidade com a LGPD, sem que a plataforma alegue conformidade (PRD, DEC-05). Ver também o [baseline de segurança](SECURITY.md).
+
+**Princípio.** Só o módulo `identity` guarda os dados que identificam a pessoa. Todos os outros módulos, a outbox e a trilha de auditoria guardam só o id da conta. Os eventos não levam nome nem e-mail. Assim, pseudonimizar a conta remove a identificação em todo lugar, sem alterar a trilha.
+
+**Inventário.**
+
+| Módulo | Dado | Finalidade | Quem vê | Retenção | Na anonimização |
+|---|---|---|---|---|---|
+| `identity` | Nome, usuário, e-mail (vindos do IdP), identificador do IdP (`subject`), data de criação, última atividade | Identificar a pessoa nas telas; ligar o login à conta | **Nome:** quem lê a mesma unidade. **E-mail e usuário:** a própria pessoa (`/me`) e o administrador (`/admin/people`). **Última atividade:** só o administrador. | Enquanto a conta existir | Nome vira "Pessoa removida (XXXX)"; usuário e e-mail apagados; `subject` vira hash; conta inativa |
+| `identity` | Preferências (tema, avisos) | Ajustar a tela e os avisos | A própria pessoa | Enquanto a conta existir | Apagadas |
+| `access` | Papéis por unidade, com quem concedeu e quando | Autorização | O administrador | Histórico mantido (revogação marca `revoked_at`) | Papéis vigentes revogados |
+| `activity` | Últimos itens abertos e favoritos | Home: "Continuar de onde parou" e "Favoritos" | A própria pessoa | Os 30 últimos itens abertos; favoritos até a pessoa tirar | Apagados |
+| `activity` | Quem fez cada mudança na unidade (id) | Home: "Novidades" | Quem lê a unidade | Os últimos 30 dias aparecem na tela | Fica o id, com o pseudônimo |
+| `notification` | Avisos recebidos | Sino | A própria pessoa | Sem limite no MVP (a tela mostra os 30 últimos) | Apagados |
+| `livingdocs` | Comentários, anexos e versões de autoria da pessoa | Conteúdo da página e do artefato | Quem lê a página ou o artefato | O do conteúdo | Ficam, com o pseudônimo |
+| `workitem`, `workflow`, `governance`, `board` | Responsáveis, quem mudou o status, quem aprovou, quem criou | Conteúdo e governança do artefato | Quem lê o artefato | O do artefato | Ficam, com o pseudônimo, até alguém trocar o responsável |
+| `events` | Ator de cada evento (id) | Entregar os eventos | Ninguém pela API | 7 dias depois da entrega (`aquaqe.events.retention-days`) | Fica o id |
+| `audit` | Ator, valores anterior e posterior (ids) | Trilha imutável | O administrador na raiz | Sem limite: a trilha não aceita exclusão | Fica o id; a cadeia de hash continua íntegra |
+
+**Capacidades para atender a um titular.** Só o `PLATFORM_ADMIN` na unidade raiz, a mesma regra da trilha de auditoria (Administração › Pessoas e privacidade, [UX/UI 7.10](UX-UI.md#710-administração)):
+
+- **Exportar:** `GET /admin/people/{id}/personal-data` devolve um JSON com uma seção por módulo do inventário. Publica `person.data_exported`.
+- **Anonimizar:** `POST /admin/people/{id}/anonymize` aplica a última coluna do inventário numa transação só e publica `person.anonymized`. Não dá para desfazer. Depois disso, o mesmo login do IdP recebe 403 `ACCOUNT_ANONYMIZED` e não recria a conta. Quem opera também deve remover a pessoa no IdP.
+- **Na trilha:** os dois eventos guardam só o id da pessoa e os nomes das seções, nunca o nome nem o e-mail.
+
+**Fora do MVP.** Retenção automática dos avisos e das contas inativas, e anonimização do texto que cita a pessoa (por exemplo, "@Ana" escrito num comentário). Esse texto é conteúdo e fica como foi escrito.
+
 ## 3. Recursos por módulo
 
 Em cada tabela, a coluna **RF** indica o requisito do PRD atendido.
@@ -203,6 +232,9 @@ Em cada tabela, a coluna **RF** indica o requisito do PRD atendido.
 | GET | `/me/favorites` | Páginas marcadas com estrela (#85) que o usuário ainda lê, das marcadas por último. | autenticado | — |
 | PUT | `/me/favorites/pages/{id}` | Marca a página com estrela (repetir não duplica). 204; 404 se o usuário não lê a página. | autenticado | — |
 | DELETE | `/me/favorites/pages/{id}` | Tira a estrela. 204. | autenticado | — |
+| GET | `/admin/people` | Diretório de pessoas da Administração (#32; seção 2.2): contas cujo nome, usuário ou e-mail contém `q`, até 50, com `email`, `active`, `anonymized` e `lastSeenAt`. Módulo `privacy`. | dados pessoais | — |
+| GET | `/admin/people/{id}/personal-data` | Baixa em JSON (`Content-Disposition: attachment`, `no-store`) os dados da pessoa, uma seção por módulo. Publica `person.data_exported`. 404 se a conta não existe. | dados pessoais | — |
+| POST | `/admin/people/{id}/anonymize` | Anonimiza a conta (seção 2.2). 422 `CANNOT_ANONYMIZE_SELF` na própria conta; 409 `ALREADY_ANONYMIZED`; 404 se não existe. Publica `person.anonymized`. | dados pessoais | — |
 | GET | `/me/preferences` | Preferências pessoais (#15; REV-10): `theme` (`SYSTEM`, `LIGHT` ou `DARK`) e `notifications` (`mention`, `reply`). Sem preferências gravadas, valem os padrões: `SYSTEM` e os dois avisos ligados. Módulo `identity`. | autenticado | — |
 | PUT | `/me/preferences` | Grava as preferências do próprio usuário e devolve as gravadas. Tema fora da lista dá 400 no campo `theme`. Aviso desligado não é criado: o módulo `notification` consulta `UserPreferences` antes de criar `MENTION` ou `REPLY`. | autenticado | — |
 | GET | `/me/news` | Home, "Novidades" (#83): o último evento de cada artefato, documento ou página nas unidades em que o usuário lê tudo (SSD 2.1, regra 1), nos últimos 30 dias, até 20. Cada item traz `action` (tipo do evento, SSD 7.2), quem fez (`actor`), a unidade e `own` quando foi o próprio usuário. Base: o consumidor `activity` da outbox, que guarda os eventos com a unidade (a trilha de auditoria não guarda a unidade e só o administrador a consulta). | autenticado | — |
@@ -1388,7 +1420,7 @@ A tabela `story_rule_ref` não aparece no diagrama do SAD; ela materializa a ref
 - **Campos customizados:** declarados por tipo de artefato e validados na gravação e nos gates desde a #17 (seção 3.3). Campos por unidade, obrigatórios na criação e com regras de exibição ficam para o Customization Engine.
 - **Limites operacionais:** tamanho máximo de anexo (decidido: 10 MB, configurável, #13), retenção da outbox e limites de taxa da API dependem dos valores de qualidade ainda em aberto.
 - **Internacionalização:** os nomes de status e as mensagens de regra estão em português; não há mecanismo de tradução.
-- **Dados pessoais:** visibilidade de nome e e-mail de outros usuários, tratamento de contas desativadas na trilha de auditoria e retenção ([REV-14](REVIEW-01.md#rev-14--privacidade-e-dados-pessoais)).
+- **Dados pessoais:** decididos na #32 (seção 2.2). Ficam pendentes a retenção automática dos avisos e das contas inativas e o perfil com mais dados pessoais (foto, cargo, gestor), que deve passar pelo inventário antes de existir.
 
 ## 11. Rastreabilidade
 
