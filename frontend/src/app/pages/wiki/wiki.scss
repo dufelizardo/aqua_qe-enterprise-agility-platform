@@ -181,12 +181,12 @@ h1 {
   font-weight: 800;
 
   &[data-status='DRAFT'] {
-    background: #eef2f6;
+    background: var(--surface-muted);
   }
 
   &[data-status='IN_REVIEW'] {
-    background: #fff2d6;
-    color: #8a4b00;
+    background: var(--warn-bg);
+    color: var(--warn-text);
   }
 
   &[data-status='APPROVED'] {
@@ -195,12 +195,12 @@ h1 {
   }
 
   &[data-status='PUBLISHED'] {
-    background: #e3f5ea;
-    color: #17663a;
+    background: var(--ok-bg);
+    color: var(--ok-text);
   }
 
   &[data-status='ARCHIVED'] {
-    background: #f1f1f1;
+    background: var(--surface-muted);
     color: var(--text-muted);
   }
 }
@@ -297,7 +297,7 @@ h1 {
   background: var(--blue-50);
 
   &.warn {
-    background: #fff2d6;
+    background: var(--warn-bg);
   }
 }
 
@@ -443,7 +443,7 @@ input:focus-visible {
 .title-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .star { flex: none; border: none; background: none; cursor: pointer; font-size: 22px; line-height: 1; color: var(--text-secondary); padding: 2px 4px; border-radius: 6px; }
 .star.on { color: #d4a000; }
-.star:hover { background: var(--hover, rgba(0, 0, 0, .06)); }
+.star:hover { background: var(--hover); }
 .quote-button { position: fixed; z-index: 20; box-shadow: 0 4px 14px rgba(0, 0, 0, .18); }
 
 // Ícone da página (#86).

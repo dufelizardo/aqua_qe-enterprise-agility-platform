@@ -35,12 +35,12 @@
 }
 
 .chip[data-status='PENDING'] {
-  background: #eef2f6;
+  background: var(--surface-muted);
 }
 
 .chip[data-status='IN_PROGRESS'] {
-  background: #fff2d6;
-  color: #8a4b00;
+  background: var(--warn-bg);
+  color: var(--warn-text);
 }
 
 .overview {
@@ -135,7 +135,7 @@
 
   &:hover {
     border-color: var(--border-strong);
-    background: var(--surface-muted, #f4f6f8);
+    background: var(--surface-muted);
   }
 
   &:focus-visible {

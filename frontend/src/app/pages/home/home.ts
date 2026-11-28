@@ -92,7 +92,7 @@ import { WorkspaceService } from '../../core/workspace.service';
     a:hover { text-decoration: underline; }
     .meta { font-size: 12px; color: var(--text-secondary); }
     .muted { font-size: 14px; }
-    .error { margin-top: 16px; color: var(--danger, #b42318); }
+    .error { margin-top: 16px; color: var(--danger); }
   `,
 })
 export class Home {

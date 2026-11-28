@@ -203,6 +203,8 @@ Em cada tabela, a coluna **RF** indica o requisito do PRD atendido.
 | GET | `/me/favorites` | Páginas marcadas com estrela (#85) que o usuário ainda lê, das marcadas por último. | autenticado | — |
 | PUT | `/me/favorites/pages/{id}` | Marca a página com estrela (repetir não duplica). 204; 404 se o usuário não lê a página. | autenticado | — |
 | DELETE | `/me/favorites/pages/{id}` | Tira a estrela. 204. | autenticado | — |
+| GET | `/me/preferences` | Preferências pessoais (#15; REV-10): `theme` (`SYSTEM`, `LIGHT` ou `DARK`) e `notifications` (`mention`, `reply`). Sem preferências gravadas, valem os padrões: `SYSTEM` e os dois avisos ligados. Módulo `identity`. | autenticado | — |
+| PUT | `/me/preferences` | Grava as preferências do próprio usuário e devolve as gravadas. Tema fora da lista dá 400 no campo `theme`. Aviso desligado não é criado: o módulo `notification` consulta `UserPreferences` antes de criar `MENTION` ou `REPLY`. | autenticado | — |
 | GET | `/me/news` | Home, "Novidades" (#83): o último evento de cada artefato, documento ou página nas unidades em que o usuário lê tudo (SSD 2.1, regra 1), nos últimos 30 dias, até 20. Cada item traz `action` (tipo do evento, SSD 7.2), quem fez (`actor`), a unidade e `own` quando foi o próprio usuário. Base: o consumidor `activity` da outbox, que guarda os eventos com a unidade (a trilha de auditoria não guarda a unidade e só o administrador a consulta). | autenticado | — |
 | GET | `/users` | Lista usuários (filtro `q`). Para escolher pessoas em artefatos, quem edita usa `GET /artifacts/{artifact}/people` e `GET /org-units/{id}/people` (seção 3.4; REV-07). | gerir papéis | — |
 | GET | `/roles` | Lista papéis. | autenticado | — |
@@ -1320,6 +1322,7 @@ Convenções:
 | Schema | Tabela | Colunas principais | Restrições e índices |
 |---|---|---|---|
 | `identity` | `user_account` | `subject`, `name`, `email`, `active`, `last_seen_at` | `subject` único (identificador do IdP). |
+| `identity` | `user_preference` | `user_id` (PK), `theme`, `notify_mention`, `notify_reply`, `updated_at` | Uma linha por usuário, só depois da primeira gravação (#15). |
 | `access` | `role` | `key`, `name` | `key` única. |
 | | `role_assignment` | `user_id`, `role_id`, `org_unit_id`, `granted_by`, `granted_at`, `revoked_at` | Única por (`user_id`, `role_id`, `org_unit_id`) enquanto não revogada. |
 | `organization` | `org_level` | `key`, `name`, `position`, `flight_level` | `key` e `position` únicos; no máximo um nível por `flight_level`. |
@@ -1367,7 +1370,7 @@ A tabela `story_rule_ref` não aparece no diagrama do SAD; ela materializa a ref
 - **Itens "a validar" deste documento:** papéis padrão e matriz de permissões; status dos workflows de FL2 e FL1; gates padrão; seções e aprovadores dos templates; tipos de bloco.
 - **Segregação de funções:** impedir que o autor de um documento seja o aprovador, e que quem executa a transição seja quem aprova o gate.
 - **Editor de documentos:** a decisão de construir ou adotar pode alterar o formato de blocos da seção 6.
-- **Notificações:** só e-mail ao responsável em quatro eventos; faltam preferências do usuário, outros destinatários e outros canais.
+- **Notificações:** só e-mail ao responsável em quatro eventos; faltam outros destinatários e outros canais. As preferências dos avisos do sino (menção e resposta) existem desde a #15 (`/me/preferences`); as do e-mail entram quando o e-mail tiver tipos que a pessoa possa escolher.
 - **Eventos de autenticação** na trilha da plataforma.
 - **Campos customizados:** declarados por tipo de artefato e validados na gravação e nos gates desde a #17 (seção 3.3). Campos por unidade, obrigatórios na criação e com regras de exibição ficam para o Customization Engine.
 - **Limites operacionais:** tamanho máximo de anexo (decidido: 10 MB, configurável, #13), retenção da outbox e limites de taxa da API dependem dos valores de qualidade ainda em aberto.

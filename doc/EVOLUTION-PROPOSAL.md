@@ -391,7 +391,7 @@ Cada ADR registra contexto, decisão, alternativas, consequências e status. Uma
 | [REV-07](REVIEW-01.md#rev-07--consulta-de-usuários-para-quem-edita) | Consulta de usuários | F06, F07; resolvido nas #79 e #12 (2026-11-27) |
 | [REV-08](REVIEW-01.md#rev-08--listagem-de-anexos) | Listagem de anexos | F06, F03; resolvido na #13 (2026-11-27) |
 | [REV-09](REVIEW-01.md#rev-09--consulta-de-quem-pode-aprovar) | Quem pode aprovar | F06, F02; resolvido na #14 (2026-11-27) |
-| [REV-10](REVIEW-01.md#rev-10--preferências-do-usuário) | Preferências do usuário | F06 |
+| [REV-10](REVIEW-01.md#rev-10--preferências-do-usuário) | Preferências do usuário | F06; resolvido na #15 (2026-11-28) |
 | [REV-11](REVIEW-01.md#rev-11--exportação-de-documentos) | Exportação de documentos | F06, F03 |
 | [REV-12](REVIEW-01.md#rev-12--campos-customizados-usados-em-gates) | Campos customizados em gates | nenhuma; resolvido na #17 (2026-11-27) |
 | [REV-13](REVIEW-01.md#rev-13--baseline-de-segurança-por-framework) | Baseline de segurança | parcial: F08c (seção 8) |

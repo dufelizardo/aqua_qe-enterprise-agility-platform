@@ -175,14 +175,14 @@ interface TransitionRow {
     .transitions li.on { background: var(--bg); }
     .path { flex: 1 1 160px; font-weight: 600; }
     .chip { font-size: 12px; padding: 1px 8px; border-radius: 999px; background: var(--bg); color: var(--text-secondary); }
-    .chip.on { background: #dbeafe; color: #1e40af; }
+    .chip.on { background: var(--blue-50); color: var(--blue-700); }
     .rules { margin: 0 0 12px; padding-left: 20px; display: grid; gap: 12px; }
     .rule { display: grid; gap: 6px; }
     .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
     .message { flex: 1 1 240px; }
     .bar { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-    .error { color: var(--danger, #b42318); }
-    .danger { color: var(--danger, #b42318); }
+    .error { color: var(--danger); }
+    .danger { color: var(--danger); }
   `,
 })
 export class AdminGates {

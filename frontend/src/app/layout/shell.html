@@ -57,6 +57,7 @@
           <span class="muted">{{ user.email }}</span>
         }
       </div>
+      <a mat-menu-item routerLink="/preferencias" data-testid="profile-preferences">Preferências</a>
       @if (session.devMode()) {
         <div class="menu-label">Trocar persona</div>
         @for (persona of session.devPersonas(); track persona.username) {

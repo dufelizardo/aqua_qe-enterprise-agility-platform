@@ -67,6 +67,7 @@ class CommentsIntegrationTests {
 		grant("tiago", "TECH_LEAD", portfolio);
 		grant("sara", "QA_ENGINEER", cadeia);
 		grant("otavio", "PRODUCT_MANAGER", outro);
+		grant("rui", "QA_ENGINEER", portfolio);
 	}
 
 	@Test
@@ -150,6 +151,42 @@ class CommentsIntegrationTests {
 			.andExpect(status().isNoContent());
 		mvc.perform(get("/api/v1/me/favorites").with(user("tiago")))
 			.andExpect(jsonPath("$.items[*].title").value(not(hasItem("Favorita CO"))));
+	}
+
+	@Test
+	void preferenciasDoUsuarioEAvisos() throws Exception {
+		mvc.perform(get("/api/v1/me/preferences").with(user("rui")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.theme").value("SYSTEM"))
+			.andExpect(jsonPath("$.notifications.mention").value(true))
+			.andExpect(jsonPath("$.notifications.reply").value(true));
+		mvc.perform(json(put("/api/v1/me/preferences"), user("rui"), "{\"theme\":\"ROXO\"}"))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.errors[0].field").value("theme"));
+		mvc.perform(json(put("/api/v1/me/preferences"), user("rui"),
+				"{\"theme\":\"DARK\",\"notifications\":{\"mention\":false,\"reply\":true}}"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.theme").value("DARK"))
+			.andExpect(jsonPath("$.notifications.mention").value(false));
+		mvc.perform(get("/api/v1/me/preferences").with(user("rui")))
+			.andExpect(jsonPath("$.theme").value("DARK"))
+			.andExpect(jsonPath("$.notifications.reply").value(true));
+		// Cada pessoa tem as suas: as de rui não mudam as de paula.
+		mvc.perform(get("/api/v1/me/preferences").with(user("paula"))).andExpect(jsonPath("$.theme").value("SYSTEM"));
+
+		// Menção desligada: rui não recebe; resposta ligada: recebe.
+		String page = page("Preferências CO");
+		String own = JsonPath.read(comment("rui", page, "{\"body\":\"Dúvida.\"}").andExpect(status().isCreated())
+			.andReturn().getResponse().getContentAsString(), "$.id");
+		comment("paula", page, "{\"body\":\"@rui veja\",\"mentionIds\":[\"" + id("rui") + "\"]}")
+			.andExpect(status().isCreated());
+		comment("paula", page, "{\"body\":\"Respondido.\",\"parentId\":\"" + own + "\"}")
+			.andExpect(status().isCreated());
+		relay.drain();
+		mvc.perform(get("/api/v1/me/notifications").with(user("rui")))
+			.andExpect(jsonPath("$.unread").value(1))
+			.andExpect(jsonPath("$.items.length()").value(1))
+			.andExpect(jsonPath("$.items[0].kind").value("REPLY"));
 	}
 
 	// ------------------------------------------------------------------------------------------------ apoio

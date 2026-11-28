@@ -38,7 +38,7 @@ Ao conferir a análise externa contra os documentos, três pontos foram ajustado
 | REV-07 | Médio | Consulta de usuários para quem edita | SSD 3.1, UX/UI 13 | Resolvido (#79, #12) |
 | REV-08 | Médio | Listagem de anexos | SSD 3.7, UX/UI 13, PRD-RF-018 | Resolvido (#13) |
 | REV-09 | Médio | Consulta de quem pode aprovar | SSD 3.6, UX/UI 13, PRD-RF-024 | Resolvido (#14) |
-| REV-10 | Baixo | Preferências do usuário | UX/UI 13, SSD 10 | Aberto |
+| REV-10 | Baixo | Preferências do usuário | UX/UI 13, SSD 10 | Resolvido (#15) |
 | REV-11 | Baixo | Exportação de documentos | PRD, SSD 6 | Aberto |
 | REV-12 | Baixo | Campos customizados usados em gates | SSD 5.2 e 10 | Resolvido (#17) |
 | REV-13 | Alto | Baseline de segurança por framework | Spec. Segurança V2.0 (RF-SC, RNF-SC), SAD 7 e 13 | Aberto |
@@ -180,6 +180,8 @@ Nota de 2026-11-20: a [Proposta 05](CONFIG-PROPOSAL.md#2-confronto-com-o-que-já
 **Evidência.** O item existe no menu de perfil, mas não tem conteúdo ([UX/UI, seção 13](UX-UI.md#13-pendências)). O [SSD, seção 10](SSD.md#10-pendências), lista as preferências de notificação como pendência.
 
 **Recomendação.** Retirar o item do menu no MVP ou limitá-lo às preferências de notificação, quando estas forem especificadas.
+
+**Decisão (2026-11-28, #15): aceita, além da recomendação.** O item Preferências fica no menu do avatar e abre `/preferencias` ([UX/UI 7.14](UX-UI.md#714-preferências)), com o tema (do sistema, claro ou escuro) e os avisos do sino que existem: menção e resposta a comentário. As preferências ficam no servidor (`/me/preferences`, módulo `identity`; [SSD 3.1](SSD.md)), valem em qualquer navegador, e o aviso desligado não é criado. Idioma e widgets da Home ficam pendentes. Testes no [QA](QA.md).
 
 ### REV-11 — Exportação de documentos
 

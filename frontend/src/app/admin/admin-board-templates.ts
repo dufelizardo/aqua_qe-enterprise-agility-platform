@@ -99,15 +99,15 @@ const LEVEL_NAMES: Record<string, string> = { FL3: 'Portfólio (FL3)', FL2: 'Tá
     .template { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; }
     .template p { margin: 2px 0 0; }
     .columns { font-size: 13px; }
-    .badge { margin-left: 6px; padding: 1px 6px; border-radius: 999px; font-size: 11px; background: var(--surface-muted, #eef1f6); color: var(--text-secondary); }
+    .badge { margin-left: 6px; padding: 1px 6px; border-radius: 999px; font-size: 11px; background: var(--surface-muted); color: var(--text-secondary); }
     .actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-start; }
     .edit { display: grid; gap: 6px; flex: 1; max-width: 520px; }
     input { min-height: 32px; padding: 0 8px; border: 1px solid var(--border-strong); border-radius: 6px; font: inherit; background: var(--surface); color: var(--text); }
-    .notice { flex-basis: 100%; padding: 10px 12px; border-radius: 8px; background: #fff7e6; color: var(--text); }
+    .notice { flex-basis: 100%; padding: 10px 12px; border-radius: 8px; background: var(--notice-bg); color: var(--text); }
     .notice p { margin: 0 0 8px; }
     .notice .btn + .btn { margin-left: 6px; }
     .muted { color: var(--text-secondary); font-size: 13px; }
-    .error { color: var(--danger, #b42318); }
+    .error { color: var(--danger); }
   `,
 })
 export class AdminBoardTemplates {

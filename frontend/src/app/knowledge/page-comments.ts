@@ -117,9 +117,9 @@ import {
     textarea { width: 100%; box-sizing: border-box; font: inherit; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); resize: vertical; }
     .suggestions { position: absolute; z-index: 5; left: 0; top: 100%; min-width: 220px; max-width: 100%; margin-top: 4px; padding: 4px; gap: 0; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); box-shadow: 0 6px 18px rgba(0,0,0,.12); }
     .suggestions button { display: block; width: 100%; text-align: left; padding: 6px 10px; border: none; border-radius: 6px; background: none; color: var(--text); cursor: pointer; font: inherit; }
-    .suggestions button.on, .suggestions button:hover { background: var(--hover, rgba(0,0,0,.06)); }
+    .suggestions button.on, .suggestions button:hover { background: var(--hover); }
     .btn { justify-self: start; }
-    .error { color: var(--danger, #b42318); }
+    .error { color: var(--danger); }
     .empty { font-size: 14px; }
   `,
 })
