@@ -394,8 +394,8 @@ Cada ADR registra contexto, decisão, alternativas, consequências e status. Uma
 | [REV-10](REVIEW-01.md#rev-10--preferências-do-usuário) | Preferências do usuário | F06; resolvido na #15 (2026-11-28) |
 | [REV-11](REVIEW-01.md#rev-11--exportação-de-documentos) | Exportação de documentos | F06, F03; resolvido na #16 (2026-11-28) |
 | [REV-12](REVIEW-01.md#rev-12--campos-customizados-usados-em-gates) | Campos customizados em gates | nenhuma; resolvido na #17 (2026-11-27) |
-| [REV-13](REVIEW-01.md#rev-13--baseline-de-segurança-por-framework) | Baseline de segurança | parcial: F08c (seção 8) |
-| [Q-01](REVIEW-01.md#3-questões-em-aberto) | Nome AQuA-QE e "integração futura" | **nenhuma** (seção 8) |
+| [REV-13](REVIEW-01.md#rev-13--baseline-de-segurança-por-framework) | Baseline de segurança | parcial: F08c (seção 8); resolvido na #18 (2026-11-28) |
+| [Q-01](REVIEW-01.md#3-questões-em-aberto) | Nome AQuA-QE e "integração futura" | nenhuma; respondida na #19 (2026-11-28): é esta plataforma |
 
 Frentes que não nascem de um REV, mas de pendências já registradas nos documentos:
 
@@ -413,7 +413,7 @@ Frentes que não nascem de um REV, mas de pendências já registradas nos docume
 | REV-02 | Nenhuma frente trata o contexto herdado quando a Iniciativa está em outro ramo. | Incluir em F01 a regra de leitura de resumo dos ancestrais (título, status, início da descrição e status dos documentos). |
 | REV-12 | `customFields` livres citados em gates. | **Resolvido (#17, 2026-11-27):** campos declarados por tipo, validados na gravação e nos gates ([SSD 3.3](SSD.md#33-configuration)). |
 | REV-13 | Baseline ASVS L2, SSDF e mapeamento ao NIST CSF 2.0. A F08c cobre só parte da função Detect. | **Resolvido (#18, 2026-11-28):** [baseline de segurança](SECURITY.md), SBOM e varredura no CI; lacunas S-01 a S-05 como issues. |
-| Q-01 | Esclarecer a "integração futura com AQuA-QE" citada na análise externa. | Decisão do responsável pelo produto. |
+| Q-01 | Esclarecer a "integração futura com AQuA-QE" citada na análise externa. | **Respondida (#19, 2026-11-28):** é a gestão de testes desta plataforma (D07, Fase 2); [PRD, DEC-11](PRD.md#12-decisões-de-consolidação). |
 
 ## 9. Divergências com os documentos atuais
 

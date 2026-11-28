@@ -23,7 +23,7 @@ Ao conferir a análise externa contra os documentos, três pontos foram ajustado
 
 - Parte do que ela recomenda para a auditoria já está especificada (REV-03).
 - Ela não percebeu um conflito entre a regra de leitura e o contexto herdado (REV-02).
-- A menção a uma "integração futura com AQuA-QE" precisa ser esclarecida, porque AQuA-QE é o nome deste produto (Q-01).
+- A menção a uma "integração futura com AQuA-QE" precisava ser esclarecida, porque AQuA-QE é o nome deste produto (Q-01). Respondida em 2026-11-28 (#19): é esta plataforma ([PRD, DEC-11](PRD.md#12-decisões-de-consolidação)).
 
 ## 2. Achados
 
@@ -44,7 +44,7 @@ Ao conferir a análise externa contra os documentos, três pontos foram ajustado
 | REV-13 | Alto | Baseline de segurança por framework | Spec. Segurança V2.0 (RF-SC, RNF-SC), SAD 7 e 13 | Resolvido (#18) |
 | REV-14 | Alto | Privacidade e dados pessoais | SAD 13, SSD 9 e 10, [Proposta de experiência](EXPERIENCE-PROPOSAL.md) | Aberto |
 
-A frente de trabalho que trata cada achado está na [Proposta de evolução, seção 7](EVOLUTION-PROPOSAL.md#7-relação-entre-achados-e-frentes). REV-02, REV-14 e Q-01 ainda não têm frente (REV-12 foi resolvido direto, na #17), e REV-13 foi resolvido direto, na #18, com o [baseline de segurança](SECURITY.md).
+A frente de trabalho que trata cada achado está na [Proposta de evolução, seção 7](EVOLUTION-PROPOSAL.md#7-relação-entre-achados-e-frentes). REV-02 e REV-14 ainda não têm frente (Q-01 foi respondida na #19) (REV-12 foi resolvido direto, na #17), e REV-13 foi resolvido direto, na #18, com o [baseline de segurança](SECURITY.md).
 
 ### REV-01 — Regras de autorização entre unidades
 
@@ -247,7 +247,7 @@ Assim como no REV-13, o produto fornece capacidades e quem opera a instalação 
 
 | ID | Questão |
 |---|---|
-| Q-01 | A análise externa cita uma "integração futura com AQuA-QE e seus recursos de qualidade e automação". AQuA-QE é o nome desta plataforma ([PRD, seção 3](PRD.md#3-nome-do-produto)). Se existe outro produto com esse nome, ele precisa entrar no PRD, no glossário e no mapa de integrações. Se não existe, a menção deve ser lida como a futura gestão de testes desta plataforma (Fase 2). |
+| Q-01 | A análise externa cita uma "integração futura com AQuA-QE e seus recursos de qualidade e automação". AQuA-QE é o nome desta plataforma ([PRD, seção 3](PRD.md#3-nome-do-produto)). Se existe outro produto com esse nome, ele precisa entrar no PRD, no glossário e no mapa de integrações. Se não existe, a menção deve ser lida como a futura gestão de testes desta plataforma (Fase 2).<br>**Resposta (2026-11-28, #19):** não existe outro produto. A menção é a gestão de testes e qualidade desta plataforma, o domínio D07 Quality & Traceability Management, na Fase 2. Nada entra no glossário nem no mapa de integrações ([PRD, seção 3 e DEC-11](PRD.md#3-nome-do-produto)). |
 
 ## 4. Ordem de trabalho proposta
 
