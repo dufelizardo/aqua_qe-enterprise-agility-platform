@@ -302,7 +302,7 @@ import { OrganizationService, TreeRow, buildTree } from './organization.service'
     .row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
     .muted { color: var(--text-secondary); font-size: 13px; }
     .hint { margin: 0 0 6px; font-size: 12px; color: var(--text-secondary); }
-    .notice { margin: 10px 0 0; padding: 10px 12px; border-radius: 8px; background: #fff7e6; color: var(--text); }
+    .notice { margin: 10px 0 0; padding: 10px 12px; border-radius: 8px; background: var(--notice-bg); color: var(--text); }
     .notice.confirm p { margin: 0 0 8px; }
     .notice .btn { margin-left: 6px; }
     .editor { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
@@ -314,8 +314,8 @@ import { OrganizationService, TreeRow, buildTree } from './organization.service'
     .matrix th, .matrix td { padding: 4px 6px; border: 1px solid var(--border); text-align: center; }
     .matrix th[scope='row'] { text-align: left; white-space: nowrap; }
     .btn.icon { min-width: 28px; padding: 0 6px; }
-    .field-error { color: var(--danger-700, #b42318); font-size: 13px; }
-    .error { color: var(--danger, #b42318); }
+    .field-error { color: var(--danger-700); font-size: 13px; }
+    .error { color: var(--danger); }
     .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
     @media (max-width: 700px) { .statuses thead { display: none; } .statuses td { display: block; border: 0; } .statuses tr { display: block; padding: 6px 0; border-bottom: 1px solid var(--border); } }
   `,

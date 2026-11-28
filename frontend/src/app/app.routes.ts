@@ -117,6 +117,12 @@ export const routes: Routes = [
           },
         ],
       },
+      // Preferências pessoais: tema e avisos (#15; REV-10).
+      {
+        path: 'preferencias',
+        title: 'Preferências · AQuA-QE',
+        loadComponent: () => import('./pages/preferences/preferences').then((m) => m.PreferencesPage),
+      },
       {
         path: 'busca',
         title: 'Busca · AQuA-QE',

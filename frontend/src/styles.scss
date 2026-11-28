@@ -21,6 +21,15 @@
   --border: #e3e9ef;
   --border-strong: #d5dde5;
   --danger-700: #c2410c;
+  --danger: #b42318;
+  --danger-bg: #fde8e1;
+  --surface-muted: #eef2f6;
+  --hover: rgba(0, 0, 0, 0.06);
+  --notice-bg: #fff7e6;
+  --warn-bg: #fff2d6;
+  --warn-text: #8a4b00;
+  --ok-bg: #e3f5ea;
+  --ok-text: #067647;
 
   --font-text: 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
@@ -40,6 +49,34 @@
       density: 0,
     )
   );
+}
+
+/*
+ * Tema escuro (#15; REV-10): a Shell põe data-theme="dark" no <html> conforme as Preferências (ou o sistema, no
+ * padrão). A landing, pública, fica sempre clara. O menu lateral já é navy nos dois temas.
+ */
+:root[data-theme='dark'] {
+  --bg: #0b1622;
+  --surface: #13212f;
+  --text: #e6edf3;
+  --text-secondary: #b6c2cf;
+  --text-muted: #8a9bad;
+  --border: #253545;
+  --border-strong: #31455a;
+  --blue-50: #10314a;
+  --blue-700: #6cc4ef;
+  --danger-700: #fb923c;
+  --danger: #f97066;
+  --danger-bg: #3d1a12;
+  --surface-muted: #1b2b3b;
+  --hover: rgba(255, 255, 255, 0.06);
+  --notice-bg: #3a2a0c;
+  --warn-bg: #3d2a08;
+  --warn-text: #f8c46b;
+  --ok-bg: #0f3321;
+  --ok-text: #6fd89a;
+
+  color-scheme: dark;
 }
 
 html,

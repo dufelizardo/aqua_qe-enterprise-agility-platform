@@ -91,7 +91,7 @@ type Filter = 'ALL' | HitKind;
     .snippet { font-size: 14px; color: var(--text); overflow-wrap: anywhere; margin: 0; }
     mark { background: color-mix(in srgb, #f5c400 40%, transparent); color: inherit; border-radius: 2px; }
     .meta { font-size: 12px; color: var(--text-secondary); }
-    .error { color: var(--danger, #b42318); margin-top: 16px; }
+    .error { color: var(--danger); margin-top: 16px; }
     .empty { margin-top: 16px; }
   `,
 })

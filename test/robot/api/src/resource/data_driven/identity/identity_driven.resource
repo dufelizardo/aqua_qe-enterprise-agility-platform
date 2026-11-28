@@ -8,3 +8,6 @@ ${get_me_invalid_token}     eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJmYWxzbyJ9.assinatura
 # Papel de cada persona na unidade raiz (application.yml, aquaqe.auth.dev-personas)
 &{get_me_persona_roles}     admin=PLATFORM_ADMIN    bo=BUSINESS_OWNER    pm=PRODUCT_MANAGER    tl=TECH_LEAD
 ...                         ux=UX_DESIGNER    qa=QA_ENGINEER    squad=SQUAD_MEMBER    viewer=VIEWER
+# preferences (GET/PUT /api/v1/me/preferences, #15)
+${preferences_persona}      ux
+${preferences_theme}        DARK

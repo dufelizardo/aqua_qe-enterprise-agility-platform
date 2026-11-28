@@ -24,21 +24,24 @@ import br.com.aquaqe.platform.events.EventConsumer;
 import br.com.aquaqe.platform.events.EventEnvelope;
 import br.com.aquaqe.platform.identity.CurrentUser;
 import br.com.aquaqe.platform.identity.UserDirectory;
+import br.com.aquaqe.platform.identity.UserPreferences;
 import br.com.aquaqe.platform.identity.UserDirectory.UserRef;
 import br.com.aquaqe.platform.shared.ApiException;
 
 /**
  * Notificações (#85). Consome {@code knowledge_page.commented}: avisa as pessoas mencionadas ({@code MENTION}) e o
  * autor do comentário respondido ({@code REPLY}), nunca quem comentou. Tolera reentrega (ADR-06): um aviso por evento e
- * pessoa.
+ * pessoa. Respeita as preferências da pessoa (#15): o tipo de aviso desligado não é criado.
  */
 @Component
 class NotificationConsumer implements EventConsumer {
 
 	private final JdbcClient jdbc;
+	private final UserPreferences preferences;
 
-	NotificationConsumer(JdbcClient jdbc) {
+	NotificationConsumer(JdbcClient jdbc, UserPreferences preferences) {
 		this.jdbc = jdbc;
+		this.preferences = preferences;
 	}
 
 	@Override
@@ -56,6 +59,8 @@ class NotificationConsumer implements EventConsumer {
 			targets.putIfAbsent(UUID.fromString(String.valueOf(replyTo)), "REPLY");
 		}
 		targets.remove(event.actorId());
+		// #15: quem desligou o tipo de aviso nas Preferências não recebe.
+		targets.entrySet().removeIf(target -> !preferences.notifies(target.getKey(), target.getValue()));
 		targets.forEach((user, kind) -> jdbc.sql("""
 				insert into notification.notification (event_id, user_id, kind, actor_id, target_type, target_id,
 				  org_unit_id, title, excerpt, created_at)

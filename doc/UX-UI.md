@@ -146,7 +146,7 @@ Regras que decorrem da tabela:
 | Notificações (🔔, #85) | Contador dos avisos não lidos (até "9+"), atualizado a cada minuto e ao abrir. A lista mostra "Paula mencionou você em Guia" e "Tiago respondeu ao seu comentário em Guia", com o trecho e a hora; abrir um aviso marca como lido e leva à página, na unidade dela. "Marcar todas como lidas". | `GET /me/notifications` |
 | Unidade ativa | Nome da unidade escolhida na árvore do menu; o nível aparece ao passar o mouse. A troca é feita na árvore ([Proposta 06, Revisão 2](NAVIGATION-PROPOSAL.md#6-revisão-2-proposal-07-estrutura-organizacional-como-navegação)). | `GET /me/workspaces` |
 | Menu (☰) | Só no celular: abre o menu lateral como gaveta. | — |
-| Perfil | Avatar com iniciais. Menu: nome e papéis na unidade ativa, Preferências, Ajuda, Sair. | `GET /me` |
+| Perfil | Avatar com iniciais. Menu: nome e papéis na unidade ativa, Preferências (seção 7.14), Ajuda, Sair. | `GET /me` |
 
 O ponto verde de "operacional" sobre o avatar, presente no protótipo, não é usado: não há estado de presença no MVP.
 
@@ -676,6 +676,16 @@ Princípio adotado da [Proposta 03](ADMIN-PROPOSAL.md#1-princípio-adotado-três
 - **Quem está nas unidades abaixo** lê só a versão publicada (SSD 2.1, regra 9).
 - **Dados:** `GET /org-units/{id}/regimento`, `POST /org-units/{id}/regimento` e as operações de `/pages/{id}` (SSD 3.7.1).
 
+### 7.14 Preferências
+
+- **Objetivo:** o nível Pessoal da configuração (seção 7.11), para cada pessoa ajustar a própria tela e os próprios avisos (#15; REV-10).
+- **Rota:** `/preferencias`, pelo menu do avatar › Preferências.
+- **Tema:** Do sistema (padrão), Claro ou Escuro. Vale na hora, só nas telas internas; a landing, pública, fica sempre clara. No navegador fica uma cópia do tema, para a tela abrir já no tema certo.
+- **Avisos do sino:** "Quando alguém me menciona em um comentário" e "Quando alguém responde a um comentário meu", ligados por padrão. Desligado, o aviso não é criado; o comentário continua na página.
+- **Gravação:** cada mudança é gravada na hora e mostra "Preferências salvas."; vale em qualquer navegador.
+- **Fora do MVP:** idioma (não há tradução) e widgets da Home (catálogo pendente, seção 13).
+- **Dados:** `GET` e `PUT /me/preferences` (SSD 3.1).
+
 ## 8. Fluxos de interação
 
 ### 8.1 Mover um cartão e ser bloqueado
@@ -828,8 +838,7 @@ A identidade (hexágono, azul e âmbar) é mantida.
 - Layouts finais de alta fidelidade e conjunto de ícones.
 - Editor de documentos: construir ou adotar um componente existente; a decisão pode alterar a seção 6.6.
 - Comentários e menções em artefatos e documentos: não previstos no MVP.
-- Preferências do usuário: o item existe no menu de perfil, mas não há conteúdo definido.
-- Modo escuro.
+- ~~Preferências do usuário~~ e ~~modo escuro~~: resolvidos (REV-10, #15): tema e avisos do sino (7.14). Idioma e widgets da Home continuam pendentes.
 - Internacionalização: textos em português, sem mecanismo de tradução.
 - Telas das Fases 2 e 3.
 

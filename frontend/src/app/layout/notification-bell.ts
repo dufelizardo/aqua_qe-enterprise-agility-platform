@@ -75,13 +75,13 @@ const REFRESH_MS = 60_000;
   styles: `
     :host { display: inline-flex; }
     .bell { position: relative; border: none; background: none; cursor: pointer; font-size: 18px; padding: 6px 8px; border-radius: 8px; color: inherit; }
-    .bell:hover { background: var(--hover, rgba(0, 0, 0, .06)); }
+    .bell:hover { background: var(--hover); }
     .badge { position: absolute; top: 0; right: 0; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: #d92d20; color: #fff; font-size: 11px; font-weight: 700; line-height: 16px; text-align: center; box-sizing: border-box; }
     .panel { width: min(360px, calc(100vw - 32px)); padding: 4px 0; }
     .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 16px; }
     .link { background: none; border: none; padding: 0; color: var(--primary, inherit); cursor: pointer; font: inherit; font-size: 13px; }
     .item { display: grid; gap: 2px; width: 100%; text-align: left; padding: 10px 16px; border: none; background: none; cursor: pointer; font: inherit; color: inherit; }
-    .item:hover { background: var(--hover, rgba(0, 0, 0, .06)); }
+    .item:hover { background: var(--hover); }
     .item.unread .text { font-weight: 700; }
     .item.unread { box-shadow: inset 3px 0 0 var(--primary, #1d4ed8); }
     .excerpt { font-size: 13px; color: var(--text-secondary); overflow-wrap: anywhere; }

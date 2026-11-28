@@ -102,17 +102,17 @@ interface Step {
     .to { font-weight: 700; color: var(--text); }
     .gate-name { color: var(--text-secondary); font-size: 13px; }
     .count { font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 999px; background: var(--bg); color: var(--text-secondary); }
-    .count.done { background: #dcfae6; color: #067647; }
+    .count.done { background: var(--ok-bg); color: var(--ok-text); }
     header .btn { margin-left: auto; }
     ul { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 8px; }
     li { display: flex; gap: 8px; align-items: flex-start; }
     .mark { flex: none; width: 18px; text-align: center; font-weight: 700; color: var(--text-secondary); }
-    li.ok .mark { color: #067647; }
+    li.ok .mark { color: var(--ok-text); }
     .text { display: grid; gap: 2px; min-width: 0; }
     .muted { font-size: 12px; color: var(--text-secondary); overflow-wrap: anywhere; }
     .actions, .decide { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
     .decide input { flex: 1 1 200px; min-height: 30px; padding: 0 8px; border: 1px solid var(--border-strong); border-radius: 6px; font: inherit; }
-    .error { color: var(--danger, #b42318); }
+    .error { color: var(--danger); }
   `,
 })
 export class ArtifactGates {

@@ -134,7 +134,7 @@ import { OrganizationService, TreeRow, buildTree } from './organization.service'
     .row { display: flex; flex-wrap: wrap; gap: 6px; }
     .hint { margin: 6px 0 0; font-size: 12px; color: var(--text-secondary); }
     .muted { color: var(--text-secondary); font-size: 13px; }
-    .error { color: var(--danger, #b42318); }
+    .error { color: var(--danger); }
     .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
     @media (max-width: 700px) { .rules thead { display: none; } .rules td { display: block; border: 0; padding: 4px 0; } .rules tr { display: block; padding: 8px 0; border-bottom: 1px solid var(--border); } .actions { text-align: left; } }
   `,

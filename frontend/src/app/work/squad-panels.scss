@@ -161,7 +161,7 @@ select {
   align-items: center;
   padding: 12px 16px;
   border-radius: 8px;
-  background: #fff7e6;
+  background: var(--notice-bg);
 }
 
 .field-error {

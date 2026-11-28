@@ -1,10 +1,11 @@
-import { Component, ElementRef, HostListener, inject, signal, viewChild } from '@angular/core';
+import { Component, DestroyRef, ElementRef, HostListener, inject, signal, viewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { SessionService } from '../core/session.service';
 import { LevelsService } from '../core/levels.service';
+import { PreferencesService } from '../core/preferences.service';
 import { WorkspaceService } from '../core/workspace.service';
 import { NotificationBell } from './notification-bell';
 import { OrgTree } from './org-tree';
@@ -31,6 +32,8 @@ export class Shell {
   protected readonly drawer = signal(false);
 
   constructor() {
+    // Tema das Preferências nas telas internas (#15); a landing fica clara.
+    inject(PreferencesService).start(inject(DestroyRef));
     void this.levels.load();
     if (!this.workspace.loaded()) {
       void this.workspace.load();
