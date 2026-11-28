@@ -1,5 +1,6 @@
 package br.com.aquaqe.platform.governance;
 
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
@@ -139,7 +140,11 @@ class GateIntegrationTests {
 			.andExpect(jsonPath("$.items[0].name").value("Pronto para Construir"))
 			.andExpect(jsonPath("$.items[0].satisfied").value(0))
 			.andExpect(jsonPath("$.items[0].total").value(5))
-			.andExpect(jsonPath("$.items[0].rules[4].canDecide").value(false));
+			.andExpect(jsonPath("$.items[0].rules[4].canDecide").value(false))
+			// #14 (REV-09): quem tem o papel na unidade ou acima; o administrador aprova, mas não é listado.
+			.andExpect(jsonPath("$.items[0].rules[4].approvers[*].name").value(contains("tiago")))
+			.andExpect(jsonPath("$.items[0].rules[4].approverCount").value(1))
+			.andExpect(jsonPath("$.items[0].rules[0].approvers").doesNotExist());
 		mvc.perform(get("/api/v1/artifacts/{a}/gates", init).with(user("tiago")))
 			.andExpect(jsonPath("$.items[0].rules[4].canDecide").value(true));
 

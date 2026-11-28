@@ -22,6 +22,9 @@ export interface PanelRule {
   satisfied: boolean;
   lastDecision: LastDecision | null;
   canDecide: boolean;
+  /** Nas regras de aprovação (#14): até 10 pessoas com o papel na unidade do item ou acima, e o total. */
+  approvers?: { id: string; name: string }[] | null;
+  approverCount?: number | null;
 }
 
 /** Gate de uma transição que sai do status atual. */
@@ -99,6 +102,30 @@ export const ROLE_LABELS: Record<string, string> = {
 };
 
 /** Parâmetros vazios de cada tipo, para o formulário de configuração. */
+/**
+ * Quem pode aprovar, para o painel (#14; REV-09): "Pode aprovar: Ana", "Ana e Bruno", "Ana, Bruno e mais 3". Sem
+ * ninguém com o papel, avisa; fora das regras de aprovação, vazio.
+ */
+export function approversText(rule: Pick<PanelRule, 'approvers' | 'approverCount'>): string {
+  const people = rule.approvers ?? null;
+  if (people === null) {
+    return '';
+  }
+  const total = rule.approverCount ?? people.length;
+  if (total === 0) {
+    return 'Ninguém tem este papel na unidade do item ou acima. Peça ao administrador.';
+  }
+  const names = people.map((p) => p.name);
+  const rest = total - names.length;
+  if (rest > 0) {
+    return `Pode aprovar: ${names.join(', ')} e mais ${rest}`;
+  }
+  if (names.length === 1) {
+    return `Pode aprovar: ${names[0]}`;
+  }
+  return `Pode aprovar: ${names.slice(0, -1).join(', ')} e ${names[names.length - 1]}`;
+}
+
 export function emptyParams(type: RuleType): Record<string, unknown> {
   switch (type) {
     case 'REQUIRED_FIELD':

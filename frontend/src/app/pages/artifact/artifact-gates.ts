@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { Component, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
 
 import { messageOf, toApiError } from '../../core/api-error';
-import { GatesService, PanelGate, PanelRule, ruleSummary } from '../../work/gates.service';
+import { GatesService, PanelGate, PanelRule, approversText, ruleSummary } from '../../work/gates.service';
 import { Artifact, TransitionOption, WorkService } from '../../work/work.service';
 
 /** Próximo passo: a transição possível e o gate dela, se houver. */
@@ -52,6 +52,9 @@ interface Step {
                           · <a [routerLink]="[]" [queryParams]="{ tab: doc }" data-testid="gate-open-document">Abrir {{ doc }}</a>
                         }
                       </span>
+                      @if (approvers(rule); as who) {
+                        <span class="muted" data-testid="gate-approvers">{{ who }}</span>
+                      }
                       @if (rule.lastDecision; as d) {
                         <span class="muted" data-testid="gate-decision">
                           {{ d.decision === 'APPROVED' ? 'Aprovada' : 'Rejeitada' }} por {{ d.by.name ?? 'alguém' }} em {{ d.at | date: 'dd/MM/yyyy HH:mm' }}@if (d.comment) {: "{{ d.comment }}"}
@@ -129,6 +132,11 @@ export class ArtifactGates {
   protected readonly error = signal<string | null>(null);
   protected readonly deciding = signal<{ ruleId: string; decision: 'APPROVED' | 'REJECTED' } | null>(null);
   protected readonly comment = signal('');
+  /** Quem pode aprovar, enquanto a regra está pendente (#14). */
+  protected approvers(rule: PanelRule): string {
+    return rule.satisfied ? '' : approversText(rule);
+  }
+
   protected readonly summary = ruleSummary;
 
   constructor() {

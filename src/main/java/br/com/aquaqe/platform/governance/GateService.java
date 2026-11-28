@@ -58,6 +58,9 @@ class GateService {
 	private final Authorization authorization;
 	private final OrgUnits orgUnits;
 	private final CurrentUser currentUser;
+	/** Quantos nomes de aprovadores o painel mostra (#14). */
+	static final int APPROVERS_SHOWN = 10;
+
 	private final UserDirectory users;
 	private final DomainEvents events;
 
@@ -195,7 +198,9 @@ class GateService {
 						&& evaluator.satisfied(rule.params(), new GateRuleEvaluator.Context(artifact, view, rule.id()));
 				LastDecision last = null;
 				boolean canDecide = false;
+				Approvers approvers = null;
 				if ("ROLE_APPROVAL".equals(rule.type())) {
+					approvers = approvers(String.valueOf(rule.params().get("role")), artifact.orgUnitId());
 					Optional<Decision> decision = repository.lastDecision(artifact.id(), rule.id(), artifact.statusId());
 					if (decision.isPresent()) {
 						Decision d = decision.get();
@@ -206,7 +211,8 @@ class GateService {
 						String.valueOf(rule.params().get("role")), artifact.orgUnitId());
 				}
 				rules.add(new PanelRule(rule.id(), rule.type(), category(rule.type()), rule.message(), rule.params(), ok,
-					last, canDecide));
+					last, canDecide, approvers == null ? null : approvers.people(),
+					approvers == null ? null : approvers.count()));
 			}
 			long satisfied = rules.stream().filter(PanelRule::satisfied).count();
 			result.add(new PanelGate(gate.id(), gate.name(), transition.id(),
@@ -287,6 +293,20 @@ class GateService {
 		return evaluator == null ? "VALIDATION" : evaluator.category();
 	}
 
+	/**
+	 * Quem tem o papel aprovador na unidade do item ou acima, ativo, em ordem de nome: até {@link #APPROVERS_SHOWN}
+	 * nomes e o total (#14; REV-09). O {@code PLATFORM_ADMIN} também aprova, mas não entra na lista.
+	 */
+	private Approvers approvers(String role, UUID orgUnitId) {
+		java.util.Set<UUID> holders = authorization.roleHoldersInLineage(role, orgUnitId);
+		List<UserRef> active = users.search(holders, "", Math.max(holders.size(), 1));
+		List<Person> shown = active.stream().limit(APPROVERS_SHOWN).map(u -> new Person(u.id(), u.name())).toList();
+		return new Approvers(shown, active.size());
+	}
+
+	private record Approvers(List<Person> people, int count) {
+	}
+
 	private String name(UUID id, Map<UUID, String> cache) {
 		return cache.computeIfAbsent(id, key -> {
 			UserRef user = users.find(List.of(key)).get(key);
@@ -346,8 +366,13 @@ class GateService {
 			java.time.Instant decidedAt) {
 	}
 
+	/**
+	 * Regra no painel. Nas de aprovação, {@code approvers} traz até 10 pessoas com o papel e {@code approverCount}, o
+	 * total (#14); nas demais, os dois vêm nulos.
+	 */
 	record PanelRule(UUID ruleId, String type, String category, String message, Map<String, Object> params,
-			boolean satisfied, LastDecision lastDecision, boolean canDecide) {
+			boolean satisfied, LastDecision lastDecision, boolean canDecide, List<Person> approvers,
+			Integer approverCount) {
 	}
 
 	record PanelGate(UUID gateId, String name, UUID transitionId, StatusRef to, long satisfied, int total,

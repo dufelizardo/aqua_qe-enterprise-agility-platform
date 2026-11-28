@@ -177,7 +177,7 @@ Artefato - Editar Titulo E Responsavel
     Wait For Card In Column    ${status}    ${new_title}
 
 Artefato - Gate Com Aprovacao
-    [Documentation]    #78: o administrador cria um gate com aprovação de Tech Lead na transição Ideia → Cancelado; na
+    [Documentation]    #78 e #14: o administrador cria um gate com aprovação de Tech Lead na transição Ideia → Cancelado; na
     ...    página da Iniciativa, os Próximos passos mostram a regra pendente e o Mover desabilitado; aprovar libera e
     ...    mover leva a Cancelado. O gate é removido no fim, mesmo se o teste falhar.
     [Arguments]    ${status}    ${title}    ${gate_name}    ${message}    ${path}    ${to_key}    ${to_name}
@@ -197,6 +197,8 @@ Artefato - Gate Com Aprovacao
         ${step}=    Get Gate Step Text    ${to_key}
         Should Contain    ${step}    ${message}
         Should Contain    ${step}    0/1
+        # #14 (REV-09): a regra pendente diz quem pode aprovar (ou que ninguém tem o papel no ambiente).
+        Should Match Regexp    ${step}    Pode aprovar: |Ninguém tem este papel
         ${enabled}=    Is Gate Move Enabled    ${to_key}
         Should Not Be True    ${enabled}
         Approve Gate Rule    ${to_key}

@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 
 import { gateErrorText } from '../admin/admin-gates';
-import { GatesService, RULE_LABELS, RuleType, emptyParams, ruleSummary } from './gates.service';
+import { GatesService, RULE_LABELS, approversText, RuleType, emptyParams, ruleSummary } from './gates.service';
 
 describe('gates (#78)', () => {
   it('cada tipo de regra tem rótulo e parâmetros iniciais', () => {
@@ -53,5 +53,18 @@ describe('gates (#78)', () => {
     put.flush({ id: 'g' });
     await saved;
     http.verify();
+  });
+
+  it('quem pode aprovar aparece por nome, com o total acima de 10 (#14)', () => {
+    const p = (name: string) => ({ id: name, name });
+    expect(approversText({ approvers: null })).toBe('');
+    expect(approversText({ approvers: [], approverCount: 0 })).toContain('Ninguém tem este papel');
+    expect(approversText({ approvers: [p('Ana')], approverCount: 1 })).toBe('Pode aprovar: Ana');
+    expect(approversText({ approvers: [p('Ana'), p('Bruno'), p('Caio')], approverCount: 3 })).toBe(
+      'Pode aprovar: Ana, Bruno e Caio',
+    );
+    expect(approversText({ approvers: [p('Ana'), p('Bruno')], approverCount: 7 })).toBe(
+      'Pode aprovar: Ana, Bruno e mais 5',
+    );
   });
 });

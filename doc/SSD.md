@@ -634,7 +634,7 @@ A situação dos gates (`GET /artifacts/{artifact}/gates`) usa o mesmo formato d
 - `GET /gates` devolve `{id, transitionId, name, rules}` (quantidade de regras), com `workflowId` opcional.
 - `GET /workflow-transitions/{id}/gate` devolve o gate com `from`, `to`, o workflow, os tipos de artefato e as regras. Exige gerir configuração, como o PUT.
 - O PUT aceita de 1 a 20 regras. Cada uma tem `type`, `params` e `message` (até 300 caracteres). O gate tem `name` (até 120). Salvar troca todas as regras, e as regras novas ganham ids novos.
-- O painel (`GET /artifacts/{artifact}/gates`) traz, por gate: `transitionId`, `to`, `satisfied`, `total` e as regras. Cada regra tem `satisfied`, `lastDecision` (`decision`, `comment`, `by`, `at`) e `canDecide`.
+- O painel (`GET /artifacts/{artifact}/gates`) traz, por gate: `transitionId`, `to`, `satisfied`, `total` e as regras. Cada regra tem `satisfied`, `lastDecision` (`decision`, `comment`, `by`, `at`) e `canDecide`. Nas regras `ROLE_APPROVAL`, também `approvers` (até 10 pessoas ativas, `id` e `name`, em ordem de nome) e `approverCount` (o total): quem tem o papel aprovador vigente na unidade do item ou acima (#14; REV-09). O `PLATFORM_ADMIN` também aprova, mas não entra na lista. Nas demais regras, os dois vêm nulos. A permissão é a mesma do painel (ler o artefato), sem consulta administrativa.
 - A aprovação vale no status em que foi dada: a decisão grava o status atual do artefato e só conta enquanto o artefato estiver nele. Assim, mudar de status invalida as aprovações, inclusive na volta ao status anterior.
 - Os eventos `gate.created`, `gate.updated`, `gate.deleted` e `approval.decided` vão para a trilha de auditoria.
 
