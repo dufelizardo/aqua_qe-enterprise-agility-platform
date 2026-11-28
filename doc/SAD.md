@@ -323,6 +323,10 @@ Busca textual em artefatos e documentos usando o recurso nativo do PostgreSQL, s
 - Segredos de infraestrutura vêm do mecanismo de segredos do cluster.
 - Credenciais de integrações (Fase 2) ficam no módulo `integration`, cifradas com chave externa ao banco, com rotação e registro de uso (RF-SC13).
 
+### 7.11 Baseline de segurança
+
+Desde a #18 (REV-13), o projeto usa três referências, cada uma no seu papel: **OWASP ASVS 4.0.3 nível 2** para os requisitos da aplicação e os testes, **NIST SSDF** para o processo de entrega e **NIST CSF 2.0** como mapa para as avaliações de clientes. O mapa dos RF-SC e RNF-SC, a cobertura por capítulo do ASVS, a política de vulnerabilidades e as lacunas estão no [baseline de segurança](SECURITY.md). A cada push e PR, o workflow `supply-chain.yml` gera o SBOM e varre as dependências e as imagens; as imagens aplicam as correções do Alpine no build.
+
 ## 8. Visão de implantação
 
 ```mermaid
@@ -450,7 +454,7 @@ Os valores-alvo são provisórios; o PRD lista sua definição como pendência.
 | RNF-SC07, RNF-DH07 Observabilidade | OpenTelemetry; health checks; ID de correlação. | — |
 | RNF-SC08 Auditabilidade | Todo evento de domínio vai para a trilha. | — |
 | RNF-DH01 Portabilidade | Um chart Helm para os três modelos; sem serviço gerenciado obrigatório. | — |
-| RNF-DH04 Segurança de imagens | Varredura de vulnerabilidades e assinatura no pipeline de build. | — |
+| RNF-DH04 Segurança de imagens | Varredura de vulnerabilidades e SBOM no pipeline de build desde a #18 ([SECURITY, seção 4](SECURITY.md#4-processo-de-entrega-ssdf)); assinatura pendente (S-01). | Nenhuma CRITICAL com correção |
 | RNF-DH06 Manutenibilidade | Migrações expandir/contrair; fronteiras de módulo verificadas. | — |
 | RNF-DH08 Eficiência | Limites de recurso configuráveis por container (RF-DH10). | — |
 | DEC-02 Atualização de indicadores | Processamento assíncrono com horário da última atualização. | Até 1 min após o evento |
@@ -475,6 +479,7 @@ Os valores-alvo são provisórios; o PRD lista sua definição como pendência.
 - **Notificações:** canais além de e-mail e regras de envio.
 - **Internacionalização e acessibilidade:** não tratadas no PRD.
 - **Ancoragem externa da cadeia de hash** da auditoria.
+- **Lacunas do baseline de segurança** S-01 a S-05 ([SECURITY, seção 5](SECURITY.md#5-lacunas)): assinatura das imagens, cabeçalhos HTTP, eventos de autenticação na trilha, resposta a incidentes e limites de taxa.
 - **Valores definitivos dos atributos de qualidade** da seção 11 e volumes esperados (usuários, artefatos).
 - **Especificações ausentes** que afetam módulos da Fase 2 e 3: OKRs, dependências, capacity planning, IA.
 - **Contratos de API:** especificados no [SSD](SSD.md).

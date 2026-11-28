@@ -41,10 +41,10 @@ Ao conferir a análise externa contra os documentos, três pontos foram ajustado
 | REV-10 | Baixo | Preferências do usuário | UX/UI 13, SSD 10 | Resolvido (#15) |
 | REV-11 | Baixo | Exportação de documentos | PRD, SSD 6 | Resolvido (#16) |
 | REV-12 | Baixo | Campos customizados usados em gates | SSD 5.2 e 10 | Resolvido (#17) |
-| REV-13 | Alto | Baseline de segurança por framework | Spec. Segurança V2.0 (RF-SC, RNF-SC), SAD 7 e 13 | Aberto |
+| REV-13 | Alto | Baseline de segurança por framework | Spec. Segurança V2.0 (RF-SC, RNF-SC), SAD 7 e 13 | Resolvido (#18) |
 | REV-14 | Alto | Privacidade e dados pessoais | SAD 13, SSD 9 e 10, [Proposta de experiência](EXPERIENCE-PROPOSAL.md) | Aberto |
 
-A frente de trabalho que trata cada achado está na [Proposta de evolução, seção 7](EVOLUTION-PROPOSAL.md#7-relação-entre-achados-e-frentes). REV-02, REV-14 e Q-01 ainda não têm frente (REV-12 foi resolvido direto, na #17), e REV-13 tem só cobertura parcial ([seção 8 da proposta](EVOLUTION-PROPOSAL.md#8-lacunas-desta-proposta)).
+A frente de trabalho que trata cada achado está na [Proposta de evolução, seção 7](EVOLUTION-PROPOSAL.md#7-relação-entre-achados-e-frentes). REV-02, REV-14 e Q-01 ainda não têm frente (REV-12 foi resolvido direto, na #17), e REV-13 foi resolvido direto, na #18, com o [baseline de segurança](SECURITY.md).
 
 ### REV-01 — Regras de autorização entre unidades
 
@@ -222,6 +222,8 @@ Nota de 2026-11-20: a [Proposta 05](CONFIG-PROPOSAL.md#2-confronto-com-o-que-já
 O CSF não deve ser usado como fonte de requisitos do produto, porque descreve resultados da organização e não da aplicação. Nas instalações on-premise e air-gapped, quem opera é o cliente; o papel do produto é fornecer as capacidades que ajudam o cliente a atingir os resultados dele. A LGPD continua obrigatória por lei. Clientes do setor financeiro tendem a pedir ISO/IEC 27001 ou a Resolução CMN 4.893, e o mapeamento ao CSF facilita responder a esses pedidos. Em textos externos, usar "mapeado ao NIST CSF 2.0", nunca "conforme" (DEC-05).
 
 O entregável da atividade é a tabela de mapeamento. Ela só deve ser feita depois que este achado for aceito.
+
+**Decisão (2026-11-28, #18): aceita.** As três referências foram adotadas no papel recomendado. O entregável é o [baseline de segurança](SECURITY.md), com o mapa dos RF-SC e RNF-SC para o ASVS e o CSF, a cobertura por capítulo do ASVS, as práticas do SSDF e a política de vulnerabilidades. As lacunas viraram issues no Backlog (S-01 a S-05). No pipeline, o `supply-chain.yml` já gera o SBOM CycloneDX e varre as dependências e as imagens com o Trivy. Ele bloqueia com vulnerabilidade CRITICAL que tem correção; as HIGH vão para o Code Scanning. A assinatura das imagens é a lacuna S-01. Ficam para depois: o perfil CSF da operação SaaS, antes do lançamento SaaS, e a migração para o ASVS 5.0.
 
 ### REV-14 — Privacidade e dados pessoais
 

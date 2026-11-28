@@ -1,0 +1,122 @@
+# Cadeia de suprimentos (NIST SSDF, SP 800-218; #18, REV-13; doc/SECURITY.md, seção 4):
+#   SBOM CycloneDX do repositório (Maven, npm e pip) e de cada imagem, e varredura de vulnerabilidades com o Trivy.
+#   Política: bloqueia com vulnerabilidade CRITICAL que já tem versão corrigida; todas as HIGH e CRITICAL vão para o
+#   Code Scanning (SARIF), para triagem. Os SBOMs ficam como artefato do run por 90 dias.
+# Retentativas (ADR-18): o download da base do Trivy tenta até 3 vezes.
+name: Cadeia de suprimentos
+
+on:
+  push:
+    branches:
+      - developer
+      - main
+  pull_request:
+    branches:
+      - developer
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: supply-chain-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  TRIVY_IMAGE: aquasec/trivy:0.58.1
+
+jobs:
+  dependencies:
+    # O commit de pin só troca a tag no overlay: não há o que varrer de novo.
+    if: "!startsWith(github.event.head_commit.message || '', 'chore: pin ')"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Baixar a base de vulnerabilidades (até 3 tentativas)
+        run: |
+          for i in 1 2 3; do
+            docker run --rm -v trivy-cache:/root/.cache "$TRIVY_IMAGE" image --download-db-only --quiet && exit 0
+            echo "::warning::Download da base do Trivy falhou (tentativa $i de 3)"; sleep $((i * 20))
+          done
+          exit 1
+      - name: SBOM do repositório (CycloneDX)
+        run: >
+          docker run --rm -v trivy-cache:/root/.cache -v "$PWD:/src" "$TRIVY_IMAGE" fs --quiet --skip-db-update
+          --format cyclonedx --output /src/sbom-repositorio.cdx.json /src
+      - name: Varredura das dependências (SARIF)
+        run: >
+          docker run --rm -v trivy-cache:/root/.cache -v "$PWD:/src" "$TRIVY_IMAGE" fs --quiet --skip-db-update
+          --scanners vuln --severity HIGH,CRITICAL --format sarif --output /src/trivy-dependencias.sarif /src
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-dependencias.sarif
+          category: trivy-dependencias
+      - name: Bloquear vulnerabilidade crítica com correção
+        run: >
+          docker run --rm -v trivy-cache:/root/.cache -v "$PWD:/src" "$TRIVY_IMAGE" fs --quiet --skip-db-update
+          --scanners vuln --severity CRITICAL --ignore-unfixed --exit-code 1 /src
+      - name: Publicar o SBOM
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-repositorio
+          path: sbom-repositorio.cdx.json
+          if-no-files-found: ignore
+          retention-days: 90
+
+  images:
+    if: "!startsWith(github.event.head_commit.message || '', 'chore: pin ')"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - context: .
+            image: aqua-qe-platform
+          - context: frontend
+            image: aqua-qe-platform-frontend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Construir a imagem (sem publicar)
+        run: docker build -t "local/${{ matrix.image }}:scan" "${{ matrix.context }}"
+      - name: Baixar a base de vulnerabilidades (até 3 tentativas)
+        run: |
+          for i in 1 2 3; do
+            docker run --rm -v trivy-cache:/root/.cache "$TRIVY_IMAGE" image --download-db-only --quiet && exit 0
+            echo "::warning::Download da base do Trivy falhou (tentativa $i de 3)"; sleep $((i * 20))
+          done
+          exit 1
+      - name: SBOM da imagem (CycloneDX)
+        run: >
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v trivy-cache:/root/.cache -v "$PWD:/src"
+          "$TRIVY_IMAGE" image --quiet --skip-db-update --format cyclonedx
+          --output "/src/sbom-${{ matrix.image }}.cdx.json" "local/${{ matrix.image }}:scan"
+      - name: Varredura da imagem (SARIF)
+        run: >
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v trivy-cache:/root/.cache -v "$PWD:/src"
+          "$TRIVY_IMAGE" image --quiet --skip-db-update --scanners vuln --severity HIGH,CRITICAL --format sarif
+          --output "/src/trivy-${{ matrix.image }}.sarif" "local/${{ matrix.image }}:scan"
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-${{ matrix.image }}.sarif
+          category: trivy-${{ matrix.image }}
+      - name: Bloquear vulnerabilidade crítica com correção
+        run: >
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v trivy-cache:/root/.cache
+          "$TRIVY_IMAGE" image --quiet --skip-db-update --scanners vuln --severity CRITICAL --ignore-unfixed
+          --exit-code 1 "local/${{ matrix.image }}:scan"
+      - name: Publicar o SBOM
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ matrix.image }}
+          path: sbom-${{ matrix.image }}.cdx.json
+          if-no-files-found: ignore
+          retention-days: 90

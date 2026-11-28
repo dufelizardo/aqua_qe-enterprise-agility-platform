@@ -412,7 +412,7 @@ Frentes que não nascem de um REV, mas de pendências já registradas nos docume
 |---|---|---|
 | REV-02 | Nenhuma frente trata o contexto herdado quando a Iniciativa está em outro ramo. | Incluir em F01 a regra de leitura de resumo dos ancestrais (título, status, início da descrição e status dos documentos). |
 | REV-12 | `customFields` livres citados em gates. | **Resolvido (#17, 2026-11-27):** campos declarados por tipo, validados na gravação e nos gates ([SSD 3.3](SSD.md#33-configuration)). |
-| REV-13 | Baseline ASVS L2, SSDF e mapeamento ao NIST CSF 2.0. A F08c cobre só parte da função Detect. | Nova frente F09, ou incorporar em F08c com escopo ampliado. A verificação ASVS já está prevista no [QA](QA.md). |
+| REV-13 | Baseline ASVS L2, SSDF e mapeamento ao NIST CSF 2.0. A F08c cobre só parte da função Detect. | **Resolvido (#18, 2026-11-28):** [baseline de segurança](SECURITY.md), SBOM e varredura no CI; lacunas S-01 a S-05 como issues. |
 | Q-01 | Esclarecer a "integração futura com AQuA-QE" citada na análise externa. | Decisão do responsável pelo produto. |
 
 ## 9. Divergências com os documentos atuais
