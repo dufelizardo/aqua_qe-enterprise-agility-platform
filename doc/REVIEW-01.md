@@ -39,7 +39,7 @@ Ao conferir a análise externa contra os documentos, três pontos foram ajustado
 | REV-08 | Médio | Listagem de anexos | SSD 3.7, UX/UI 13, PRD-RF-018 | Resolvido (#13) |
 | REV-09 | Médio | Consulta de quem pode aprovar | SSD 3.6, UX/UI 13, PRD-RF-024 | Resolvido (#14) |
 | REV-10 | Baixo | Preferências do usuário | UX/UI 13, SSD 10 | Resolvido (#15) |
-| REV-11 | Baixo | Exportação de documentos | PRD, SSD 6 | Aberto |
+| REV-11 | Baixo | Exportação de documentos | PRD, SSD 6 | Resolvido (#16) |
 | REV-12 | Baixo | Campos customizados usados em gates | SSD 5.2 e 10 | Resolvido (#17) |
 | REV-13 | Alto | Baseline de segurança por framework | Spec. Segurança V2.0 (RF-SC, RNF-SC), SAD 7 e 13 | Aberto |
 | REV-14 | Alto | Privacidade e dados pessoais | SAD 13, SSD 9 e 10, [Proposta de experiência](EXPERIENCE-PROPOSAL.md) | Aberto |
@@ -188,6 +188,8 @@ Nota de 2026-11-20: a [Proposta 05](CONFIG-PROPOSAL.md#2-confronto-com-o-que-já
 **Evidência.** Nenhum documento prevê exportar a documentação viva.
 
 **Recomendação.** Registrar no PRD um requisito de exportação para Markdown e PDF, com DOCX como opção, na Fase 2. O formato da seção 6 do SSD deve permitir essa conversão sem perda das seções e dos anexos, o que reforça o REV-05.
+
+**Decisão (2026-11-28, #16): aceita, com parte já no MVP.** O requisito está no PRD (PRD-RF-039). O Markdown já é gerado pelo servidor, a partir do formato da seção 6 do SSD, sem perder as seções e com os anexos como links ([SSD 6.4](SSD.md#64-exportação)). Vale para os documentos do artefato, as páginas do Wiki e o Regimento. O PDF sai da impressão do navegador, com uma folha de estilo que deixa só o documento. O PDF gerado pelo servidor e o DOCX ficam para a Fase 2. Testes no [QA](QA.md).
 
 ### REV-12 — Campos customizados usados em gates
 

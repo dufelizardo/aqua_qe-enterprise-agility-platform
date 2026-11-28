@@ -654,6 +654,7 @@ Documentos existem apenas em Iniciativas e Features. Os tipos são `PRD`, `SAD`,
 | GET | `/artifacts/{artifact}/documents/{type}/versions` | Lista de versões (sem conteúdo). | ler | 020 |
 | GET | `/artifacts/{artifact}/documents/{type}/versions/{number}` | Conteúdo de uma versão. | ler | 020 |
 | POST | `/artifacts/{artifact}/documents/{type}/status` | Aprova ou reabre o documento. | ver abaixo | 019, 023 |
+| GET | `/artifacts/{artifact}/documents/{type}/export/markdown` | Baixa a versão atual em Markdown (#16; REV-11; seção 6.4), com os anexos do artefato como links no fim. `text/markdown`, `Content-Disposition: attachment` com o nome `<chave>-<tipo>.md`. | ler | 039 |
 | GET | `/artifacts/{artifact}/attachments` | Lista os anexos (#13; REV-08): `id`, `fileName`, `contentType`, `size`, `uploadedBy`, `uploadedAt`, do mais recente para o mais antigo, mais `canEdit` e `maxSize`. | ler o artefato | 018 |
 | POST | `/artifacts/{artifact}/attachments` | Envia anexo (`multipart/form-data`, campo `file`). | editar no nível | 018 |
 | GET | `/attachments/{id}/content` | Baixa o anexo. | ler o artefato | 018 |
@@ -708,6 +709,7 @@ O mesmo motor de documentos tem **dono genérico**: um artefato (os cinco docume
 | POST | `/pages/{id}/rank` | Reorganiza no Wiki ([PROP-002](propostas/PROP-002-organizacao-flexivel-da-wiki.md)). `beforeId` ou `afterId`: irmã de referência no nível de destino. `parentId`, se presente, muda o nível (nulo = raiz) e leva as subpáginas junto; sem irmã de referência, vai para o fim do nível. Recusa ciclo, referência de outro nível e o regimento. Não cria versão nem mexe no status. Publica `knowledge_page.moved`, com pai e posição antes e depois. | `EDIT_KNOWLEDGE` |
 | POST | `/pages/{id}/archive` | Arquiva (`reason` opcional). Página com subpáginas ativas: `HAS_CHILDREN`. | `EDIT_KNOWLEDGE` |
 | POST | `/pages/{id}/copy` | Faz uma cópia (menu ⋯, #81): página nova na mesma unidade e no mesmo pai, logo depois da original, com o conteúdo da versão atual e sem as subpáginas. `title` opcional (padrão "Cópia de <título>"). Recusa o regimento (422 `NOT_COPYABLE`). Publica `knowledge_page.created` com `copiedFrom`. Responde 201. | `EDIT_KNOWLEDGE` |
+| GET | `/pages/{id}/export/markdown` | Baixa em Markdown a versão que a pessoa lê (a atual ou, pela regra 9, a publicada), com o nome do arquivo a partir do título (#16; seção 6.4). Vale para o Regimento. | ler pelas regras 1 e 9 | 039 |
 | GET | `/pages/{id}/comments` | Comentários da página (#85), com as respostas logo depois de cada um (um nível): `{id, parentId, author, body, quote, mentions, createdAt, deleted, canDelete}`. Excluído com respostas vem com `deleted` e sem texto; sem respostas, some. | ler |
 | POST | `/pages/{id}/comments` | Comenta: `body` (até 2.000 caracteres), `quote` opcional (o trecho selecionado, até 500), `parentId` opcional (responder; a resposta de uma resposta vai para o comentário principal) e `mentionIds` (até 20 pessoas que leem a página; outra pessoa dá 400 no campo `mentionIds`). Publica `knowledge_page.commented` com `mentionedUserIds` e `replyToUserId`; o módulo `notification` cria os avisos. 201. | ler |
 | DELETE | `/pages/{id}/comments/{commentId}` | Exclui o próprio comentário (exclusão lógica). Outra pessoa: 403. 204. | autor |
@@ -1142,6 +1144,17 @@ Todo bloco tem um `id` único dentro do documento, gerado pelo cliente.
 ### 6.3 Seção preenchida
 
 Uma seção conta como preenchida quando tem ao menos um bloco com conteúdo: texto que não seja só espaços, lista ou tabela com ao menos um item, anexo ou link válido. Blocos `heading` sozinhos não contam. No `richtext`, conta qualquer texto do documento.
+
+### 6.4 Exportação
+
+Desde a #16 (REV-11), o documento do artefato e a página do Wiki ou do Regimento são exportados em Markdown pelo servidor, a partir do formato desta seção, sem perda das seções:
+
+- **Cabeçalho:** `#` com o título (o nome do documento e a chave do artefato, ou o título da página) e uma lista com status, versão, autor e data da versão.
+- **Seções:** um `##` por seção do template, na ordem do template. Seção sem conteúdo sai como _Seção não preenchida._
+- **Editor contínuo (`richtext`):** os títulos da seção descem um nível (`###` e `####`); listas, listas de tarefas (`- [x]`), citação, bloco de código com a linguagem, tabela e linha horizontal têm equivalente direto. Negrito, itálico, tachado, código e link viram a marcação do Markdown. Sublinhado, cor do texto e destaque não têm equivalente e saem como texto simples. O texto simples é escapado para não virar marcação.
+- **Editor anterior:** o texto dos blocos já está em Markdown em linha e é copiado como está.
+- **Anexos:** no documento do artefato, uma seção `## Anexos` no fim, com um link por anexo para `/attachments/{id}/content`.
+- **PDF:** no MVP, sai da impressão do navegador, com uma folha de estilo que deixa só o documento e usa o tema claro. O PDF gerado pelo servidor e o DOCX ficam para a Fase 2 (PRD-RF-039).
 
 ## 7. Eventos de domínio
 

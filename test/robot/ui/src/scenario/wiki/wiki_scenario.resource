@@ -82,3 +82,9 @@ WIKI UI - SUMARIO TAREFAS E ICONE
     ...    ${task}    ${summary}
     Wiki - Abrir    ${username}    ${display_name}    ${root_name}
     Wiki - Sumario Tarefas E Icone    ${title_base}    ${heading_one}    ${heading_two}    ${task}    ${summary}
+
+WIKI UI - BAIXAR MARKDOWN
+    [Documentation]    Exportação da página do Wiki em Markdown (#16; REV-11).
+    [Arguments]    ${username}    ${display_name}    ${root_name}    ${title_base}
+    Wiki - Abrir    ${username}    ${display_name}    ${root_name}
+    Wiki - Baixar Markdown    ${title_base}

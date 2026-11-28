@@ -186,6 +186,7 @@ A coluna **Fase** segue a proposta da [seção 13](#13-faseamento-proposto-a-val
 | PRD-RF-019 | O Workspace do Artefato deve exibir o status de cada documento (Pending, In Progress, Approved) ao lado do status dos gates. | V2.1 §4 | MVP |
 | PRD-RF-020 | Os documentos devem ser versionados, com histórico consultável no próprio artefato. | V2.1 EP04 | MVP |
 | PRD-RF-021 | O sistema deve oferecer uma central que lista os documentos de todos os artefatos a que o usuário tem acesso. | V2.1 UI-10 | 2 |
+| PRD-RF-039 | Os documentos do artefato e as páginas do Wiki e do Regimento devem poder ser exportados em Markdown e em PDF, sem perder as seções e com os anexos como links. No MVP, o Markdown é gerado pelo servidor e o PDF sai da impressão do navegador; o PDF gerado pelo servidor e o DOCX ficam para a Fase 2. | REV-11 (#16) | MVP / 2 |
 
 ### EP05 — Governance & Compliance
 

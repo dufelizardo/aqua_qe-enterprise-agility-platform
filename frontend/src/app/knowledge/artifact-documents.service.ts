@@ -66,6 +66,11 @@ export interface SectionIndexItem {
   filled: boolean;
 }
 
+/** Endereço do Markdown do documento (#16; REV-11), na versão que a pessoa lê. */
+export function documentMarkdownUrl(artifactKey: string, type: string): string {
+  return `${API}/artifacts/${encodeURIComponent(artifactKey)}/documents/${encodeURIComponent(type)}/export/markdown`;
+}
+
 export function sectionIndex(sections: PageSection[]): SectionIndexItem[] {
   return sections.map((s) => ({
     key: s.key,

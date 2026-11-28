@@ -392,7 +392,7 @@ Cada ADR registra contexto, decisão, alternativas, consequências e status. Uma
 | [REV-08](REVIEW-01.md#rev-08--listagem-de-anexos) | Listagem de anexos | F06, F03; resolvido na #13 (2026-11-27) |
 | [REV-09](REVIEW-01.md#rev-09--consulta-de-quem-pode-aprovar) | Quem pode aprovar | F06, F02; resolvido na #14 (2026-11-27) |
 | [REV-10](REVIEW-01.md#rev-10--preferências-do-usuário) | Preferências do usuário | F06; resolvido na #15 (2026-11-28) |
-| [REV-11](REVIEW-01.md#rev-11--exportação-de-documentos) | Exportação de documentos | F06, F03 |
+| [REV-11](REVIEW-01.md#rev-11--exportação-de-documentos) | Exportação de documentos | F06, F03; resolvido na #16 (2026-11-28) |
 | [REV-12](REVIEW-01.md#rev-12--campos-customizados-usados-em-gates) | Campos customizados em gates | nenhuma; resolvido na #17 (2026-11-27) |
 | [REV-13](REVIEW-01.md#rev-13--baseline-de-segurança-por-framework) | Baseline de segurança | parcial: F08c (seção 8) |
 | [Q-01](REVIEW-01.md#3-questões-em-aberto) | Nome AQuA-QE e "integração futura" | **nenhuma** (seção 8) |

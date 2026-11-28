@@ -66,3 +66,6 @@ ${DOC_OUTLINE_ITEM}         css=[data-testid="doc-outline-item"]
 ${WIKI_READ_TASK_ITEM}      css=[data-testid="wiki-page"] .reading ul[data-type="taskList"] li
 ${WIKI_ICON_BUTTON}         css=[data-testid="wiki-icon-button"]
 ${WIKI_ICON_OPTION}         css=[data-testid="wiki-icon-option"] >> nth=0
+# Exportação (#16; REV-11).
+${WIKI_EXPORT_MD}               css=[data-testid="wiki-export-md"]
+${WIKI_PRINT}                   css=[data-testid="wiki-print"]

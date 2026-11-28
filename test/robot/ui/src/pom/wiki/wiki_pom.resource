@@ -1,6 +1,7 @@
 *** Settings ***
 Documentation       Ações na tela Wiki. Sem asserções: as esperas só sincronizam.
 Library             Browser
+Library             OperatingSystem
 Library             Collections
 Resource            ../../resource/locators/wiki/wiki_locator.resource
 
@@ -298,3 +299,14 @@ Choose First Page Icon
 Get Page Icon Text
     ${text}=    Get Text    ${WIKI_ICON_BUTTON}
     RETURN    ${text}
+
+Download Wiki Markdown
+    [Documentation]    Clica em "Baixar Markdown" e devolve o nome sugerido do arquivo e o texto baixado.
+    ${promise}=    Promise To Wait For Download
+    Click    ${WIKI_EXPORT_MD}
+    ${file}=    Wait For    ${promise}
+    ${text}=    Get File    ${file}[saveAs]    encoding=UTF-8
+    RETURN    ${file}[suggestedFilename]    ${text}
+
+Wait For Wiki Print Button
+    Wait For Elements State    ${WIKI_PRINT}    visible    timeout=30s

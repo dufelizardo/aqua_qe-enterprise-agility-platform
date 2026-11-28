@@ -16,6 +16,7 @@ import {
   DocType,
   TYPES_WITH_DOCUMENTS,
   sectionIndex,
+  documentMarkdownUrl,
 } from '../../knowledge/artifact-documents.service';
 import { ActivityService } from '../../core/activity.service';
 import { DocOutline } from '../../knowledge/doc-outline';
@@ -472,6 +473,16 @@ export class ArtifactPage implements LeaveAware {
         await this.reloadSummaries();
       });
     }
+  }
+
+  /** Markdown da versão que a pessoa lê (#16; REV-11). */
+  protected markdownUrl(doc: ArtifactDocument): string {
+    return documentMarkdownUrl(doc.artifactKey, doc.type);
+  }
+
+  /** Imprimir ou salvar PDF pela impressão do navegador; a folha de impressão deixa só o documento (#16). */
+  protected print(): void {
+    window.print();
   }
 
   protected async showHistory(): Promise<void> {

@@ -1,9 +1,9 @@
 <!-- Página da unidade: trilha, nome e abas (Wiki, Regimento e, na Squad, Quadro, Backlog, Sprints; bug #66). -->
-<app-unit-header />
+<app-unit-header class="no-print" />
 
 <div class="layout" [class.single]="isRegimento()">
   @if (!isRegimento()) {
-  <aside class="pages" aria-label="Páginas">
+  <aside class="pages no-print" aria-label="Páginas">
     @if (list(); as l) {
       @if (l.canEdit) {
         <div class="actions">
@@ -244,6 +244,8 @@
               @if (current.access === 'FULL') {
                 <button type="button" class="btn" (click)="showHistory()" data-testid="wiki-history">Histórico</button>
               }
+              <a class="btn" [href]="markdownUrl(current.id)" download data-testid="wiki-export-md">Baixar Markdown</a>
+              <button type="button" class="btn" (click)="print()" data-testid="wiki-print">Imprimir ou salvar PDF</button>
               @if (current.canEdit && !current.archived) {
                 <button type="button" class="btn subtle" (click)="ask('archive')" data-testid="wiki-archive">Arquivar</button>
               }
@@ -353,7 +355,7 @@
                 (mousedown)="$event.preventDefault()" (click)="commentSelection()" data-testid="wiki-comment-selection">Comentar trecho</button>
             }
             @if (mode() === 'read' && !oldVersion()) {
-              <app-page-comments [pageId]="current.id" />
+              <app-page-comments class="no-print" [pageId]="current.id" />
             }
           }
         </article>
