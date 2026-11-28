@@ -71,6 +71,21 @@ class AccessRepository {
 	}
 
 	/** Verdadeiro se o usuário tem algum dos papéis em alguma das unidades. */
+	/** Quem tem o papel vigente em alguma das unidades (#14). */
+	List<UUID> holdersIn(String roleKey, Collection<UUID> orgUnitIds) {
+		if (orgUnitIds.isEmpty()) {
+			return List.of();
+		}
+		return jdbc.sql("""
+				select distinct a.user_id from access.role_assignment a join access.role r on r.id = a.role_id
+				 where a.revoked_at is null and r.key = :role and a.org_unit_id in (:units)
+				""")
+			.param("role", roleKey)
+			.param("units", orgUnitIds)
+			.query(UUID.class)
+			.list();
+	}
+
 	boolean hasAnyRole(UUID userId, Collection<String> roles, Collection<UUID> orgUnitIds) {
 		if (roles.isEmpty() || orgUnitIds.isEmpty()) {
 			return false;

@@ -37,7 +37,7 @@ Ao conferir a análise externa contra os documentos, três pontos foram ajustado
 | REV-06 | Alto | Publicação de nova versão de workflow | SSD 3.3, PRD-RF-011 | Aberto |
 | REV-07 | Médio | Consulta de usuários para quem edita | SSD 3.1, UX/UI 13 | Resolvido (#79, #12) |
 | REV-08 | Médio | Listagem de anexos | SSD 3.7, UX/UI 13, PRD-RF-018 | Resolvido (#13) |
-| REV-09 | Médio | Consulta de quem pode aprovar | SSD 3.6, UX/UI 13, PRD-RF-024 | Aberto |
+| REV-09 | Médio | Consulta de quem pode aprovar | SSD 3.6, UX/UI 13, PRD-RF-024 | Resolvido (#14) |
 | REV-10 | Baixo | Preferências do usuário | UX/UI 13, SSD 10 | Aberto |
 | REV-11 | Baixo | Exportação de documentos | PRD, SSD 6 | Aberto |
 | REV-12 | Baixo | Campos customizados usados em gates | SSD 5.2 e 10 | Resolvido (#17) |
@@ -172,6 +172,8 @@ Nota de 2026-11-20: a [Proposta 05](CONFIG-PROPOSAL.md#2-confronto-com-o-que-já
 **Evidência.** O painel de gates mostra só o papel aguardado. Para mostrar o nome das pessoas, falta uma consulta que não exija permissão administrativa ([UX/UI, seção 13](UX-UI.md#13-pendências)).
 
 **Recomendação.** Acrescentar à resposta de `GET /artifacts/{artifact}/gates` ([SSD, seção 3.6](SSD.md#36-governance)), em cada regra de aprovação, a lista de pessoas que têm o papel aprovador no escopo do artefato. Se ela for grande, devolver só a contagem e um link para a lista paginada.
+
+**Decisão (2026-11-27, #14): aceita.** Cada regra de aprovação do painel (`GET /artifacts/{artifact}/gates`) traz `approvers`, com até 10 pessoas ativas que têm o papel na unidade do item ou acima, e `approverCount`, com o total ([SSD 3.6](SSD.md#36-governance)). Acima de 10, a tela mostra "e mais N"; não foi preciso uma lista paginada. O `PLATFORM_ADMIN` também aprova, mas não é listado, para a lista mostrar só quem responde pelo papel. Testes no [QA](QA.md).
 
 ### REV-10 — Preferências do usuário
 

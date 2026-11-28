@@ -301,6 +301,7 @@ Gate: Pronto para Construir                                4 de 6 atendidas
 **Implementado (#78, 2026-11-26):** o painel é a seção **Próximos passos** da Visão geral do artefato.
 - Para cada transição que sai do status atual, mostra o status de destino e o nome do gate, com o contador de regras atendidas (por exemplo, 1/2). Cada regra aparece com ✓ ou ○, a mensagem e um resumo ("Campo: Estimativa", "PRD aprovado").
 - Nas regras de aprovação aparece a última decisão: quem decidiu, quando e o comentário. Quem tem o papel vê **Aprovar** e **Rejeitar**; a rejeição pede o motivo.
+- **Quem pode aprovar (#14, 2026-11-27):** enquanto a aprovação está pendente, a regra mostra "Pode aprovar: Ana, Bruno e Caio", com até 10 nomes e "e mais N" acima disso. Se ninguém tem o papel na unidade do item ou acima: "Ninguém tem este papel na unidade do item ou acima. Peça ao administrador."
 - O botão **Mover** só fica habilitado com todas as regras atendidas e para quem pode editar o item. Ao mover, a página recarrega.
 - Nas regras de documento, o link "Abrir" leva à aba do documento.
 - Ainda não há atalho para o campo do artefato nem para os itens filhos.
@@ -817,7 +818,7 @@ A identidade (hexágono, azul e âmbar) é mantida.
 
 - ~~**Seleção de pessoas:**~~ resolvida (REV-07): a página do item usa `GET /artifacts/{artifact}/people` (#79) e o formulário de novo item, `GET /org-units/{id}/people` (#12).
 - ~~**Lista de anexos:**~~ resolvida (REV-08, #13): `GET /artifacts/{artifact}/attachments` e o cartão Anexos da página do item (7.4).
-- **Quem pode aprovar:** o painel de gates mostra só o papel aguardado; para mostrar os nomes das pessoas, falta uma consulta que não exija permissão administrativa.
+- ~~**Quem pode aprovar:**~~ resolvida (REV-09, #14): o painel traz os nomes de quem tem o papel (6.4).
 - **Itens recentes:** não há registro de itens visitados; por isso a home não tem esse bloco.
 
 **Deste documento**

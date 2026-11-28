@@ -40,6 +40,14 @@ public class Authorization {
 	}
 
 	/**
+	 * Quem tem o papel na unidade ou acima dela: as pessoas que aprovam uma regra {@code ROLE_APPROVAL} (#14; REV-09).
+	 * Não inclui o {@code PLATFORM_ADMIN}, que também aprova, mas não é listado.
+	 */
+	public Set<UUID> roleHoldersInLineage(String role, UUID orgUnitId) {
+		return Set.copyOf(repository.holdersIn(role, orgUnits.lineage(orgUnitId)));
+	}
+
+	/**
 	 * Quem tem o papel na unidade ou, se ninguém lá o tem, na unidade acima mais próxima em que alguém o tenha (#43,
 	 * responsável padrão). {@code orgUnitId} nulo e lista vazia quando ninguém na linhagem tem o papel.
 	 */

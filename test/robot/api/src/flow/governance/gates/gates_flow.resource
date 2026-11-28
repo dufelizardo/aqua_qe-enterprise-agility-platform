@@ -38,6 +38,12 @@ Gates - Bloquear Aprovar E Liberar
     Should Be Equal As Integers    ${gate_panel}[satisfied]    1
     ${rule_id}=    Set Variable    ${gate_panel}[rules][1][ruleId]
     Should Be True    ${gate_panel}[rules][1][canDecide]
+    # #14 (REV-09): a regra de aprovação traz quem tem o papel (até 10 nomes) e o total; as demais, nada.
+    ${approvers}=    Set Variable    ${gate_panel}[rules][1][approvers]
+    ${count}=    Set Variable    ${gate_panel}[rules][1][approverCount]
+    Should Be True    ${count} >= 1
+    Should Be True    len($approvers) == min($count, 10)
+    Should Be Equal    ${gate_panel}[rules][0][approvers]    ${None}
     ${approval}=    Create Dictionary    gateRuleId=${rule_id}    decision=APPROVED    comment=Ok
     ${not_role}=    POST Approval As Persona    pm    ${init}[key]    ${approval}
     Validate Error Body    ${not_role}    403    APPROVER_ROLE_REQUIRED
