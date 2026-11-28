@@ -171,6 +171,7 @@
       </div>
       @if (artifact(); as current) {
         <app-artifact-gates [artifact]="current" (moved)="reload()" />
+        <app-artifact-attachments [artifact]="current.key" />
       }
       @if (hasDocuments()) {
         <div class="card">

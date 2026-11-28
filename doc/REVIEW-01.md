@@ -36,7 +36,7 @@ Ao conferir a análise externa contra os documentos, três pontos foram ajustado
 | REV-05 | Alto | Contrato do documento independente do editor | SSD 6, UX/UI 6.6, PRD-RF-018 e 020 | Decidido (2026-11-20) |
 | REV-06 | Alto | Publicação de nova versão de workflow | SSD 3.3, PRD-RF-011 | Aberto |
 | REV-07 | Médio | Consulta de usuários para quem edita | SSD 3.1, UX/UI 13 | Resolvido (#79, #12) |
-| REV-08 | Médio | Listagem de anexos | SSD 3.7, UX/UI 13, PRD-RF-018 | Aberto |
+| REV-08 | Médio | Listagem de anexos | SSD 3.7, UX/UI 13, PRD-RF-018 | Resolvido (#13) |
 | REV-09 | Médio | Consulta de quem pode aprovar | SSD 3.6, UX/UI 13, PRD-RF-024 | Aberto |
 | REV-10 | Baixo | Preferências do usuário | UX/UI 13, SSD 10 | Aberto |
 | REV-11 | Baixo | Exportação de documentos | PRD, SSD 6 | Aberto |
@@ -164,6 +164,8 @@ Nota de 2026-11-20: a [Proposta 05](CONFIG-PROPOSAL.md#2-confronto-com-o-que-já
 **Evidência.** Existem `POST /artifacts/{artifact}/attachments` e `GET /attachments/{id}/content` ([SSD, seção 3.7](SSD.md#37-livingdocs)), mas não há como listar os anexos de um artefato.
 
 **Recomendação.** Criar `GET /artifacts/{artifact}/attachments`, com nome, tipo, tamanho, autor e data, e permissão "ler o artefato".
+
+**Decisão (2026-11-27, #13): aceita.** Os anexos não existiam no código; a entrega fez envio, listagem, download e remoção ([SSD 3.7](SSD.md#37-livingdocs)). A listagem traz nome, tipo, tamanho, autor e data, e segue a leitura do artefato; enviar e remover seguem a edição. Limite de 10 MB por arquivo, configurável. O conteúdo fica no banco, atrás de uma interface de armazenamento, até entrar o armazenamento de objetos do SAD; a API não muda. O download sai sempre como arquivo, com `nosniff`. A tela é o cartão Anexos da página do item ([UX/UI 7.4](UX-UI.md#74-initiative-workspace-ui-06)); o bloco de anexo dentro dos documentos fica para outra entrega. Testes no [QA](QA.md).
 
 ### REV-09 — Consulta de quem pode aprovar
 

@@ -99,7 +99,7 @@ flowchart TB
 | **Workers** | Processam a fila de eventos: auditoria, notificações e, depois, agregações de analytics e ingestão de integrações. É a mesma imagem da API iniciada com outro perfil. | MVP |
 | **IdP empacotado** | Login, credenciais locais, MFA e federação com o provedor de identidade do cliente. | MVP |
 | **PostgreSQL** | Persistência transacional, fila de eventos (outbox), trilha de auditoria e busca textual. | MVP |
-| **Armazenamento de objetos** | Anexos e evidências. MinIO em on-premise; serviço equivalente em nuvem. | MVP |
+| **Armazenamento de objetos** | Anexos e evidências. MinIO em on-premise; serviço equivalente em nuvem. Até entrar, os anexos ficam no banco, atrás da mesma interface (#13, 2026-11-27). | MVP |
 | **Analytics Store** | Dados preparados para consulta analítica, alimentados pelos workers. | 2 |
 | **Broker de eventos** | Só se o volume ou integrações externas exigirem; o MVP não precisa. | 2+ |
 | **Runtime de IA** | Agentes e modelos, com provedores intercambiáveis, locais ou externos (RF-DH12). | 3 |

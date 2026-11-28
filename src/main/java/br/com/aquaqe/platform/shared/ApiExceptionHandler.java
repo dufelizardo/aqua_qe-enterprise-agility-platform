@@ -28,6 +28,13 @@ class ApiExceptionHandler {
 		return problem(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", "Corpo da requisição inválido.", List.of());
 	}
 
+	/** Arquivo acima do limite do multipart (anexos, #13): o mesmo código da checagem do serviço. */
+	@ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+	ResponseEntity<ProblemDetail> tooLarge(org.springframework.web.multipart.MaxUploadSizeExceededException ex) {
+		return problem(HttpStatus.PAYLOAD_TOO_LARGE, "ATTACHMENT_TOO_LARGE", "Arquivo acima do tamanho permitido.",
+			List.of());
+	}
+
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
 	ResponseEntity<ProblemDetail> mismatch(MethodArgumentTypeMismatchException ex) {
 		return problem(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", "Parâmetro inválido.",

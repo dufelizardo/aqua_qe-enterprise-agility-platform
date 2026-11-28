@@ -38,3 +38,5 @@ ${custom_field_ui_label}            Canal Robot UI
 ${custom_field_ui_key}              robotUiCanal
 ${custom_field_ui_option}           Web
 @{custom_field_ui_options}          App    Web
+${attachment_ui_file_name}          anexo-robot-ui.txt
+${attachment_ui_file_content}       Anexo enviado pela suíte Robot de UI.

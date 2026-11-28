@@ -107,3 +107,13 @@ CT-011 - REV-07: Validate Novo item - Technical Lead e QA Owner escolhidos pela 
     ...    ${portfolio_root_name}    ${portfolio_unit_base}    ${portfolio_unit_label}    ${tactical_cadeia_base}
     ...    ${tactical_cadeia_label}    ${squad_unit_base}    ${squad_unit_label}    ${squad_level_name}
     ...    ${portfolio_initiative_base}    ${portfolio_initiative_description}
+
+CT-012 - REV-08: Validate Anexos - enviar e remover arquivo na página da Iniciativa
+    [Documentation]    #13: o arquivo enviado aparece na seção Anexos com o link de download; remover, com
+    ...    confirmação, o tira da lista.
+    [Tags]    UI    Portfolio    Attachments    PRD-RF-018    REV-08
+    PORTFOLIO - ANEXO NA INICIATIVA    ${portfolio_admin_username}    ${portfolio_admin_display_name}
+    ...    ${portfolio_root_name}    ${portfolio_unit_base}    ${portfolio_unit_label}    ${tactical_cadeia_base}
+    ...    ${tactical_cadeia_label}    ${squad_unit_base}    ${squad_unit_label}    ${squad_level_name}
+    ...    ${portfolio_initiative_base}    ${portfolio_initiative_description}    ${attachment_ui_file_name}
+    ...    ${attachment_ui_file_content}

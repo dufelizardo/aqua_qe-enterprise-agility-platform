@@ -4,6 +4,11 @@ spring:
   threads:
     virtual:
       enabled: true
+  # Anexos (#13): o arquivo tem o limite de aquaqe.attachments.max-size; o proxy (nginx) aceita até 12 MB.
+  servlet:
+    multipart:
+      max-file-size: ${aquaqe.attachments.max-size}
+      max-request-size: -1
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/aquaqe}
     username: ${DATABASE_USERNAME:aquaqe}
@@ -32,6 +37,9 @@ spring:
           issuer-uri: ${aquaqe.auth.public-url}/realms/${aquaqe.auth.realm}
 
 aquaqe:
+  # Tamanho máximo de cada anexo (#13); acima dele, 413 ATTACHMENT_TOO_LARGE.
+  attachments:
+    max-size: ${AQUAQE_ATTACHMENT_MAX_SIZE:10MB}
   # local, dev ou prod. Em prod, o modo sem senha é recusado na subida (ADR-17).
   environment: ${AQUAQE_ENVIRONMENT:local}
   auth:
