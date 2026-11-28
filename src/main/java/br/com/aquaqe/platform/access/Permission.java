@@ -11,6 +11,9 @@ public enum Permission {
 	/** "Consultar auditoria" (matriz do SSD 2): só o administrador. */
 	VIEW_AUDIT(Set.of("PLATFORM_ADMIN")),
 
+	/** Exportar e anonimizar os dados pessoais de uma pessoa (#32; REV-14): só o administrador, na unidade raiz. */
+	MANAGE_PERSONAL_DATA(Set.of("PLATFORM_ADMIN")),
+
 	/** "Gerir quadros e sprints". */
 	MANAGE_BOARDS(Set.of("PLATFORM_ADMIN", "PRODUCT_MANAGER", "TECH_LEAD")),
 

@@ -37,6 +37,12 @@ class AuditTrail implements EventConsumer {
 		this.json = json;
 	}
 
+	/** A trilha não aceita lacuna: se falha, o repassador para e alerta (REV-03); nunca vai para a fila de falhas. */
+	@Override
+	public boolean critical() {
+		return true;
+	}
+
 	@Override
 	public void accept(EventEnvelope event) {
 		boolean known = jdbc.sql("select exists (select 1 from audit.audit_event where event_id = :id)")
@@ -80,15 +86,51 @@ class AuditTrail implements EventConsumer {
 				rs.getString("target_key"), map(rs.getString("before")), map(rs.getString("after")),
 				rs.getString("correlation_id")), rs.getString("prev_hash"), rs.getString("hash")))
 			.list();
+		// Âncoras (#8): o hash guardado em cada âncora tem de ser o do registro daquela sequência.
+		List<Anchor> anchors = anchors();
+		Map<Long, String> hashes = new java.util.HashMap<>();
+		rows.forEach(row -> hashes.put(row.sequence(), row.hash()));
+		Long anchorMismatch = anchors.stream().filter(a -> !a.hash().equals(hashes.get(a.sequence())))
+			.map(Anchor::sequence).findFirst().orElse(null);
 		String expectedPrev = GENESIS;
 		for (Stored row : rows) {
 			if (!row.prevHash().equals(expectedPrev) || !row.hash().equals(hash(row.prevHash(), row.record()))) {
-				return new Verification(false, rows.size(), row.sequence());
+				return new Verification(false, rows.size(), row.sequence(), anchors.size(), anchorMismatch);
 			}
 			expectedPrev = row.hash();
 		}
-		return new Verification(true, rows.size(), null);
+		return new Verification(anchorMismatch == null, rows.size(), null, anchors.size(), anchorMismatch);
 	}
+
+	/** Âncoras gravadas, das mais antigas. */
+	List<Anchor> anchors() {
+		return jdbc.sql("select sequence, hash, anchored_at from audit.hash_anchor order by sequence")
+			.query((rs, n) -> new Anchor(rs.getLong("sequence"), rs.getString("hash"),
+				rs.getObject("anchored_at", OffsetDateTime.class).toInstant()))
+			.list();
+	}
+
+	/**
+	 * Grava a âncora do último registro, se a trilha cresceu desde a anterior, e a escreve no log estruturado, que pode ir
+	 * para fora do banco (#8). @return a âncora nova, ou vazio se não havia o que ancorar
+	 */
+	java.util.Optional<Anchor> anchor() {
+		java.util.Optional<Anchor> last = jdbc.sql("""
+				select sequence, hash from audit.audit_event
+				 where sequence > coalesce((select max(sequence) from audit.hash_anchor), 0)
+				 order by sequence desc limit 1
+				""")
+			.query((rs, n) -> new Anchor(rs.getLong("sequence"), rs.getString("hash"), Instant.now()))
+			.optional();
+		last.ifPresent(a -> {
+			jdbc.sql("insert into audit.hash_anchor (sequence, hash) values (:sequence, :hash) on conflict do nothing")
+				.param("sequence", a.sequence()).param("hash", a.hash()).update();
+			ANCHOR_LOG.info("audit_anchor sequence={} hash={}", a.sequence(), a.hash());
+		});
+		return last;
+	}
+
+	private static final org.slf4j.Logger ANCHOR_LOG = org.slf4j.LoggerFactory.getLogger("aquaqe.audit.anchor");
 
 	String hash(String prev, Record record) {
 		List<Object> canonical = new ArrayList<>();
@@ -137,7 +179,13 @@ class AuditTrail implements EventConsumer {
 	private record Stored(long sequence, Record record, String prevHash, String hash) {
 	}
 
-	/** {@code firstInconsistent}: o primeiro registro que não confere, ou nulo quando a trilha está íntegra. */
-	record Verification(boolean valid, int checked, Long firstInconsistent) {
+	/**
+	 * {@code firstInconsistent}: o primeiro registro que não confere, ou nulo quando a cadeia está íntegra.
+	 * {@code firstAnchorMismatch}: a primeira âncora cujo hash não é o da trilha (#8), ou nulo.
+	 */
+	record Verification(boolean valid, int checked, Long firstInconsistent, int anchorsChecked, Long firstAnchorMismatch) {
+	}
+
+	record Anchor(long sequence, String hash, Instant anchoredAt) {
 	}
 }

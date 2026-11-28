@@ -24,7 +24,7 @@
       <h1 data-testid="artifact-title">{{ a.title }}</h1>
     }
     <p class="meta"><span class="chip" data-testid="artifact-status">{{ a.status.name }}</span></p>
-    <nav class="tabs" aria-label="Abas do artefato" data-testid="artifact-tabs">
+    <nav class="tabs no-print" aria-label="Abas do artefato" data-testid="artifact-tabs">
       <a href="?" (click)="goTab($event, null)" [class.on]="!docType()" data-testid="artifact-tab-overview">Visão geral</a>
       @for (type of tabs(); track type) {
         <a [attr.href]="'?tab=' + type" (click)="goTab($event, type)" [class.on]="docType() === type" [attr.data-testid]="'artifact-tab-' + type">{{
@@ -194,7 +194,7 @@
     </section>
   } @else if (document(); as current) {
     <div class="layout">
-      <aside class="pages" aria-label="Seções">
+      <aside class="pages no-print" aria-label="Seções">
         <ul class="sections-index" data-testid="doc-index">
           @for (item of index(); track item.key) {
             <li [class.filled]="item.filled">
@@ -252,6 +252,8 @@
                 @if (current.currentVersion > 0) {
                   <button type="button" class="btn" (click)="showHistory()" data-testid="doc-history">Histórico</button>
                 }
+                <a class="btn" [href]="markdownUrl(current)" download data-testid="doc-export-md">Baixar Markdown</a>
+                <button type="button" class="btn" (click)="print()" data-testid="doc-print">Imprimir ou salvar PDF</button>
               </div>
               @if (current.canApprove && current.status === 'IN_PROGRESS' && current.missingSections.length > 0) {
                 <p class="hint" data-testid="doc-missing">Para aprovar, preencha: {{ missingTitles() }}.</p>

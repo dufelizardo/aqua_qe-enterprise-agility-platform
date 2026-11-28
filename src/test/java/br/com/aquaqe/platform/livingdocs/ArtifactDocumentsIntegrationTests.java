@@ -9,6 +9,8 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -147,6 +149,44 @@ class ArtifactDocumentsIntegrationTests {
 		save("vera", init, 0, sections(init, "context")).andExpect(status().isForbidden());
 		mvc.perform(get("/api/v1/artifacts/{a}/documents", init).with(user("otto"))).andExpect(status().isNotFound());
 		mvc.perform(get("/api/v1/artifacts/{a}/documents/XYZ", init).with(user("pedro"))).andExpect(status().isNotFound());
+	}
+
+	@Test
+	void exportarEmMarkdown() throws Exception {
+		String init = artifact("{\"type\":\"INITIATIVE\",\"title\":\"Exportar\",\"orgUnitId\":\"" + portfolio + "\"}");
+		String first = firstSection(init);
+		save("pedro", init, 0, sections(init, first)).andExpect(status().isOk());
+
+		mvc.perform(get("/api/v1/artifacts/{a}/documents/PRD/export/markdown", init).with(user("vera")))
+			.andExpect(status().isOk())
+			.andExpect(header().string("Content-Type", org.hamcrest.Matchers.startsWith("text/markdown")))
+			.andExpect(header().string("Content-Disposition",
+				org.hamcrest.Matchers.containsString("filename=\"" + init + "-PRD.md\"")))
+			.andExpect(header().string("X-Content-Type-Options", "nosniff"))
+			.andExpect(content().string(org.hamcrest.Matchers.startsWith("# PRD")))
+			.andExpect(content().string(org.hamcrest.Matchers.containsString("Texto de " + first)))
+			.andExpect(content().string(org.hamcrest.Matchers.containsString("- **Autor:** pedro")))
+			.andExpect(content().string(org.hamcrest.Matchers.containsString("_Seção não preenchida._")));
+		mvc.perform(get("/api/v1/artifacts/{a}/documents/PRD/export/markdown", init).with(user("otto")))
+			.andExpect(status().isNotFound());
+		mvc.perform(get("/api/v1/artifacts/{a}/documents/XYZ/export/markdown", init).with(user("pedro")))
+			.andExpect(status().is4xxClientError());
+
+		String page = JsonPath.read(mvc.perform(json(post("/api/v1/org-units/{u}/pages", portfolio), user("pedro"),
+				"{\"title\":\"Guia de Exportação\"}")).andExpect(status().isCreated()).andReturn().getResponse()
+			.getContentAsString(), "$.id");
+		mvc.perform(get("/api/v1/pages/{id}/export/markdown", page).with(user("pedro")))
+			.andExpect(status().isOk())
+			.andExpect(header().string("Content-Disposition",
+				org.hamcrest.Matchers.containsString("Guia-de-Exportacao.md")))
+			.andExpect(content().string(org.hamcrest.Matchers.startsWith("# Guia de Exportação")));
+		mvc.perform(get("/api/v1/pages/{id}/export/markdown", page).with(user("otto")))
+			.andExpect(status().isNotFound());
+	}
+
+	private String firstSection(String artifact) throws Exception {
+		return JsonPath.read(mvc.perform(get("/api/v1/artifacts/{a}/documents/PRD", artifact).with(user("pedro")))
+			.andReturn().getResponse().getContentAsString(), "$.sections[0].key");
 	}
 
 	// ------------------------------------------------------------------------------------------------ apoio

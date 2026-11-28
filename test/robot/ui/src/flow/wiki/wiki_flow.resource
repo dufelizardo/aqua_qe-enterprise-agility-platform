@@ -299,3 +299,15 @@ Page Icon Should Be
     [Arguments]    ${icon}
     ${text}=    Get Page Icon Text
     Should Be Equal    ${text}    ${icon}
+
+Wiki - Baixar Markdown
+    [Documentation]    #16: a página criada baixa em Markdown, com o título no nome do arquivo e na primeira linha; o
+    ...    botão de imprimir ou salvar PDF fica ao lado.
+    [Arguments]    ${title_base}
+    ${title}=    Unique Name    ${title_base}
+    Create Wiki Page    ${title}
+    Wait For Wiki Page Title    ${title}
+    Wait For Wiki Print Button
+    ${name}    ${text}=    Download Wiki Markdown
+    Should End With    ${name}    .md
+    Should Start With    ${text}    \# ${title}

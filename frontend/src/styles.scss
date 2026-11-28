@@ -79,6 +79,54 @@
   color-scheme: dark;
 }
 
+/*
+ * Impressão e PDF (#16; REV-11): só o conteúdo do documento, no tema claro. O cabeçalho, o menu, as barras de ações,
+ * a árvore de páginas, as abas e os comentários ficam de fora.
+ */
+@media print {
+  :root,
+  :root[data-theme='dark'] {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --text: #0f2233;
+    --text-secondary: #334155;
+    --text-muted: #475569;
+    --border: #d5dde5;
+    --border-strong: #b8c7d4;
+
+    color-scheme: light;
+  }
+
+  .header,
+  .sidebar,
+  .toolbar,
+  .no-print,
+  app-doc-outline,
+  app-artifact-gates,
+  app-artifact-attachments {
+    display: none !important;
+  }
+
+  .body,
+  .content {
+    display: block !important;
+    overflow: visible !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  a {
+    color: inherit;
+  }
+
+  pre,
+  table,
+  blockquote {
+    break-inside: avoid;
+  }
+}
+
 html,
 body {
   height: 100%;

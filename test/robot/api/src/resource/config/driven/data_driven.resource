@@ -22,3 +22,5 @@ Resource            ../../data_driven/busca/busca_driven.resource
 Resource            ../../data_driven/governance/governance_driven.resource
 # CONFIGURATION
 Resource            ../../data_driven/configuration/configuration_driven.resource
+# PRIVACY
+Resource            ../../data_driven/privacy/privacy_driven.resource

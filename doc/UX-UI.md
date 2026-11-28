@@ -336,7 +336,7 @@ Abre quando a transição devolve `GATE_BLOCKED`. Título: "Ainda não é possí
 - **Aprovar** aparece para quem tem o papel aprovador do template e fica desabilitado, com a explicação ao lado, enquanto houver seção obrigatória vazia. Usa `POST /artifacts/{artifact}/documents/{type}/status`.
 - Documento aprovado abre em modo de leitura, com o botão **Reabrir para edição**, que pede um comentário e usa o mesmo endpoint.
 - Anexos: `POST /artifacts/{artifact}/attachments`, exibidos por `GET /attachments/{id}/content`.
-- **Situação (2026-11-25, #63):** implementado na página do artefato (`/artefato/<chave>?tab=PRD`), com o índice de seções, Editar e Salvar, Aprovar (desabilitado, com as seções que faltam), Reabrir para edição (com comentário) e Histórico (abre qualquer versão). Ainda faltam: o bloco de anexo dentro do documento e a comparação lado a lado (6.7); os anexos do item ficam na Visão geral (7.4, #13). Rascunho automático e aviso ao sair sem salvar (#82): como no Wiki (7.12), também ao trocar de aba.
+- **Situação (2026-11-25, #63):** implementado na página do artefato (`/artefato/<chave>?tab=PRD`), com o índice de seções, Editar e Salvar, Aprovar (desabilitado, com as seções que faltam), Reabrir para edição (com comentário) e Histórico (abre qualquer versão). Ainda faltam: o bloco de anexo dentro do documento e a comparação lado a lado (6.7); os anexos do item ficam na Visão geral (7.4, #13). Rascunho automático e aviso ao sair sem salvar (#82): como no Wiki (7.12), também ao trocar de aba. **Baixar Markdown** e **Imprimir ou salvar PDF** (#16): como no Wiki (7.12); o Markdown traz os anexos do item como links.
 - Sem permissão de edição para aquele tipo de documento, a tela abre em modo de leitura, sem os botões.
 
 ### 6.7 Histórico e comparação de versões
@@ -557,6 +557,13 @@ Documentação                    Gates — Pronto para Construir    4 de 6
 
 Visível apenas para `PLATFORM_ADMIN`. Uma página com seções no menu interno.
 
+**Pessoas e privacidade (#32, 2026-11-28):** `/admin/pessoas`, aba no topo da Administração ([SSD 2.2](SSD.md#22-dados-pessoais-rev-14)).
+- A busca acha a pessoa pelo nome, pelo usuário ou pelo e-mail. Cada linha mostra nome, usuário, e-mail e a última atividade; a conta anonimizada leva o selo "Anonimizada".
+- **Baixar dados** baixa o JSON com os dados da pessoa, uma seção por módulo.
+- **Anonimizar** abre uma confirmação que explica o que sai e o que fica e avisa que não dá para desfazer. O botão só libera depois que o nome da pessoa é digitado; Esc cancela. Depois, a linha mostra o pseudônimo "Pessoa removida (XXXX)" e o aviso "Conta anonimizada.".
+- A própria conta não pode ser anonimizada. Só o administrador da raiz usa a tela; para os outros, a busca mostra a mensagem de acesso negado.
+- O e-mail das outras pessoas só aparece aqui e na própria conta (menu do avatar). As demais telas mostram só o nome.
+
 **Gates (#78, 2026-11-26):** `/admin/gates`, com abas Estrutura organizacional e Gates no topo.
 - À esquerda, a pessoa escolhe o fluxo (com os tipos de artefato dele) e vê as transições, cada uma com o gate e a quantidade de regras, ou "sem gate".
 - "Criar gate" ou "Editar" abre o formulário: nome do gate e regras em ordem.
@@ -662,6 +669,7 @@ Princípio adotado da [Proposta 03](ADMIN-PROPOSAL.md#1-princípio-adotado-três
   - **Sumário automático:** com dois títulos ou mais no conteúdo, a leitura mostra "Sumário" no topo, com os títulos e subtítulos. O clique leva ao título. Vale também para os documentos do artefato.
   - **Ícone da página:** quem edita clica no ☺ ao lado do título e escolhe um emoji, ou "Tirar o ícone". O ícone aparece ao lado do título e na árvore. Trocar o ícone não cria versão.
 - **Histórico:** versões com autor, data, resumo e marcas de aprovada e publicada; abrir uma versão mostra o aviso "Você está vendo a versão N" e o retorno à atual.
+- **Exportar (#16, 2026-11-28):** na barra da página, **Baixar Markdown** baixa a versão que a pessoa lê (SSD 6.4), e **Imprimir ou salvar PDF** abre a impressão do navegador, só com a página: sem cabeçalho, menu, árvore, barra de ações e comentários, sempre no tema claro. Vale também para os documentos do artefato (7.4) e para o Regimento.
 - **Quem lê pela regra 9** (SSD 2.1) vê só a versão publicada, com "Somente leitura (publicado)" e sem histórico.
 - **Dados:** `GET /org-units/{id}/pages`, `POST /org-units/{id}/pages`, `GET/PUT/PATCH /pages/{id}`, `GET /pages/{id}/versions[/{n}]`, `POST /pages/{id}/status`, `POST /pages/{id}/archive`, `POST /pages/{id}/restore` (SSD 3.7.1).
 - **Celular:** abaixo de 900 px, a lista de páginas fica acima da página.

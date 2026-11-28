@@ -34,6 +34,8 @@ Três princípios orientam o produto:
 
 O nome oficial é **AQuA-QE Enterprise Agility Platform**; a forma curta é **AQuA-QE**. "Enterprise Agility Platform" sozinho, usado nos documentos anteriores, não deve mais ser usado como nome.
 
+Não existe outro produto chamado AQuA-QE. A "integração futura com AQuA-QE e seus recursos de qualidade e automação", citada na análise externa, é a gestão de testes e qualidade desta própria plataforma: o domínio D07 Quality & Traceability Management, na Fase 2 (DEC-11).
+
 ## 4. Glossário
 
 | Termo | Definição |
@@ -186,6 +188,7 @@ A coluna **Fase** segue a proposta da [seção 13](#13-faseamento-proposto-a-val
 | PRD-RF-019 | O Workspace do Artefato deve exibir o status de cada documento (Pending, In Progress, Approved) ao lado do status dos gates. | V2.1 §4 | MVP |
 | PRD-RF-020 | Os documentos devem ser versionados, com histórico consultável no próprio artefato. | V2.1 EP04 | MVP |
 | PRD-RF-021 | O sistema deve oferecer uma central que lista os documentos de todos os artefatos a que o usuário tem acesso. | V2.1 UI-10 | 2 |
+| PRD-RF-039 | Os documentos do artefato e as páginas do Wiki e do Regimento devem poder ser exportados em Markdown e em PDF, sem perder as seções e com os anexos como links. No MVP, o Markdown é gerado pelo servidor e o PDF sai da impressão do navegador; o PDF gerado pelo servidor e o DOCX ficam para a Fase 2. | REV-11 (#16) | MVP / 2 |
 
 ### EP05 — Governance & Compliance
 
@@ -315,6 +318,7 @@ Protótipos existentes: [UI-01](prototype/landing_page.png), [UI-02](prototype/l
 | DEC-08 | A Feature de Sustentação não aparece na hierarquia da Taxonomia V2.0. | Mantida como tipo de FL2. | Taxonomia V2.0 |
 | DEC-09 | O blueprint de login não tem MFA nem seleção de workspace. | Ambos são requisitos da UI-02 (PRD-RF-037 e 038). | [login.md](prototype/login.md) |
 | DEC-10 | O DevOps V1 criava Bug automaticamente a cada falha de regressão; o V2.0 classifica a falha antes. | A criação é configurável e ocorre depois da classificação da falha. | — (já está no DevOps V2.0) |
+| DEC-11 | A análise externa cita uma "integração futura com AQuA-QE e seus recursos de qualidade e automação", mas AQuA-QE é o nome desta plataforma (Q-01). | Não há outro produto. A menção é lida como o domínio D07 Quality & Traceability Management desta plataforma, na Fase 2. Nada entra no mapa de integrações. Decidido pelo responsável pelo produto em 2026-11-28 (#19). | Análise externa |
 
 ## 13. Faseamento proposto (a validar)
 

@@ -4,6 +4,8 @@ Library             String
 Resource            ../../pom/common/aquaqe_ui_common.resource
 Resource            ../../pom/admin/admin_pom.resource
 Resource            ../../pom/workflows/workflows_pom.resource
+Resource            ../../pom/privacy/privacy_pom.resource
+Resource            ../../pom/navigation/navigation_pom.resource
 Resource            ../login/login_flow.resource
 
 *** Keywords ***
@@ -104,3 +106,23 @@ Admin - Sem Acesso
     Wait For Home Page
     ${url}=    Get Current Page Url
     Should Start With    ${url}    ${AQUA_UI_URL}/home
+
+Admin - Pessoas Exportar E Confirmar Anonimizacao
+    [Documentation]    #32: o administrador acha a pessoa, baixa os dados dela em JSON e vê que a anonimização só libera
+    ...    com o nome digitado. Cancela sem anonimizar: as personas são contas de todas as suítes.
+    [Arguments]    ${search}
+    Click People Tab
+    Wait For Url To End With    /admin/pessoas
+    Search People    ${search}
+    ${name}=    Get First Person Name
+    ${file}    ${text}=    Download First Person Data
+    Should Start With    ${file}    dados-pessoais-
+    ${data}=    Evaluate    json.loads($text)    modules=json
+    Dictionary Should Contain Key    ${data}[sections]    identity
+    Open Anonymize Confirmation
+    ${enabled}=    Is Anonymize Confirm Enabled
+    Should Not Be True    ${enabled}
+    Type Anonymize Name    ${name}
+    ${enabled}=    Is Anonymize Confirm Enabled
+    Should Be True    ${enabled}
+    Cancel Anonymize With Escape

@@ -87,6 +87,7 @@ feature/* ──PR──▶ developer ──(pipeline verde)──▶ PR automá
 | Momento | O que roda |
 |---|---|
 | Push na `developer` e qualquer PR | `pipeline.yml`: backend (JUnit, Testcontainers, Spring Modulith), frontend (build e testes), Robot `--dryrun`, CodeQL. |
+| Push na `developer` ou na `main` e qualquer PR | `supply-chain.yml` (#18): SBOM CycloneDX do repositório e das duas imagens (artefatos de 90 dias) e varredura com o Trivy. Bloqueia com vulnerabilidade CRITICAL que tem correção; as HIGH vão para o Code Scanning ([SECURITY, seção 4](SECURITY.md#4-processo-de-entrega-ssdf)). |
 | Push na `developer` | `publish-image.yml`: imagens no ghcr.io e SHA gravado em `k8s/apps/overlays/dev`; o ArgoCD atualiza o dev. |
 | Pipeline verde num push da `developer` | `promote.yml`: abre o PR `developer` → `main`, ou reaproveita o que já está aberto. |
 | PR `developer` → `main` | `pipeline.yml` com a aceitação Robot (API e interface) contra a pilha do `compose.yaml`; `auto-merge.yml` faz o merge quando `backend`, `frontend`, `robot-dryrun` e `acceptance` passam. Se algum falhar, o PR fica aberto e nada vai para a prod. |
@@ -201,3 +202,10 @@ bash test/robot/run_tests.sh ui           # interface (rfbrowser init chromium u
 ```
 
 A primeira subida do Keycloak leva alguns minutos. Os testes unitários do frontend (`ng test`) rodam no CI e em Linux; nesta máquina Windows o Vitest não inicia o processo de teste a tempo.
+
+## Auditoria (#8)
+
+- **Atraso:** `GET /api/v1/audit-events/status` (administrador) e o componente `audit` de `/actuator/health`, que passa a `DELAYED` com mais de 5 minutos de atraso. As sondas de prontidão e de vida não usam esse componente.
+- **Fila de falhas:** `GET /api/v1/admin/event-failures` lista os eventos que um consumidor que não é a auditoria não conseguiu processar em 5 tentativas; `POST /api/v1/admin/event-failures/{id}/retry` reprocessa.
+- **Âncoras:** guarde fora do servidor as linhas `audit_anchor sequence=… hash=…` do logger `aquaqe.audit.anchor` (a cada hora). Para conferir, compare com `GET /api/v1/audit-events/anchors` e rode `GET /api/v1/audit-events/verification`.
+- **Variáveis:** `AQUAQE_EVENTS_LAG_ALERT` (padrão `PT5M`), `AQUAQE_EVENTS_MAX_ATTEMPTS` (5), `AQUAQE_AUDIT_ANCHOR_INTERVAL` (`PT1H`), `AQUAQE_AUDIT_ANCHOR_ENABLED` (`true`).

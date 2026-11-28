@@ -31,6 +31,7 @@ import { OrganizationService, TreeRow, buildTree } from './organization.service'
         <a routerLink="/admin/campos-customizados">Campos customizados</a>
         <a routerLink="/admin/responsavel-padrao" class="on" aria-current="page">Responsável padrão</a>
         <a routerLink="/admin/templates-de-quadro">Templates de quadro</a>
+        <a routerLink="/admin/pessoas">Pessoas e privacidade</a>
       </nav>
       <h1 data-testid="page-title">Responsável padrão</h1>
       <p class="lead">

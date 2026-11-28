@@ -23,7 +23,7 @@ Ao conferir a análise externa contra os documentos, três pontos foram ajustado
 
 - Parte do que ela recomenda para a auditoria já está especificada (REV-03).
 - Ela não percebeu um conflito entre a regra de leitura e o contexto herdado (REV-02).
-- A menção a uma "integração futura com AQuA-QE" precisa ser esclarecida, porque AQuA-QE é o nome deste produto (Q-01).
+- A menção a uma "integração futura com AQuA-QE" precisava ser esclarecida, porque AQuA-QE é o nome deste produto (Q-01). Respondida em 2026-11-28 (#19): é esta plataforma ([PRD, DEC-11](PRD.md#12-decisões-de-consolidação)).
 
 ## 2. Achados
 
@@ -31,7 +31,7 @@ Ao conferir a análise externa contra os documentos, três pontos foram ajustado
 |---|---|---|---|---|
 | REV-01 | Crítico | Regras de autorização entre unidades | SAD 7.2, SSD 2, ADR-14 | Resolvido em 2026-11-20 ([SSD 2.1](SSD.md#21-escopo-entre-unidades-rev-01-rev-02-rev-04)) |
 | REV-02 | Crítico | Contexto herdado vazio entre ramos | PRD-RF-017, SSD 3.4, UX/UI 6.9 | Resolvido em 2026-11-20 ([SSD 2.1](SSD.md#21-escopo-entre-unidades-rev-01-rev-02-rev-04)) |
-| REV-03 | Alto | Garantias da auditoria assíncrona | SAD 7.4 e 7.5, ADR-06, ADR-07, PRD-RF-026 | Parcial em 2026-11-20: recomendações 2 a 5 implementadas; falta fixar o SLA (1) e restringir o usuário de banco |
+| REV-03 | Alto | Garantias da auditoria assíncrona | SAD 7.4 e 7.5, ADR-06, ADR-07, PRD-RF-026 | Resolvido (#8); usuário de banco restrito vai com a produção (#25) |
 | REV-04 | Alto | Modelo organizacional (ADR-14) | SAD 5.1 e 13, SSD 3.2 | Resolvido em 2026-11-20 ([SSD 2.1](SSD.md#21-escopo-entre-unidades-rev-01-rev-02-rev-04)) |
 | REV-05 | Alto | Contrato do documento independente do editor | SSD 6, UX/UI 6.6, PRD-RF-018 e 020 | Decidido (2026-11-20) |
 | REV-06 | Alto | Publicação de nova versão de workflow | SSD 3.3, PRD-RF-011 | Aberto |
@@ -39,12 +39,12 @@ Ao conferir a análise externa contra os documentos, três pontos foram ajustado
 | REV-08 | Médio | Listagem de anexos | SSD 3.7, UX/UI 13, PRD-RF-018 | Resolvido (#13) |
 | REV-09 | Médio | Consulta de quem pode aprovar | SSD 3.6, UX/UI 13, PRD-RF-024 | Resolvido (#14) |
 | REV-10 | Baixo | Preferências do usuário | UX/UI 13, SSD 10 | Resolvido (#15) |
-| REV-11 | Baixo | Exportação de documentos | PRD, SSD 6 | Aberto |
+| REV-11 | Baixo | Exportação de documentos | PRD, SSD 6 | Resolvido (#16) |
 | REV-12 | Baixo | Campos customizados usados em gates | SSD 5.2 e 10 | Resolvido (#17) |
-| REV-13 | Alto | Baseline de segurança por framework | Spec. Segurança V2.0 (RF-SC, RNF-SC), SAD 7 e 13 | Aberto |
-| REV-14 | Alto | Privacidade e dados pessoais | SAD 13, SSD 9 e 10, [Proposta de experiência](EXPERIENCE-PROPOSAL.md) | Aberto |
+| REV-13 | Alto | Baseline de segurança por framework | Spec. Segurança V2.0 (RF-SC, RNF-SC), SAD 7 e 13 | Resolvido (#18) |
+| REV-14 | Alto | Privacidade e dados pessoais | SAD 13, SSD 9 e 10, [Proposta de experiência](EXPERIENCE-PROPOSAL.md) | Resolvido (#32) |
 
-A frente de trabalho que trata cada achado está na [Proposta de evolução, seção 7](EVOLUTION-PROPOSAL.md#7-relação-entre-achados-e-frentes). REV-02, REV-14 e Q-01 ainda não têm frente (REV-12 foi resolvido direto, na #17), e REV-13 tem só cobertura parcial ([seção 8 da proposta](EVOLUTION-PROPOSAL.md#8-lacunas-desta-proposta)).
+A frente de trabalho que trata cada achado está na [Proposta de evolução, seção 7](EVOLUTION-PROPOSAL.md#7-relação-entre-achados-e-frentes). REV-02 ainda não tem frente (REV-14 foi resolvido direto, na #32) (Q-01 foi respondida na #19) (REV-12 foi resolvido direto, na #17), e REV-13 foi resolvido direto, na #18, com o [baseline de segurança](SECURITY.md).
 
 ### REV-01 — Regras de autorização entre unidades
 
@@ -101,6 +101,8 @@ A ancoragem externa do último hash já é pendência no SAD.
 3. Proibir a limpeza de um evento da outbox antes de ele estar gravado na auditoria.
 4. Incluir as operações administrativas (estrutura organizacional, papéis e configuração) entre as ações auditadas. Os eventos `org_unit.*` foram acrescentados ao [SSD 7.2](SSD.md#72-catálogo) em 2026-11-20 ([Proposta 03](ADMIN-PROPOSAL.md#6-o-que-a-análise-revelou-no-produto-atual)).
 5. Manter o consumidor único no MVP. A ordem global é o que torna a cadeia simples. Cadeias por agregado ou particionadas só se justificam se o volume medido exigir; registrar isso como risco no [SAD, seção 12](SAD.md#12-riscos).
+
+**Decisão (2026-11-28, #8): aceita.** As recomendações 2, 3 e 5 já estavam implementadas desde 2026-11-20 (repassador único que para e alerta, limpeza só dos entregues) e a 4 com os eventos `org_unit.*`. Agora: (1) SLA com alvo de 1 minuto e alerta com 5 minutos de atraso, no log, no `/actuator/health` (componente `audit` em `DELAYED`, sem derrubar a API) e em `GET /audit-events/status`; (2) falha persistente: a auditoria continua parando e alertando, e os outros consumidores vão para uma fila de falhas depois de 5 tentativas, com reprocessamento pelo administrador (D-03); a trilha não fica mais presa por um aviso com defeito; (3) gatilho de só inserção na trilha e nas âncoras; (4) âncora do último hash a cada hora, no banco e no log estruturado, conferida pela verificação. A retenção da outbox ficou em 7 dias depois da entrega. O risco do consumidor único está no [SAD, seção 12](SAD.md#12-riscos). Pendente: o usuário de banco restrito no schema `audit`, junto com a produção (#25). Detalhes no [SAD, seção 7.5](SAD.md#75-trilha-de-auditoria); testes no [QA](QA.md).
 
 ### REV-04 — Modelo organizacional (ADR-14)
 
@@ -189,6 +191,8 @@ Nota de 2026-11-20: a [Proposta 05](CONFIG-PROPOSAL.md#2-confronto-com-o-que-já
 
 **Recomendação.** Registrar no PRD um requisito de exportação para Markdown e PDF, com DOCX como opção, na Fase 2. O formato da seção 6 do SSD deve permitir essa conversão sem perda das seções e dos anexos, o que reforça o REV-05.
 
+**Decisão (2026-11-28, #16): aceita, com parte já no MVP.** O requisito está no PRD (PRD-RF-039). O Markdown já é gerado pelo servidor, a partir do formato da seção 6 do SSD, sem perder as seções e com os anexos como links ([SSD 6.4](SSD.md#64-exportação)). Vale para os documentos do artefato, as páginas do Wiki e o Regimento. O PDF sai da impressão do navegador, com uma folha de estilo que deixa só o documento. O PDF gerado pelo servidor e o DOCX ficam para a Fase 2. Testes no [QA](QA.md).
+
 ### REV-12 — Campos customizados usados em gates
 
 **Evidência.** No MVP, `customFields` é um objeto livre, e a regra `REQUIRED_FIELD` aceita `customFields.<nome>` ([SSD, seções 5.2 e 10](SSD.md#52-tipos-de-regra-do-mvp)).
@@ -221,6 +225,8 @@ O CSF não deve ser usado como fonte de requisitos do produto, porque descreve r
 
 O entregável da atividade é a tabela de mapeamento. Ela só deve ser feita depois que este achado for aceito.
 
+**Decisão (2026-11-28, #18): aceita.** As três referências foram adotadas no papel recomendado. O entregável é o [baseline de segurança](SECURITY.md), com o mapa dos RF-SC e RNF-SC para o ASVS e o CSF, a cobertura por capítulo do ASVS, as práticas do SSDF e a política de vulnerabilidades. As lacunas viraram issues no Backlog (S-01 a S-05). No pipeline, o `supply-chain.yml` já gera o SBOM CycloneDX e varre as dependências e as imagens com o Trivy. Ele bloqueia com vulnerabilidade CRITICAL que tem correção; as HIGH vão para o Code Scanning. A assinatura das imagens é a lacuna S-01. Ficam para depois: o perfil CSF da operação SaaS, antes do lançamento SaaS, e a migração para o ASVS 5.0.
+
 ### REV-14 — Privacidade e dados pessoais
 
 Achado incluído em 2026-11-20, a partir da análise da [Proposta de experiência corporativa](EXPERIENCE-PROPOSAL.md).
@@ -239,11 +245,13 @@ Achado incluído em 2026-11-20, a partir da análise da [Proposta de experiênci
 
 Assim como no REV-13, o produto fornece capacidades e quem opera a instalação responde pela conformidade. Nunca alegar "conforme a LGPD" (DEC-05 do PRD).
 
+**Decisão (2026-11-28, #32): aceita.** O inventário, a finalidade, a visibilidade e a retenção de cada dado estão no [SSD, seção 2.2](SSD.md#22-dados-pessoais-rev-14). Só o módulo `identity` identifica a pessoa; os outros módulos e a trilha guardam só o id. Por isso, anonimizar pseudonimiza a conta sem alterar a trilha imutável. O nome vira "Pessoa removida (XXXX)", usuário e e-mail saem, os papéis são revogados e visitas, favoritos, avisos e preferências são apagados. O e-mail das outras pessoas só aparece para o administrador. Para atender titulares, o administrador da raiz exporta os dados da pessoa em JSON e anonimiza a conta (Administração › Pessoas e privacidade). As duas ações vão para a trilha sem o nome. Ficam pendentes a retenção automática dos avisos e das contas inativas e a anonimização do texto livre que cita a pessoa. Testes no [QA](QA.md).
+
 ## 3. Questões em aberto
 
 | ID | Questão |
 |---|---|
-| Q-01 | A análise externa cita uma "integração futura com AQuA-QE e seus recursos de qualidade e automação". AQuA-QE é o nome desta plataforma ([PRD, seção 3](PRD.md#3-nome-do-produto)). Se existe outro produto com esse nome, ele precisa entrar no PRD, no glossário e no mapa de integrações. Se não existe, a menção deve ser lida como a futura gestão de testes desta plataforma (Fase 2). |
+| Q-01 | A análise externa cita uma "integração futura com AQuA-QE e seus recursos de qualidade e automação". AQuA-QE é o nome desta plataforma ([PRD, seção 3](PRD.md#3-nome-do-produto)). Se existe outro produto com esse nome, ele precisa entrar no PRD, no glossário e no mapa de integrações. Se não existe, a menção deve ser lida como a futura gestão de testes desta plataforma (Fase 2).<br>**Resposta (2026-11-28, #19):** não existe outro produto. A menção é a gestão de testes e qualidade desta plataforma, o domínio D07 Quality & Traceability Management, na Fase 2. Nada entra no glossário nem no mapa de integrações ([PRD, seção 3 e DEC-11](PRD.md#3-nome-do-produto)). |
 
 ## 4. Ordem de trabalho proposta
 

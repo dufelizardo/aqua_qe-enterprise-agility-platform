@@ -90,12 +90,18 @@ class AuditIntegrationTests {
 		createUnit("Portfólio Para Adulterar", null);
 		relay.drain();
 		Long target = jdbc.queryForObject("select max(sequence) from audit.audit_event", Long.class);
-		jdbc.update("update audit.audit_event set action = 'adulterado' where sequence = ?", target);
-		mvc.perform(get("/api/v1/audit-events/verification").with(admin()))
-			.andExpect(jsonPath("$.valid").value(false))
-			.andExpect(jsonPath("$.firstInconsistent").value(target));
-		// Desfaz, para não afetar os outros testes da classe.
-		jdbc.update("update audit.audit_event set action = 'org_unit.created' where sequence = ?", target);
+		// Quem administra o banco consegue desligar o gatilho (#8); a cadeia de hash denuncia a alteração.
+		jdbc.execute("alter table audit.audit_event disable trigger audit_event_append_only");
+		try {
+			jdbc.update("update audit.audit_event set action = 'adulterado' where sequence = ?", target);
+			mvc.perform(get("/api/v1/audit-events/verification").with(admin()))
+				.andExpect(jsonPath("$.valid").value(false))
+				.andExpect(jsonPath("$.firstInconsistent").value(target));
+			// Desfaz, para não afetar os outros testes da classe.
+			jdbc.update("update audit.audit_event set action = 'org_unit.created' where sequence = ?", target);
+		} finally {
+			jdbc.execute("alter table audit.audit_event enable trigger audit_event_append_only");
+		}
 	}
 
 	/** A chave do alvo de uma página é o título (até 200): com 40, a página longa travava a entrega (V13). */

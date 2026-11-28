@@ -4,6 +4,8 @@ Documentation       Documentos da Iniciativa e da Feature (SSD 3.7; #63): cria a
 Library             Collections
 Resource            ../../../pom/knowledge/documents/documents_pom.resource
 Resource            ../../workitem/artifacts/artifacts_flow.resource
+Resource            ../../../pom/knowledge/pages/pages_pom.resource
+Resource            ../pages/pages_flow.resource
 
 *** Keywords ***
 Create Initiative For Documents
@@ -89,3 +91,25 @@ Documents - Leitor Nao Edita
     Should Be Equal    ${listing.json()}[items][0][canEdit]    ${False}
     ${denied}=    Save PRD    viewer    ${init}    0    context
     Validate Error Body    ${denied}    403    FORBIDDEN
+
+Documents - Exportar Em Markdown
+    [Documentation]    O PRD salvo e uma página do Wiki baixam em Markdown (#16; REV-11), com o título, as seções e o
+    ...    nome do arquivo; quem lê também baixa.
+    [Arguments]    ${title}    ${unit_name}    ${page_title}
+    ${init}=    Create Initiative For Documents    ${title}
+    ${saved}=    Save PRD    pm    ${init}    0    context
+    Should Be Equal As Integers    ${saved.status_code}    200
+    ${md}=    GET Artifact Document Markdown As Persona    viewer    ${init}    PRD
+    Should Be Equal As Integers    ${md.status_code}    200
+    Should Start With    ${md.headers}[Content-Type]    text/markdown
+    Should Contain    ${md.headers}[Content-Disposition]    ${init}-PRD.md
+    ${body}=    Evaluate    $md.content.decode('utf-8')
+    Should Start With    ${body}    \# PRD
+    Should Contain    ${body}    Texto de context
+    Should Contain    ${body}    _Seção não preenchida._
+    ${unit}=    Create Knowledge Unit    ${unit_name}
+    ${page}=    Create Page    pm    ${unit}    ${page_title}
+    ${page_md}=    GET Page Markdown As Persona    viewer    ${page}[id]
+    Should Be Equal As Integers    ${page_md.status_code}    200
+    ${page_body}=    Evaluate    $page_md.content.decode('utf-8')
+    Should Start With    ${page_body}    \# ${page_title}

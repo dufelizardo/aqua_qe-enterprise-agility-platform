@@ -9,6 +9,8 @@ RUN --mount=type=cache,target=/root/.m2 mvn -B -q package -DskipTests \
       -Daether.connector.http.retryHandler.count=5 -Daether.connector.requestTimeout=120000
 
 FROM eclipse-temurin:25-jre-alpine
+# Correções de segurança do Alpine publicadas depois da imagem base (#18; doc/SECURITY.md, seção 4).
+RUN apk upgrade --no-cache
 WORKDIR /app
 COPY --from=build /src/target/aqua-qe-platform-*.jar /tmp/app.jar
 # Extrai o jar em camadas: o Java carrega mais rápido, o que importa num servidor modesto.

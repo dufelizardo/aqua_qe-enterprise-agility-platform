@@ -441,6 +441,11 @@ export function dropRank(tree: PageNode[], from: number, to: number): { id: stri
 }
 
 /** Endereço da página no Wiki: o endereço atual com {@code ?page=<id>} (Copiar link do menu ⋯). */
+/** Endereço do Markdown da página do Wiki ou do Regimento (#16; REV-11). */
+export function pageMarkdownUrl(id: string): string {
+  return `${API}/pages/${encodeURIComponent(id)}/export/markdown`;
+}
+
 export function pageLink(currentHref: string, id: string): string {
   const url = new URL(currentHref);
   url.searchParams.set('page', id);

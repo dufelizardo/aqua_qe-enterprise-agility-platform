@@ -41,3 +41,11 @@ GET Artifact Document Versions As Persona
     ...    expected_status=ANY
     Log    ${response.status_code} ${response.text}
     RETURN    ${response}
+
+GET Artifact Document Markdown As Persona
+    [Arguments]    ${persona}    ${artifact}    ${type}
+    ${session}=    Get AQuA-QE Session For Persona    ${persona}
+    ${response}=    GET On Session    ${session}    ${API_BASE_PATH}/artifacts/${artifact}/documents/${type}/export/markdown
+    ...    expected_status=ANY
+    Log    ${response.status_code} ${response.headers}
+    RETURN    ${response}

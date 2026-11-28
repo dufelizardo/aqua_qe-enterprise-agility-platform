@@ -79,3 +79,9 @@ CT-011 - KNOW-020: Validate Wiki - sumário automático, lista de tarefas, emoji
     [Tags]    UI    Wiki    Editor    KNOW-020
     WIKI UI - SUMARIO TAREFAS E ICONE    ${wiki_pm_username}    ${wiki_pm_display_name}    ${wiki_root_name}
     ...    ${wiki_page_base}    ${wiki_heading_one}    ${wiki_heading_two}    ${wiki_task}    ${wiki_summary}
+
+CT-012 - REV-11: Validate Wiki - baixar a página em Markdown
+    [Documentation]    #16: "Baixar Markdown" baixa a página com o título; "Imprimir ou salvar PDF" fica ao lado.
+    [Tags]    UI    Wiki    Export    REV-11
+    WIKI UI - BAIXAR MARKDOWN    ${wiki_pm_username}    ${wiki_pm_display_name}    ${wiki_root_name}
+    ...    ${wiki_page_base}

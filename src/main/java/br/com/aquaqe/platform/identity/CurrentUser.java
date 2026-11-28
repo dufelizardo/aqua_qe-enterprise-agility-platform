@@ -58,6 +58,11 @@ public class CurrentUser {
 			throw new ApiException(org.springframework.http.HttpStatus.UNAUTHORIZED, "UNAUTHENTICATED",
 				"Autenticação necessária.");
 		}
+		// Conta anonimizada (#32): o mesmo login não recria a conta nem a liga de novo à pessoa.
+		if (find(IdentityPersonalData.anonymizedSubject(subject)).isPresent()) {
+			throw new ApiException(org.springframework.http.HttpStatus.FORBIDDEN, "ACCOUNT_ANONYMIZED",
+				"Esta conta foi removida. Fale com o administrador.");
+		}
 		UserAccount account = upsert(subject, text(claims, "preferred_username"), text(claims, "name"),
 			text(claims, "email"));
 		if (request != null) {

@@ -40,12 +40,13 @@ Leia nesta ordem:
 
 | Documento | Conteúdo |
 |---|---|
-| [PRD](doc/PRD.md) | Visão, glossário, personas, domínios, requisitos (`PRD-RF-001` a `038`), catálogo de telas e faseamento. |
+| [PRD](doc/PRD.md) | Visão, glossário, personas, domínios, requisitos (`PRD-RF-001` a `039`), catálogo de telas e faseamento. |
 | [SAD](doc/SAD.md) | Arquitetura: containers, módulos, modelo de dados, mecanismos transversais, implantação e decisões (ADRs). |
 | [SSD](doc/SSD.md) | Especificação do MVP: contratos da API, regras de gate, formato dos documentos, eventos, configuração padrão e esquema físico. |
 | [UX/UI](doc/UX-UI.md) | Tokens de design, navegação, componentes, telas do MVP e mensagens de erro. |
 | [QA](doc/QA.md) | Plano de testes do MVP: níveis, Robot Framework no padrão LKDF para API e interface, rastreabilidade, ambiente e critérios de saída. |
 | [Revisão 01](doc/REVIEW-01.md) | Achados da revisão dos quatro documentos, com gravidade, evidência, recomendação e ordem de trabalho. Não altera os documentos revisados. |
+| [Segurança](doc/SECURITY.md) | Baseline de segurança: OWASP ASVS nível 2, NIST SSDF e mapa ao NIST CSF 2.0; cobertura, política de vulnerabilidades e lacunas. |
 | [Operação](doc/OPERACAO.md) | Ambientes dev e prod, nomes na rede (mDNS), pipeline de promoção, configuração única do GitHub e do servidor, desenvolvimento local. |
 | [Proposta de evolução](doc/EVOLUTION-PROPOSAL.md) | Frentes F01 a F08c que tratam os achados da revisão, com divergências e decisões pendentes. Status: proposto, não aprovado para implementação. |
 | [Proposta de experiência corporativa](doc/EXPERIENCE-PROPOSAL.md) | Menu do usuário, perfil, metas, equipes, pessoas e navegação, confrontados com o que o produto já tem. Status: proposto, fora do MVP; decisões EXP-01 a EXP-12. |

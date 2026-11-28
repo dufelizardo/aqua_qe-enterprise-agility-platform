@@ -31,6 +31,7 @@ import { ArtifactType, WorkService } from '../work/work.service';
         <a routerLink="/admin/campos-customizados" class="on" aria-current="page">Campos customizados</a>
         <a routerLink="/admin/responsavel-padrao">Responsável padrão</a>
         <a routerLink="/admin/templates-de-quadro">Templates de quadro</a>
+        <a routerLink="/admin/pessoas">Pessoas e privacidade</a>
       </nav>
       <h1 data-testid="page-title">Campos customizados</h1>
       <p class="lead">

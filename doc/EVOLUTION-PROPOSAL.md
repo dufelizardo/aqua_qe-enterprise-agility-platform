@@ -384,7 +384,7 @@ Cada ADR registra contexto, decisão, alternativas, consequências e status. Uma
 |---|---|---|
 | [REV-01](REVIEW-01.md#rev-01--regras-de-autorização-entre-unidades) | Autorização entre unidades | F01, F08a |
 | [REV-02](REVIEW-01.md#rev-02--contexto-herdado-vazio-entre-ramos) | Contexto herdado vazio entre ramos | **nenhuma** (seção 8) |
-| [REV-03](REVIEW-01.md#rev-03--garantias-da-auditoria-assíncrona) | Garantias da auditoria assíncrona | F04 |
+| [REV-03](REVIEW-01.md#rev-03--garantias-da-auditoria-assíncrona) | Garantias da auditoria assíncrona | F04; resolvido na #8 (2026-11-28) |
 | [REV-04](REVIEW-01.md#rev-04--modelo-organizacional-adr-14) | Modelo organizacional (ADR-14) | F01, F08a |
 | [REV-05](REVIEW-01.md#rev-05--contrato-do-documento-independente-do-editor) | Contrato do documento independente do editor | F06 |
 | [REV-06](REVIEW-01.md#rev-06--publicação-de-nova-versão-de-workflow) | Nova versão de workflow | F05 |
@@ -392,10 +392,10 @@ Cada ADR registra contexto, decisão, alternativas, consequências e status. Uma
 | [REV-08](REVIEW-01.md#rev-08--listagem-de-anexos) | Listagem de anexos | F06, F03; resolvido na #13 (2026-11-27) |
 | [REV-09](REVIEW-01.md#rev-09--consulta-de-quem-pode-aprovar) | Quem pode aprovar | F06, F02; resolvido na #14 (2026-11-27) |
 | [REV-10](REVIEW-01.md#rev-10--preferências-do-usuário) | Preferências do usuário | F06; resolvido na #15 (2026-11-28) |
-| [REV-11](REVIEW-01.md#rev-11--exportação-de-documentos) | Exportação de documentos | F06, F03 |
+| [REV-11](REVIEW-01.md#rev-11--exportação-de-documentos) | Exportação de documentos | F06, F03; resolvido na #16 (2026-11-28) |
 | [REV-12](REVIEW-01.md#rev-12--campos-customizados-usados-em-gates) | Campos customizados em gates | nenhuma; resolvido na #17 (2026-11-27) |
-| [REV-13](REVIEW-01.md#rev-13--baseline-de-segurança-por-framework) | Baseline de segurança | parcial: F08c (seção 8) |
-| [Q-01](REVIEW-01.md#3-questões-em-aberto) | Nome AQuA-QE e "integração futura" | **nenhuma** (seção 8) |
+| [REV-13](REVIEW-01.md#rev-13--baseline-de-segurança-por-framework) | Baseline de segurança | parcial: F08c (seção 8); resolvido na #18 (2026-11-28) |
+| [Q-01](REVIEW-01.md#3-questões-em-aberto) | Nome AQuA-QE e "integração futura" | nenhuma; respondida na #19 (2026-11-28): é esta plataforma |
 
 Frentes que não nascem de um REV, mas de pendências já registradas nos documentos:
 
@@ -412,8 +412,8 @@ Frentes que não nascem de um REV, mas de pendências já registradas nos docume
 |---|---|---|
 | REV-02 | Nenhuma frente trata o contexto herdado quando a Iniciativa está em outro ramo. | Incluir em F01 a regra de leitura de resumo dos ancestrais (título, status, início da descrição e status dos documentos). |
 | REV-12 | `customFields` livres citados em gates. | **Resolvido (#17, 2026-11-27):** campos declarados por tipo, validados na gravação e nos gates ([SSD 3.3](SSD.md#33-configuration)). |
-| REV-13 | Baseline ASVS L2, SSDF e mapeamento ao NIST CSF 2.0. A F08c cobre só parte da função Detect. | Nova frente F09, ou incorporar em F08c com escopo ampliado. A verificação ASVS já está prevista no [QA](QA.md). |
-| Q-01 | Esclarecer a "integração futura com AQuA-QE" citada na análise externa. | Decisão do responsável pelo produto. |
+| REV-13 | Baseline ASVS L2, SSDF e mapeamento ao NIST CSF 2.0. A F08c cobre só parte da função Detect. | **Resolvido (#18, 2026-11-28):** [baseline de segurança](SECURITY.md), SBOM e varredura no CI; lacunas S-01 a S-05 como issues. |
+| Q-01 | Esclarecer a "integração futura com AQuA-QE" citada na análise externa. | **Respondida (#19, 2026-11-28):** é a gestão de testes desta plataforma (D07, Fase 2); [PRD, DEC-11](PRD.md#12-decisões-de-consolidação). |
 
 ## 9. Divergências com os documentos atuais
 
@@ -423,7 +423,7 @@ Não são erros da proposta. São mudanças de direção que precisam de decisã
 |---|---|---|---|
 | D-01 | F05 | [SSD, seção 3.3](SSD.md#33-configuration); [UX/UI, seção 7.10](UX-UI.md#710-administração) | Hoje os artefatos existentes **passam** à nova versão do workflow, preservando o status pela `key`. A F05 os mantém na versão original. Isso também muda a recomendação 1 do REV-06 ("gates avaliados com a versão vigente"). **Resolvida em 2026-11-27 (#49) a favor da F05:** os itens ficam na versão em que estão, com as transições e os gates dela; a migração é explícita, com destino para cada status removido. O vínculo à versão é o próprio `status_id`, porque cada versão tem os seus status (sem coluna `workflow_version_id`). |
 | D-02 | F03 | [SSD, seção 6.1](SSD.md#61-estrutura) | Hoje a classificação é só registrada no MVP e as políticas entram com o ABAC na Fase 2. A F03 traz `INTERNAL` e `RESTRICTED` efetivos para o MVP. É aumento de escopo do MVP (ver seção 11, cuidado 1). |
-| D-03 | F04 | [SAD, seção 7.5](SAD.md#75-trilha-de-auditoria); REV-03 | Desviar um evento de auditoria para a DLQ e seguir em frente deixa lacuna na trilha e grava a cadeia de hash fora da ordem de ocorrência. Para o consumidor de auditoria, a recomendação do REV-03 é **parar e alertar**; a DLQ fica para os demais consumidores. |
+| D-03 | F04 | [SAD, seção 7.5](SAD.md#75-trilha-de-auditoria); REV-03 | Desviar um evento de auditoria para a DLQ e seguir em frente deixa lacuna na trilha e grava a cadeia de hash fora da ordem de ocorrência. Para o consumidor de auditoria, a recomendação do REV-03 é **parar e alertar**; a DLQ fica para os demais consumidores. **Resolvida (#8, 2026-11-28):** assim implementado ([SAD 7.5](SAD.md#75-trilha-de-auditoria)). |
 | D-04 | F01 | ADR-14; [SSD, seção 3.2](SSD.md#32-organization) | A F01 introduz `artifact_participation`; a ADR-14 já tem vínculos de atendimento entre unidades. Falta definir se a participação substitui o vínculo, o complementa (vínculo entre unidades, participação por artefato) ou se um deriva do outro. |
 
 ## 10. Validação

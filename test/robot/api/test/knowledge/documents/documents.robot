@@ -18,3 +18,8 @@ CT-002 - PRD-RF-018: Validate PUT Artifact Document - HTTP 403 FORBIDDEN
     [Documentation]    Quem só lê não grava documento.
     [Tags]    PUT    ArtifactDocuments    HTTP403    PRD-RF-018    security    ASVS-V4
     DOCUMENTS - READER CANNOT EDIT    ${documents_initiative_title}
+
+CT-003 - REV-11: Validate GET Document Markdown - HTTP 200 OK (documento do artefato e página do Wiki)
+    [Documentation]    O PRD e a página baixam em Markdown, com o título, as seções e o nome do arquivo.
+    [Tags]    GET    ArtifactDocuments    Pages    Export    HTTP200    REV-11
+    DOCUMENTS - EXPORT MARKDOWN    ${documents_initiative_title}    ${documents_export_unit}    ${documents_export_page}

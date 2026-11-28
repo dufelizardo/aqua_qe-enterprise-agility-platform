@@ -109,6 +109,12 @@ export const routes: Routes = [
             title: 'Campos customizados · AQuA-QE',
             loadComponent: () => import('./admin/admin-custom-fields').then((m) => m.AdminCustomFields),
           },
+          // Pessoas e privacidade: exportar e anonimizar dados pessoais (#32; REV-14).
+          {
+            path: 'pessoas',
+            title: 'Pessoas e privacidade · AQuA-QE',
+            loadComponent: () => import('./admin/admin-people').then((m) => m.AdminPeople),
+          },
           // Responsável padrão por unidade e tipo (#43).
           {
             path: 'responsavel-padrao',

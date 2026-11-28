@@ -37,6 +37,11 @@ spring:
           issuer-uri: ${aquaqe.auth.public-url}/realms/${aquaqe.auth.realm}
 
 aquaqe:
+  # Âncoras da cadeia de hash da auditoria (#8; REV-03): a cada intervalo, se a trilha cresceu.
+  audit:
+    anchor:
+      enabled: ${AQUAQE_AUDIT_ANCHOR_ENABLED:true}
+      interval: ${AQUAQE_AUDIT_ANCHOR_INTERVAL:PT1H}
   # Tamanho máximo de cada anexo (#13); acima dele, 413 ATTACHMENT_TOO_LARGE.
   attachments:
     max-size: ${AQUAQE_ATTACHMENT_MAX_SIZE:10MB}
@@ -70,7 +75,10 @@ aquaqe:
   events:
     relay:
       delay: ${AQUAQE_EVENTS_RELAY_DELAY:PT1S}
-    lag-alert: ${AQUAQE_EVENTS_LAG_ALERT:PT1M}
+    # SLA da auditoria (#8; REV-03): alvo de 1 min; com mais de 5 min de atraso, alerta e /actuator/health em DELAYED.
+    lag-alert: ${AQUAQE_EVENTS_LAG_ALERT:PT5M}
+    # Tentativas de um consumidor que não é a auditoria antes de o evento ir para a fila de falhas (D-03).
+    max-attempts: ${AQUAQE_EVENTS_MAX_ATTEMPTS:5}
     retention-days: ${AQUAQE_EVENTS_RETENTION_DAYS:7}
 
 server:
@@ -87,6 +95,12 @@ management:
     health:
       probes:
         enabled: true
+      # O componente "audit" mostra DELAYED quando a trilha atrasa (#8); as sondas de prontidão e de vida não o usam.
+      show-components: always
+      status:
+        order: DOWN, OUT_OF_SERVICE, DELAYED, UP, UNKNOWN
+        http-mapping:
+          DELAYED: 200
   info:
     env:
       enabled: true

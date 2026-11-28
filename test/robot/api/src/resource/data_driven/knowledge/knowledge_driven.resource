@@ -7,6 +7,8 @@ ${knowledge_page_title}         Robot Estratégia do Portfólio
 ${knowledge_regimento_title}    Robot Regimento do Portfólio
 ${knowledge_text}               Crescer em **canais digitais** com governança.
 ${documents_initiative_title}    Robot Iniciativa com Documentos
+${documents_export_unit}         Robot Portfólio Exportação
+${documents_export_page}         Robot Página Exportada
 
 # attachments (#13, REV-08: anexos do artefato)
 ${attachments_initiative_title}      Robot Iniciativa com Anexos

@@ -184,6 +184,35 @@ Decidido em 2026-11-20. A matriz acima diz **o que** cada papel faz; esta seçã
 
 O vínculo é sempre declarado por quem tem o papel de gerir configuração (SSD, seção 3.2); nenhum papel de negócio cria vínculos.
 
+### 2.2 Dados pessoais (REV-14)
+
+Decidido em 2026-11-28 (#32). O produto oferece as capacidades; quem opera a instalação responde pela conformidade com a LGPD, sem que a plataforma alegue conformidade (PRD, DEC-05). Ver também o [baseline de segurança](SECURITY.md).
+
+**Princípio.** Só o módulo `identity` guarda os dados que identificam a pessoa. Todos os outros módulos, a outbox e a trilha de auditoria guardam só o id da conta. Os eventos não levam nome nem e-mail. Assim, pseudonimizar a conta remove a identificação em todo lugar, sem alterar a trilha.
+
+**Inventário.**
+
+| Módulo | Dado | Finalidade | Quem vê | Retenção | Na anonimização |
+|---|---|---|---|---|---|
+| `identity` | Nome, usuário, e-mail (vindos do IdP), identificador do IdP (`subject`), data de criação, última atividade | Identificar a pessoa nas telas; ligar o login à conta | **Nome:** quem lê a mesma unidade. **E-mail e usuário:** a própria pessoa (`/me`) e o administrador (`/admin/people`). **Última atividade:** só o administrador. | Enquanto a conta existir | Nome vira "Pessoa removida (XXXX)"; usuário e e-mail apagados; `subject` vira hash; conta inativa |
+| `identity` | Preferências (tema, avisos) | Ajustar a tela e os avisos | A própria pessoa | Enquanto a conta existir | Apagadas |
+| `access` | Papéis por unidade, com quem concedeu e quando | Autorização | O administrador | Histórico mantido (revogação marca `revoked_at`) | Papéis vigentes revogados |
+| `activity` | Últimos itens abertos e favoritos | Home: "Continuar de onde parou" e "Favoritos" | A própria pessoa | Os 30 últimos itens abertos; favoritos até a pessoa tirar | Apagados |
+| `activity` | Quem fez cada mudança na unidade (id) | Home: "Novidades" | Quem lê a unidade | Os últimos 30 dias aparecem na tela | Fica o id, com o pseudônimo |
+| `notification` | Avisos recebidos | Sino | A própria pessoa | Sem limite no MVP (a tela mostra os 30 últimos) | Apagados |
+| `livingdocs` | Comentários, anexos e versões de autoria da pessoa | Conteúdo da página e do artefato | Quem lê a página ou o artefato | O do conteúdo | Ficam, com o pseudônimo |
+| `workitem`, `workflow`, `governance`, `board` | Responsáveis, quem mudou o status, quem aprovou, quem criou | Conteúdo e governança do artefato | Quem lê o artefato | O do artefato | Ficam, com o pseudônimo, até alguém trocar o responsável |
+| `events` | Ator de cada evento (id) | Entregar os eventos | Ninguém pela API | 7 dias depois da entrega (`aquaqe.events.retention-days`) | Fica o id |
+| `audit` | Ator, valores anterior e posterior (ids) | Trilha imutável | O administrador na raiz | Sem limite: a trilha não aceita exclusão | Fica o id; a cadeia de hash continua íntegra |
+
+**Capacidades para atender a um titular.** Só o `PLATFORM_ADMIN` na unidade raiz, a mesma regra da trilha de auditoria (Administração › Pessoas e privacidade, [UX/UI 7.10](UX-UI.md#710-administração)):
+
+- **Exportar:** `GET /admin/people/{id}/personal-data` devolve um JSON com uma seção por módulo do inventário. Publica `person.data_exported`.
+- **Anonimizar:** `POST /admin/people/{id}/anonymize` aplica a última coluna do inventário numa transação só e publica `person.anonymized`. Não dá para desfazer. Depois disso, o mesmo login do IdP recebe 403 `ACCOUNT_ANONYMIZED` e não recria a conta. Quem opera também deve remover a pessoa no IdP.
+- **Na trilha:** os dois eventos guardam só o id da pessoa e os nomes das seções, nunca o nome nem o e-mail.
+
+**Fora do MVP.** Retenção automática dos avisos e das contas inativas, e anonimização do texto que cita a pessoa (por exemplo, "@Ana" escrito num comentário). Esse texto é conteúdo e fica como foi escrito.
+
 ## 3. Recursos por módulo
 
 Em cada tabela, a coluna **RF** indica o requisito do PRD atendido.
@@ -203,6 +232,9 @@ Em cada tabela, a coluna **RF** indica o requisito do PRD atendido.
 | GET | `/me/favorites` | Páginas marcadas com estrela (#85) que o usuário ainda lê, das marcadas por último. | autenticado | — |
 | PUT | `/me/favorites/pages/{id}` | Marca a página com estrela (repetir não duplica). 204; 404 se o usuário não lê a página. | autenticado | — |
 | DELETE | `/me/favorites/pages/{id}` | Tira a estrela. 204. | autenticado | — |
+| GET | `/admin/people` | Diretório de pessoas da Administração (#32; seção 2.2): contas cujo nome, usuário ou e-mail contém `q`, até 50, com `email`, `active`, `anonymized` e `lastSeenAt`. Módulo `privacy`. | dados pessoais | — |
+| GET | `/admin/people/{id}/personal-data` | Baixa em JSON (`Content-Disposition: attachment`, `no-store`) os dados da pessoa, uma seção por módulo. Publica `person.data_exported`. 404 se a conta não existe. | dados pessoais | — |
+| POST | `/admin/people/{id}/anonymize` | Anonimiza a conta (seção 2.2). 422 `CANNOT_ANONYMIZE_SELF` na própria conta; 409 `ALREADY_ANONYMIZED`; 404 se não existe. Publica `person.anonymized`. | dados pessoais | — |
 | GET | `/me/preferences` | Preferências pessoais (#15; REV-10): `theme` (`SYSTEM`, `LIGHT` ou `DARK`) e `notifications` (`mention`, `reply`). Sem preferências gravadas, valem os padrões: `SYSTEM` e os dois avisos ligados. Módulo `identity`. | autenticado | — |
 | PUT | `/me/preferences` | Grava as preferências do próprio usuário e devolve as gravadas. Tema fora da lista dá 400 no campo `theme`. Aviso desligado não é criado: o módulo `notification` consulta `UserPreferences` antes de criar `MENTION` ou `REPLY`. | autenticado | — |
 | GET | `/me/news` | Home, "Novidades" (#83): o último evento de cada artefato, documento ou página nas unidades em que o usuário lê tudo (SSD 2.1, regra 1), nos últimos 30 dias, até 20. Cada item traz `action` (tipo do evento, SSD 7.2), quem fez (`actor`), a unidade e `own` quando foi o próprio usuário. Base: o consumidor `activity` da outbox, que guarda os eventos com a unidade (a trilha de auditoria não guarda a unidade e só o administrador a consulta). | autenticado | — |
@@ -654,6 +686,7 @@ Documentos existem apenas em Iniciativas e Features. Os tipos são `PRD`, `SAD`,
 | GET | `/artifacts/{artifact}/documents/{type}/versions` | Lista de versões (sem conteúdo). | ler | 020 |
 | GET | `/artifacts/{artifact}/documents/{type}/versions/{number}` | Conteúdo de uma versão. | ler | 020 |
 | POST | `/artifacts/{artifact}/documents/{type}/status` | Aprova ou reabre o documento. | ver abaixo | 019, 023 |
+| GET | `/artifacts/{artifact}/documents/{type}/export/markdown` | Baixa a versão atual em Markdown (#16; REV-11; seção 6.4), com os anexos do artefato como links no fim. `text/markdown`, `Content-Disposition: attachment` com o nome `<chave>-<tipo>.md`. | ler | 039 |
 | GET | `/artifacts/{artifact}/attachments` | Lista os anexos (#13; REV-08): `id`, `fileName`, `contentType`, `size`, `uploadedBy`, `uploadedAt`, do mais recente para o mais antigo, mais `canEdit` e `maxSize`. | ler o artefato | 018 |
 | POST | `/artifacts/{artifact}/attachments` | Envia anexo (`multipart/form-data`, campo `file`). | editar no nível | 018 |
 | GET | `/attachments/{id}/content` | Baixa o anexo. | ler o artefato | 018 |
@@ -708,6 +741,7 @@ O mesmo motor de documentos tem **dono genérico**: um artefato (os cinco docume
 | POST | `/pages/{id}/rank` | Reorganiza no Wiki ([PROP-002](propostas/PROP-002-organizacao-flexivel-da-wiki.md)). `beforeId` ou `afterId`: irmã de referência no nível de destino. `parentId`, se presente, muda o nível (nulo = raiz) e leva as subpáginas junto; sem irmã de referência, vai para o fim do nível. Recusa ciclo, referência de outro nível e o regimento. Não cria versão nem mexe no status. Publica `knowledge_page.moved`, com pai e posição antes e depois. | `EDIT_KNOWLEDGE` |
 | POST | `/pages/{id}/archive` | Arquiva (`reason` opcional). Página com subpáginas ativas: `HAS_CHILDREN`. | `EDIT_KNOWLEDGE` |
 | POST | `/pages/{id}/copy` | Faz uma cópia (menu ⋯, #81): página nova na mesma unidade e no mesmo pai, logo depois da original, com o conteúdo da versão atual e sem as subpáginas. `title` opcional (padrão "Cópia de <título>"). Recusa o regimento (422 `NOT_COPYABLE`). Publica `knowledge_page.created` com `copiedFrom`. Responde 201. | `EDIT_KNOWLEDGE` |
+| GET | `/pages/{id}/export/markdown` | Baixa em Markdown a versão que a pessoa lê (a atual ou, pela regra 9, a publicada), com o nome do arquivo a partir do título (#16; seção 6.4). Vale para o Regimento. | ler pelas regras 1 e 9 | 039 |
 | GET | `/pages/{id}/comments` | Comentários da página (#85), com as respostas logo depois de cada um (um nível): `{id, parentId, author, body, quote, mentions, createdAt, deleted, canDelete}`. Excluído com respostas vem com `deleted` e sem texto; sem respostas, some. | ler |
 | POST | `/pages/{id}/comments` | Comenta: `body` (até 2.000 caracteres), `quote` opcional (o trecho selecionado, até 500), `parentId` opcional (responder; a resposta de uma resposta vai para o comentário principal) e `mentionIds` (até 20 pessoas que leem a página; outra pessoa dá 400 no campo `mentionIds`). Publica `knowledge_page.commented` com `mentionedUserIds` e `replyToUserId`; o módulo `notification` cria os avisos. 201. | ler |
 | DELETE | `/pages/{id}/comments/{commentId}` | Exclui o próprio comentário (exclusão lógica). Outra pessoa: 403. 204. | autor |
@@ -868,7 +902,11 @@ Implementação (2026-11-20):
 | Método | Caminho | Descrição | Permissão | RF |
 |---|---|---|---|---|
 | GET | `/audit-events` | Consulta a trilha (filtros `targetType`, `targetId`, `actorId`, `action`, `from`, `to`). | consultar auditoria | 026 |
-| GET | `/audit-events/verification` | Verifica a cadeia de hash e informa o primeiro registro inconsistente, se houver. | consultar auditoria | 026 |
+| GET | `/audit-events/verification` | Verifica a cadeia de hash e informa o primeiro registro inconsistente, se houver. Desde a #8, confere também as âncoras: `anchorsChecked` e `firstAnchorMismatch` (a primeira âncora cujo hash não é o da trilha); `valid` só é verdadeiro com as duas coisas certas. | consultar auditoria | 026 |
+| GET | `/audit-events/status` | Situação da entrega (#8; REV-03): `lagSeconds` (idade do evento mais antigo ainda não entregue), `targetSeconds` (60, o alvo do SLA), `alertSeconds` (300, o limite de alerta), `delayed`, `deadLetters` (falhas na fila) e `lastAnchor`. | consultar auditoria | 026 |
+| GET | `/audit-events/anchors` | Âncoras da cadeia (#8): `sequence`, `hash` e `anchoredAt`, das mais antigas. Servem para guardar fora da instalação e comparar depois. | consultar auditoria | 026 |
+| GET | `/admin/event-failures` | Fila de falhas dos consumidores que não são a auditoria (#8; D-03): `id`, `eventId`, `consumer`, `type`, `attempts`, `lastError`, `firstFailedAt`, `deadAt`. | consultar auditoria | — |
+| POST | `/admin/event-failures/{id}/retry` | Entrega o evento de novo só ao consumidor que falhou. 200 e a falha sai da fila; 409 `RETRY_FAILED` se falhar de novo (fica na fila, com o erro novo); 404 se não existe ou já foi resolvida. | consultar auditoria | — |
 | GET | `/search` | Busca textual em artefatos, documentos do artefato e páginas do Wiki e do Regimento (#84). Parâmetros: `q` (2 a 100 caracteres; até 5 termos, todos precisam aparecer, sem diferença de maiúsculas e acentos) e `kind` opcional (`ARTIFACT`, `DOCUMENT` ou `PAGE`). Resposta `{q, artifacts, documents, pages}`, até 20 de cada tipo, com o trecho em volta do termo (`snippet`). Aplica as regras de leitura de cada item: artefato pelas regras 1, 2 e 6 e não arquivado; documento pela leitura do artefato, na versão atual; página na versão atual nas unidades lidas por inteiro e só na publicada nas de cima (regra 9), sem as arquivadas. 400 `VALIDATION_FAILED` para `q` curto ou longo e `kind` desconhecido. Módulo `search`, sem tabelas próprias. | ler | — |
 
 A trilha não tem endpoint de escrita, alteração ou exclusão. Consultar a trilha exige `PLATFORM_ADMIN` na unidade raiz, porque ela cobre a instalação inteira. A listagem vem da mais recente para a mais antiga; `from` e `to` são data e hora ISO-8601. A verificação responde `{ "valid": true, "checked": 1520, "firstInconsistent": null }`; quando a cadeia não confere, `valid` é `false` e `firstInconsistent` traz o `sequence` do primeiro registro com problema. Toda resposta de erro traz o `correlationId` (seção 1.6). Registro de auditoria:
@@ -1143,6 +1181,17 @@ Todo bloco tem um `id` único dentro do documento, gerado pelo cliente.
 
 Uma seção conta como preenchida quando tem ao menos um bloco com conteúdo: texto que não seja só espaços, lista ou tabela com ao menos um item, anexo ou link válido. Blocos `heading` sozinhos não contam. No `richtext`, conta qualquer texto do documento.
 
+### 6.4 Exportação
+
+Desde a #16 (REV-11), o documento do artefato e a página do Wiki ou do Regimento são exportados em Markdown pelo servidor, a partir do formato desta seção, sem perda das seções:
+
+- **Cabeçalho:** `#` com o título (o nome do documento e a chave do artefato, ou o título da página) e uma lista com status, versão, autor e data da versão.
+- **Seções:** um `##` por seção do template, na ordem do template. Seção sem conteúdo sai como _Seção não preenchida._
+- **Editor contínuo (`richtext`):** os títulos da seção descem um nível (`###` e `####`); listas, listas de tarefas (`- [x]`), citação, bloco de código com a linguagem, tabela e linha horizontal têm equivalente direto. Negrito, itálico, tachado, código e link viram a marcação do Markdown. Sublinhado, cor do texto e destaque não têm equivalente e saem como texto simples. O texto simples é escapado para não virar marcação.
+- **Editor anterior:** o texto dos blocos já está em Markdown em linha e é copiado como está.
+- **Anexos:** no documento do artefato, uma seção `## Anexos` no fim, com um link por anexo para `/attachments/{id}/content`.
+- **PDF:** no MVP, sai da impressão do navegador, com uma folha de estilo que deixa só o documento e usa o tema claro. O PDF gerado pelo servidor e o DOCX ficam para a Fase 2 (PRD-RF-039).
+
 ## 7. Eventos de domínio
 
 ### 7.1 Envelope
@@ -1358,7 +1407,9 @@ Convenções:
 | | `sprint` | `squad_id`, `name`, `goal`, `start_date`, `end_date`, `state` | No máximo uma `ACTIVE` por `squad_id`. |
 | | `sprint_item` | `sprint_id`, `artifact_id` | PK composta. |
 | `events` | `outbox_event` | `event_id`, `type`, `occurred_at`, `envelope` (JSON), `published_at` | Índice parcial nos não publicados; limpeza periódica dos publicados. |
-| `audit` | `audit_event` | `sequence` (PK), `event_id`, `occurred_at`, `actor_id`, `action`, `target_type`, `target_id`, `before` (JSON), `after` (JSON), `correlation_id`, `prev_hash`, `hash` | `event_id` único (evita duplicar em reentrega); o usuário de banco da aplicação só tem `INSERT` e `SELECT`; índices em (`target_type`, `target_id`) e em `occurred_at`. |
+| `audit` | `audit_event` | `sequence` (PK), `event_id`, `occurred_at`, `actor_id`, `action`, `target_type`, `target_id`, `before` (JSON), `after` (JSON), `correlation_id`, `prev_hash`, `hash` | `event_id` único (evita duplicar em reentrega); um gatilho recusa `UPDATE`, `DELETE` e `TRUNCATE` para qualquer usuário (#8); índices em (`target_type`, `target_id`) e em `occurred_at`. |
+| `audit` | `hash_anchor` | `id`, `sequence` (único), `hash`, `anchored_at` | Âncoras da cadeia (#8), gravadas a cada `aquaqe.audit.anchor.interval` (padrão 1 h) quando a trilha cresceu; o mesmo gatilho de só inserção. |
+| `events` | `consumer_failure` | `event_id`, `consumer` (únicos juntos), `envelope` (JSON), `attempts`, `last_error`, `first_failed_at`, `last_failed_at`, `dead_at`, `resolved_at`, `resolved_by` | Fila de falhas (#8; D-03): o evento entra com `dead_at` na 5ª falha (`aquaqe.events.max-attempts`) e sai com `resolved_at` no reprocessamento. Guarda o envelope, porque a outbox é limpa em 7 dias. |
 
 A tabela `story_rule_ref` não aparece no diagrama do SAD; ela materializa a referência das Histórias às RNs da Feature, que o SAD descreve em texto.
 
@@ -1373,9 +1424,9 @@ A tabela `story_rule_ref` não aparece no diagrama do SAD; ela materializa a ref
 - **Notificações:** só e-mail ao responsável em quatro eventos; faltam outros destinatários e outros canais. As preferências dos avisos do sino (menção e resposta) existem desde a #15 (`/me/preferences`); as do e-mail entram quando o e-mail tiver tipos que a pessoa possa escolher.
 - **Eventos de autenticação** na trilha da plataforma.
 - **Campos customizados:** declarados por tipo de artefato e validados na gravação e nos gates desde a #17 (seção 3.3). Campos por unidade, obrigatórios na criação e com regras de exibição ficam para o Customization Engine.
-- **Limites operacionais:** tamanho máximo de anexo (decidido: 10 MB, configurável, #13), retenção da outbox e limites de taxa da API dependem dos valores de qualidade ainda em aberto.
+- **Limites operacionais:** tamanho máximo de anexo (decidido: 10 MB, configurável, #13); retenção da outbox decidida na #8 (7 dias depois da entrega, só os entregues, `aquaqe.events.retention-days`); limites de taxa da API pendentes (#111).
 - **Internacionalização:** os nomes de status e as mensagens de regra estão em português; não há mecanismo de tradução.
-- **Dados pessoais:** visibilidade de nome e e-mail de outros usuários, tratamento de contas desativadas na trilha de auditoria e retenção ([REV-14](REVIEW-01.md#rev-14--privacidade-e-dados-pessoais)).
+- **Dados pessoais:** decididos na #32 (seção 2.2). Ficam pendentes a retenção automática dos avisos e das contas inativas e o perfil com mais dados pessoais (foto, cargo, gestor), que deve passar pelo inventário antes de existir.
 
 ## 11. Rastreabilidade
 

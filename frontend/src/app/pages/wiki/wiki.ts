@@ -39,6 +39,7 @@ import {
   docHasText,
   docToBlocks,
   pageLink,
+  pageMarkdownUrl,
 } from '../../knowledge/knowledge.service';
 
 /** Seção em edição: o documento do editor contínuo. */
@@ -477,6 +478,16 @@ export class Wiki implements LeaveAware {
   }
 
   // ------------------------------------------------------------------------------------------ histórico
+
+  /** Markdown da versão que a pessoa lê (#16; REV-11). */
+  protected markdownUrl(id: string): string {
+    return pageMarkdownUrl(id);
+  }
+
+  /** Imprimir ou salvar PDF pela impressão do navegador; a folha de impressão deixa só a página (#16). */
+  protected print(): void {
+    window.print();
+  }
 
   protected async showHistory(): Promise<void> {
     const page = this.page();
