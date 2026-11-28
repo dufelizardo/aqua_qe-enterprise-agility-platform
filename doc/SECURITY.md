@@ -31,7 +31,7 @@ Cada requisito da especificação aparece com o capítulo do ASVS que o verifica
 | RF-SC05: MFA configurável | V2 | PR.AA-03 | **Coberto pelo IdP.** Política de MFA do realm do Keycloak. Falta o realm de produção (#25). |
 | RF-SC06: autorização híbrida (RBAC, ABAC, por recurso) | V4 | PR.AA-05 | **Parcial.** RBAC por escopo no MVP; ABAC e autorização por recurso na Fase 2, sem mudar os módulos de negócio ([SAD 7.2](SAD.md#72-autorização)). |
 | RF-SC07 e 08: isolamento e compartilhamento entre portfólios | V4 | PR.AA-05, PR.DS-01 | **Parcial.** Regras de escopo entre unidades no MVP (SSD 2.1); níveis Private, Shared e Enterprise na Fase 2. |
-| RF-SC09 e 10: auditoria protegida | V7 | PR.PS-04, DE.CM-03, DE.AE-03 | **Coberto, com pendências da #8.** Consulta restrita (`GET /audit-events`) e verificação da cadeia (`GET /audit-events/verification`). Pendentes: usuário de banco só com `INSERT` e `SELECT` e ancoragem externa do hash ([REV-03](REVIEW-01.md#rev-03--garantias-da-auditoria-assíncrona)). |
+| RF-SC09 e 10: auditoria protegida | V7 | PR.PS-04, DE.CM-03, DE.AE-03 | **Coberto.** Consulta restrita (`GET /audit-events`), verificação da cadeia e das âncoras, gatilho de só inserção, âncoras no log e SLA de atraso com alerta (#8; [SAD 7.5](SAD.md#75-trilha-de-auditoria)). Pendente: usuário de banco só com `INSERT` e `SELECT`, com a produção (#25). |
 | RF-SC11 e 12: classificação e mascaramento | V8 | ID.AM-07, PR.DS-01 | **Parcial.** A classificação do documento é registrada (SSD 6.1); políticas por classificação e mascaramento na Fase 2. |
 | RF-SC13: gestão de segredos | V6, V14 | PR.AA-01, PR.DS-01 | **Parcial.** Segredos de infraestrutura no mecanismo do cluster; nenhum segredo no repositório (o lint LKDF recusa segredo literal nos testes). Credenciais de integração, com rotação, na Fase 2 ([SAD 7.10](SAD.md#710-segredos-e-criptografia)). |
 | RF-SC14: retenção e descarte | V8 | ID.AM-08 | **Parcial.** Inventário, retenção e anonimização decididos na #32 ([SSD 2.2](SSD.md#22-dados-pessoais-rev-14)); falta a retenção automática dos avisos e das contas inativas. |
@@ -103,7 +103,7 @@ Cada lacuna é uma issue no Backlog. As que já tinham issue apontam para ela.
 | S-03 | Eventos de autenticação e de segurança na trilha (login, falha de login, logout, troca de papel) e para onde vão | RF-SC16, RNF-SC07; CSF DE.CM-03; SSD 10 | #109 |
 | S-04 | Capacidades de resposta a incidentes: revogar as sessões de um usuário ou de todos, e exportar a trilha de um período | CSF RS.MA-01, RS.MI-01 | #110 |
 | S-05 | Limites de taxa da API, por usuário e por origem | ASVS V11.1 e V13 | #111 |
-| — | Garantias da auditoria: usuário de banco só com `INSERT` e `SELECT`, ancoragem externa do hash | RF-SC09, RNF-SC02 | #8 (REV-03) |
+| — | Garantias da auditoria: gatilho de só inserção, âncoras do hash e SLA feitos na #8; falta o usuário de banco só com `INSERT` e `SELECT` | RF-SC09, RNF-SC02 | #25 |
 | — | Privacidade, dados pessoais e retenção | RF-SC14; LGPD | resolvido na #32 (REV-14), menos a retenção automática |
 | — | TLS, realm de produção e política de MFA | RNF-SC05, RF-SC05; ASVS V9 | #25 |
 

@@ -902,7 +902,11 @@ Implementação (2026-11-20):
 | Método | Caminho | Descrição | Permissão | RF |
 |---|---|---|---|---|
 | GET | `/audit-events` | Consulta a trilha (filtros `targetType`, `targetId`, `actorId`, `action`, `from`, `to`). | consultar auditoria | 026 |
-| GET | `/audit-events/verification` | Verifica a cadeia de hash e informa o primeiro registro inconsistente, se houver. | consultar auditoria | 026 |
+| GET | `/audit-events/verification` | Verifica a cadeia de hash e informa o primeiro registro inconsistente, se houver. Desde a #8, confere também as âncoras: `anchorsChecked` e `firstAnchorMismatch` (a primeira âncora cujo hash não é o da trilha); `valid` só é verdadeiro com as duas coisas certas. | consultar auditoria | 026 |
+| GET | `/audit-events/status` | Situação da entrega (#8; REV-03): `lagSeconds` (idade do evento mais antigo ainda não entregue), `targetSeconds` (60, o alvo do SLA), `alertSeconds` (300, o limite de alerta), `delayed`, `deadLetters` (falhas na fila) e `lastAnchor`. | consultar auditoria | 026 |
+| GET | `/audit-events/anchors` | Âncoras da cadeia (#8): `sequence`, `hash` e `anchoredAt`, das mais antigas. Servem para guardar fora da instalação e comparar depois. | consultar auditoria | 026 |
+| GET | `/admin/event-failures` | Fila de falhas dos consumidores que não são a auditoria (#8; D-03): `id`, `eventId`, `consumer`, `type`, `attempts`, `lastError`, `firstFailedAt`, `deadAt`. | consultar auditoria | — |
+| POST | `/admin/event-failures/{id}/retry` | Entrega o evento de novo só ao consumidor que falhou. 200 e a falha sai da fila; 409 `RETRY_FAILED` se falhar de novo (fica na fila, com o erro novo); 404 se não existe ou já foi resolvida. | consultar auditoria | — |
 | GET | `/search` | Busca textual em artefatos, documentos do artefato e páginas do Wiki e do Regimento (#84). Parâmetros: `q` (2 a 100 caracteres; até 5 termos, todos precisam aparecer, sem diferença de maiúsculas e acentos) e `kind` opcional (`ARTIFACT`, `DOCUMENT` ou `PAGE`). Resposta `{q, artifacts, documents, pages}`, até 20 de cada tipo, com o trecho em volta do termo (`snippet`). Aplica as regras de leitura de cada item: artefato pelas regras 1, 2 e 6 e não arquivado; documento pela leitura do artefato, na versão atual; página na versão atual nas unidades lidas por inteiro e só na publicada nas de cima (regra 9), sem as arquivadas. 400 `VALIDATION_FAILED` para `q` curto ou longo e `kind` desconhecido. Módulo `search`, sem tabelas próprias. | ler | — |
 
 A trilha não tem endpoint de escrita, alteração ou exclusão. Consultar a trilha exige `PLATFORM_ADMIN` na unidade raiz, porque ela cobre a instalação inteira. A listagem vem da mais recente para a mais antiga; `from` e `to` são data e hora ISO-8601. A verificação responde `{ "valid": true, "checked": 1520, "firstInconsistent": null }`; quando a cadeia não confere, `valid` é `false` e `firstInconsistent` traz o `sequence` do primeiro registro com problema. Toda resposta de erro traz o `correlationId` (seção 1.6). Registro de auditoria:
@@ -1403,7 +1407,9 @@ Convenções:
 | | `sprint` | `squad_id`, `name`, `goal`, `start_date`, `end_date`, `state` | No máximo uma `ACTIVE` por `squad_id`. |
 | | `sprint_item` | `sprint_id`, `artifact_id` | PK composta. |
 | `events` | `outbox_event` | `event_id`, `type`, `occurred_at`, `envelope` (JSON), `published_at` | Índice parcial nos não publicados; limpeza periódica dos publicados. |
-| `audit` | `audit_event` | `sequence` (PK), `event_id`, `occurred_at`, `actor_id`, `action`, `target_type`, `target_id`, `before` (JSON), `after` (JSON), `correlation_id`, `prev_hash`, `hash` | `event_id` único (evita duplicar em reentrega); o usuário de banco da aplicação só tem `INSERT` e `SELECT`; índices em (`target_type`, `target_id`) e em `occurred_at`. |
+| `audit` | `audit_event` | `sequence` (PK), `event_id`, `occurred_at`, `actor_id`, `action`, `target_type`, `target_id`, `before` (JSON), `after` (JSON), `correlation_id`, `prev_hash`, `hash` | `event_id` único (evita duplicar em reentrega); um gatilho recusa `UPDATE`, `DELETE` e `TRUNCATE` para qualquer usuário (#8); índices em (`target_type`, `target_id`) e em `occurred_at`. |
+| `audit` | `hash_anchor` | `id`, `sequence` (único), `hash`, `anchored_at` | Âncoras da cadeia (#8), gravadas a cada `aquaqe.audit.anchor.interval` (padrão 1 h) quando a trilha cresceu; o mesmo gatilho de só inserção. |
+| `events` | `consumer_failure` | `event_id`, `consumer` (únicos juntos), `envelope` (JSON), `attempts`, `last_error`, `first_failed_at`, `last_failed_at`, `dead_at`, `resolved_at`, `resolved_by` | Fila de falhas (#8; D-03): o evento entra com `dead_at` na 5ª falha (`aquaqe.events.max-attempts`) e sai com `resolved_at` no reprocessamento. Guarda o envelope, porque a outbox é limpa em 7 dias. |
 
 A tabela `story_rule_ref` não aparece no diagrama do SAD; ela materializa a referência das Histórias às RNs da Feature, que o SAD descreve em texto.
 
@@ -1418,7 +1424,7 @@ A tabela `story_rule_ref` não aparece no diagrama do SAD; ela materializa a ref
 - **Notificações:** só e-mail ao responsável em quatro eventos; faltam outros destinatários e outros canais. As preferências dos avisos do sino (menção e resposta) existem desde a #15 (`/me/preferences`); as do e-mail entram quando o e-mail tiver tipos que a pessoa possa escolher.
 - **Eventos de autenticação** na trilha da plataforma.
 - **Campos customizados:** declarados por tipo de artefato e validados na gravação e nos gates desde a #17 (seção 3.3). Campos por unidade, obrigatórios na criação e com regras de exibição ficam para o Customization Engine.
-- **Limites operacionais:** tamanho máximo de anexo (decidido: 10 MB, configurável, #13), retenção da outbox e limites de taxa da API dependem dos valores de qualidade ainda em aberto.
+- **Limites operacionais:** tamanho máximo de anexo (decidido: 10 MB, configurável, #13); retenção da outbox decidida na #8 (7 dias depois da entrega, só os entregues, `aquaqe.events.retention-days`); limites de taxa da API pendentes (#111).
 - **Internacionalização:** os nomes de status e as mensagens de regra estão em português; não há mecanismo de tradução.
 - **Dados pessoais:** decididos na #32 (seção 2.2). Ficam pendentes a retenção automática dos avisos e das contas inativas e o perfil com mais dados pessoais (foto, cargo, gestor), que deve passar pelo inventário antes de existir.
 

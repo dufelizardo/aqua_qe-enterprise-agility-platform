@@ -18,3 +18,8 @@ CT-002 - PRD-RF-026: Validate GET Audit Events - HTTP 403 FORBIDDEN
     [Documentation]    Só o administrador consulta a auditoria.
     [Tags]    GET    GetAuditEvents    HTTP403    PRD-RF-026    security    ASVS-V4
     AUDIT - GET AUDIT EVENTS - GET    403    ${audit_initiative_title}    ${audit_wait}
+
+CT-003 - REV-03: Validate GET Audit Status, Anchors e Event Failures - HTTP 200 e 403
+    [Documentation]    #8: SLA e atraso da entrega, âncoras na verificação e fila de falhas, só para o administrador.
+    [Tags]    GET    GetAuditEvents    HTTP200    HTTP403    REV-03    security    ASVS-V4
+    AUDIT - DELIVERY GUARANTEES

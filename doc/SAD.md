@@ -285,9 +285,16 @@ Esse fluxo é a fonte única para a trilha de auditoria, as notificações e, na
 - Um único consumidor grava na trilha, em ordem, para manter a cadeia consistente.
 - Senhas e tokens nunca entram no registro.
 
-**Implementação (2026-11-20; REV-03):** um único repassador entrega os eventos da outbox em ordem, um por transação, com uma trava do PostgreSQL que impede dois repassadores ao mesmo tempo, mesmo com várias instâncias da API. Se um consumidor falha, o repassador **para nesse evento e alerta** no log, sem pular; tenta de novo na rodada seguinte. O evento só é marcado como entregue na mesma transação em que a auditoria gravou, e a limpeza remove apenas eventos entregues. A métrica `aquaqe.outbox.lag` (segundos do evento mais antigo não entregue) e o aviso no log usam um limite configurável, provisório até o REV-03 fixar o SLA. Ainda pendente: o usuário de banco só com `INSERT` e `SELECT` no schema `audit`.
+**Implementação (2026-11-20; REV-03):** um único repassador entrega os eventos da outbox em ordem, um por transação, com uma trava do PostgreSQL que impede dois repassadores ao mesmo tempo, mesmo com várias instâncias da API. Se um consumidor falha, o repassador **para nesse evento e alerta** no log, sem pular; tenta de novo na rodada seguinte. O evento só é marcado como entregue na mesma transação em que a auditoria gravou, e a limpeza remove apenas eventos entregues. A métrica `aquaqe.outbox.lag` dá os segundos do evento mais antigo ainda não entregue.
 
-**Limite conhecido:** em instalação on-premise, quem administra o banco consegue apagar dados. A cadeia de hash detecta a adulteração, mas não a impede. A exportação periódica do último hash para um local externo fica como pendência.
+**Garantias (2026-11-28, #8; REV-03):**
+- **SLA:** o evento entra na trilha em até 1 minuto em operação normal. Com mais de 5 minutos de atraso (`aquaqe.events.lag-alert`), o log alerta e o componente `audit` do `/actuator/health` passa a `DELAYED`, sem entrar nas sondas de prontidão e de vida: a API continua no ar. A situação também sai em `GET /audit-events/status`.
+- **Falha persistente (D-03):** a auditoria é o único consumidor crítico. Se ela falha, o repassador para e alerta, como antes. Os outros consumidores (avisos e novidades da Home) rodam cada um num ponto de salvamento: a falha de um não desfaz o que os outros gravaram. Depois de 5 tentativas (`aquaqe.events.max-attempts`), o evento vai para a fila de falhas daquele consumidor (`events.consumer_failure`), e a entrega segue. O administrador lista e reprocessa pela API.
+- **Só inserção:** um gatilho no banco recusa `UPDATE`, `DELETE` e `TRUNCATE` na trilha e nas âncoras, para qualquer usuário. Quem administra o banco ainda consegue desligar o gatilho, mas a cadeia e as âncoras denunciam a alteração.
+- **Âncoras:** a cada hora (`aquaqe.audit.anchor.interval`), se a trilha cresceu, a sequência e o hash do último registro vão para `audit.hash_anchor` e para o log estruturado (logger `aquaqe.audit.anchor`, linha `audit_anchor sequence=… hash=…`). Quem opera guarda esse log fora do banco. A verificação confere a trilha com as âncoras.
+- **Pendente:** o usuário de banco da aplicação só com `INSERT` e `SELECT` no schema `audit`, com o Flyway rodando com outro usuário. Vai junto com a entrega de produção (#25).
+
+**Limite conhecido:** em instalação on-premise, quem administra o banco consegue desligar o gatilho e apagar dados. A cadeia de hash e as âncoras detectam a adulteração, mas não a impedem; a âncora só protege se o log em que ela foi escrita estiver fora do alcance desse administrador.
 
 ### 7.6 Documentação viva
 
@@ -447,7 +454,8 @@ Os valores-alvo são provisórios; o PRD lista sua definição como pendência.
 | Requisito | Tática arquitetural | Alvo provisório (a validar) |
 |---|---|---|
 | RNF-SC01 Confidencialidade | Ponto único de autorização; filtro de escopo em toda listagem; TLS. | — |
-| RNF-SC02 Integridade | Cadeia de hash na auditoria; versões de documento imutáveis. | Verificação diária da cadeia |
+| RNF-SC02 Integridade | Cadeia de hash na auditoria; gatilho de só inserção; âncoras no log (#8); versões de documento imutáveis. | Verificação diária da cadeia; âncora a cada hora |
+| RNF-SC08 Atraso da auditoria (REV-03) | Repassador único em ordem; `aquaqe.outbox.lag`; componente `audit` do health. | Alvo de 1 min; alerta com 5 min |
 | RNF-SC03, RNF-DH03 Disponibilidade | API sem estado com várias réplicas; banco com réplica. | 99,5% mensal |
 | RNF-SC04, RNF-DH05 Recuperabilidade | Backup automatizado antes de upgrade e periódico; teste de restauração. | RPO 1 h, RTO 4 h |
 | RNF-SC05 Criptografia | TLS em trânsito; criptografia em repouso no banco e nos objetos. | — |
@@ -469,6 +477,7 @@ Os valores-alvo são provisórios; o PRD lista sua definição como pendência.
 | Campos customizados em coluna JSON dificultam filtros e relatórios. | Retrabalho na Fase 2. | Campos usados em gates e filtros padrão são colunas; JSON só para extensões. |
 | Keycloak aumenta o esforço de operação e atualização, sobretudo em air-gapped. | Custo de suporte. | Empacotar versão testada no chart; documentar o procedimento de upgrade. |
 | Fila de eventos no banco concorre com a carga transacional. | Degradação sob pico. | Limpeza de eventos entregues; broker como saída prevista (ADR-06). |
+| Consumidor único da auditoria limita a vazão da trilha (REV-03, recomendação 5). | Atraso da auditoria acima do SLA sob volume alto. | Medir com `aquaqe.outbox.lag`; cadeias por agregado ou particionadas só se o volume medido exigir. |
 | Administrador de banco on-premise pode apagar registros de auditoria. | Não atende plenamente RF-SC02. | Cadeia de hash detecta; ancoragem externa do hash como pendência. |
 | Fronteiras de módulo erodem com o tempo. | Perda da possibilidade de extração. | Verificação no build (ADR-04) e revisão de dependências entre módulos. |
 
@@ -479,7 +488,7 @@ Os valores-alvo são provisórios; o PRD lista sua definição como pendência.
 - **Editor de documentos:** construir ou adotar; formato exato dos blocos.
 - **Notificações:** canais além de e-mail e regras de envio.
 - **Internacionalização e acessibilidade:** não tratadas no PRD.
-- **Ancoragem externa da cadeia de hash** da auditoria.
+- ~~**Ancoragem externa da cadeia de hash**~~: feita na #8 (âncoras no log, seção 7.5). Pendente o usuário de banco restrito no schema `audit`, com a produção (#25).
 - **Lacunas do baseline de segurança** S-01 a S-05 ([SECURITY, seção 5](SECURITY.md#5-lacunas)): assinatura das imagens, cabeçalhos HTTP, eventos de autenticação na trilha, resposta a incidentes e limites de taxa.
 - **Valores definitivos dos atributos de qualidade** da seção 11 e volumes esperados (usuários, artefatos).
 - **Especificações ausentes** que afetam módulos da Fase 2 e 3: OKRs, dependências, capacity planning, IA.

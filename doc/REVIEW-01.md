@@ -31,7 +31,7 @@ Ao conferir a análise externa contra os documentos, três pontos foram ajustado
 |---|---|---|---|---|
 | REV-01 | Crítico | Regras de autorização entre unidades | SAD 7.2, SSD 2, ADR-14 | Resolvido em 2026-11-20 ([SSD 2.1](SSD.md#21-escopo-entre-unidades-rev-01-rev-02-rev-04)) |
 | REV-02 | Crítico | Contexto herdado vazio entre ramos | PRD-RF-017, SSD 3.4, UX/UI 6.9 | Resolvido em 2026-11-20 ([SSD 2.1](SSD.md#21-escopo-entre-unidades-rev-01-rev-02-rev-04)) |
-| REV-03 | Alto | Garantias da auditoria assíncrona | SAD 7.4 e 7.5, ADR-06, ADR-07, PRD-RF-026 | Parcial em 2026-11-20: recomendações 2 a 5 implementadas; falta fixar o SLA (1) e restringir o usuário de banco |
+| REV-03 | Alto | Garantias da auditoria assíncrona | SAD 7.4 e 7.5, ADR-06, ADR-07, PRD-RF-026 | Resolvido (#8); usuário de banco restrito vai com a produção (#25) |
 | REV-04 | Alto | Modelo organizacional (ADR-14) | SAD 5.1 e 13, SSD 3.2 | Resolvido em 2026-11-20 ([SSD 2.1](SSD.md#21-escopo-entre-unidades-rev-01-rev-02-rev-04)) |
 | REV-05 | Alto | Contrato do documento independente do editor | SSD 6, UX/UI 6.6, PRD-RF-018 e 020 | Decidido (2026-11-20) |
 | REV-06 | Alto | Publicação de nova versão de workflow | SSD 3.3, PRD-RF-011 | Aberto |
@@ -101,6 +101,8 @@ A ancoragem externa do último hash já é pendência no SAD.
 3. Proibir a limpeza de um evento da outbox antes de ele estar gravado na auditoria.
 4. Incluir as operações administrativas (estrutura organizacional, papéis e configuração) entre as ações auditadas. Os eventos `org_unit.*` foram acrescentados ao [SSD 7.2](SSD.md#72-catálogo) em 2026-11-20 ([Proposta 03](ADMIN-PROPOSAL.md#6-o-que-a-análise-revelou-no-produto-atual)).
 5. Manter o consumidor único no MVP. A ordem global é o que torna a cadeia simples. Cadeias por agregado ou particionadas só se justificam se o volume medido exigir; registrar isso como risco no [SAD, seção 12](SAD.md#12-riscos).
+
+**Decisão (2026-11-28, #8): aceita.** As recomendações 2, 3 e 5 já estavam implementadas desde 2026-11-20 (repassador único que para e alerta, limpeza só dos entregues) e a 4 com os eventos `org_unit.*`. Agora: (1) SLA com alvo de 1 minuto e alerta com 5 minutos de atraso, no log, no `/actuator/health` (componente `audit` em `DELAYED`, sem derrubar a API) e em `GET /audit-events/status`; (2) falha persistente: a auditoria continua parando e alertando, e os outros consumidores vão para uma fila de falhas depois de 5 tentativas, com reprocessamento pelo administrador (D-03); a trilha não fica mais presa por um aviso com defeito; (3) gatilho de só inserção na trilha e nas âncoras; (4) âncora do último hash a cada hora, no banco e no log estruturado, conferida pela verificação. A retenção da outbox ficou em 7 dias depois da entrega. O risco do consumidor único está no [SAD, seção 12](SAD.md#12-riscos). Pendente: o usuário de banco restrito no schema `audit`, junto com a produção (#25). Detalhes no [SAD, seção 7.5](SAD.md#75-trilha-de-auditoria); testes no [QA](QA.md).
 
 ### REV-04 — Modelo organizacional (ADR-14)
 

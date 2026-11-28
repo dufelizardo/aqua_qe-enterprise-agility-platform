@@ -202,3 +202,10 @@ bash test/robot/run_tests.sh ui           # interface (rfbrowser init chromium u
 ```
 
 A primeira subida do Keycloak leva alguns minutos. Os testes unitários do frontend (`ng test`) rodam no CI e em Linux; nesta máquina Windows o Vitest não inicia o processo de teste a tempo.
+
+## Auditoria (#8)
+
+- **Atraso:** `GET /api/v1/audit-events/status` (administrador) e o componente `audit` de `/actuator/health`, que passa a `DELAYED` com mais de 5 minutos de atraso. As sondas de prontidão e de vida não usam esse componente.
+- **Fila de falhas:** `GET /api/v1/admin/event-failures` lista os eventos que um consumidor que não é a auditoria não conseguiu processar em 5 tentativas; `POST /api/v1/admin/event-failures/{id}/retry` reprocessa.
+- **Âncoras:** guarde fora do servidor as linhas `audit_anchor sequence=… hash=…` do logger `aquaqe.audit.anchor` (a cada hora). Para conferir, compare com `GET /api/v1/audit-events/anchors` e rode `GET /api/v1/audit-events/verification`.
+- **Variáveis:** `AQUAQE_EVENTS_LAG_ALERT` (padrão `PT5M`), `AQUAQE_EVENTS_MAX_ATTEMPTS` (5), `AQUAQE_AUDIT_ANCHOR_INTERVAL` (`PT1H`), `AQUAQE_AUDIT_ANCHOR_ENABLED` (`true`).
