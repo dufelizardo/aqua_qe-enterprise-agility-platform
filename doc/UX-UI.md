@@ -335,7 +335,7 @@ Abre quando a transição devolve `GATE_BLOCKED`. Título: "Ainda não é possí
 - **Aprovar** aparece para quem tem o papel aprovador do template e fica desabilitado, com a explicação ao lado, enquanto houver seção obrigatória vazia. Usa `POST /artifacts/{artifact}/documents/{type}/status`.
 - Documento aprovado abre em modo de leitura, com o botão **Reabrir para edição**, que pede um comentário e usa o mesmo endpoint.
 - Anexos: `POST /artifacts/{artifact}/attachments`, exibidos por `GET /attachments/{id}/content`.
-- **Situação (2026-11-25, #63):** implementado na página do artefato (`/artefato/<chave>?tab=PRD`), com o índice de seções, Editar e Salvar, Aprovar (desabilitado, com as seções que faltam), Reabrir para edição (com comentário) e Histórico (abre qualquer versão). Ainda faltam: anexos e a comparação lado a lado (6.7). Rascunho automático e aviso ao sair sem salvar (#82): como no Wiki (7.12), também ao trocar de aba.
+- **Situação (2026-11-25, #63):** implementado na página do artefato (`/artefato/<chave>?tab=PRD`), com o índice de seções, Editar e Salvar, Aprovar (desabilitado, com as seções que faltam), Reabrir para edição (com comentário) e Histórico (abre qualquer versão). Ainda faltam: o bloco de anexo dentro do documento e a comparação lado a lado (6.7); os anexos do item ficam na Visão geral (7.4, #13). Rascunho automático e aviso ao sair sem salvar (#82): como no Wiki (7.12), também ao trocar de aba.
 - Sem permissão de edição para aquele tipo de documento, a tela abre em modo de leitura, sem os botões.
 
 ### 6.7 Histórico e comparação de versões
@@ -453,6 +453,7 @@ Documentação                         Gates
 - **Requisitos:** PRD-RF-001, 003, 010, 018, 019, 020, 022 a 024.
 - **Situação (2026-11-25, #63):** o título do cartão (ou da linha, na lista) abre `/artefato/<chave>`, com as abas Visão geral, PRD, SAD, SSD, UX/UI e QA. A Visão geral mostra responsável, estimativa, descrição e o status de cada documento, com link para a aba. Ainda faltam Business case, Features, History, o botão Avançar e o painel de gates (os gates vêm em entrega própria).
 - **Situação (2026-11-25, edição, #79):** quem pode editar o item clica no campo para alterá-lo: título (no cabeçalho), Responsável, Tech Lead, QA (busca pelo nome entre as pessoas da unidade, das de cima e das de baixo; "Ninguém" limpa), Estimativa e Descrição. Cada campo salva sozinho; se outra pessoa alterou o item antes, a tela recarrega e pede para refazer. O Quadro da Squad guarda o nível em `?nivel=`, então o "← Voltar" retorna ao mesmo nível.
+- **Anexos (2026-11-27, #13):** na Visão geral, depois dos Próximos passos, o cartão **Anexos** lista nome (link de download), tamanho, tipo, quem enviou e quando, do mais recente para o mais antigo. Quem edita vê **Enviar arquivo**, que envia ao escolher, e **Remover**, com confirmação. Acima do limite, o aviso "Arquivo acima do tamanho permitido (10 MB)." aparece antes do envio. Sem anexos: "Nenhum anexo." Vale para todos os tipos de item.
 
 ### 7.5 Tactical Board (UI-07)
 
@@ -815,7 +816,7 @@ A identidade (hexágono, azul e âmbar) é mantida.
 **Lacunas do SSD encontradas ao especificar as telas**
 
 - ~~**Seleção de pessoas:**~~ resolvida (REV-07): a página do item usa `GET /artifacts/{artifact}/people` (#79) e o formulário de novo item, `GET /org-units/{id}/people` (#12).
-- **Lista de anexos:** há envio e download de anexo, mas não há como listar os anexos de um artefato.
+- ~~**Lista de anexos:**~~ resolvida (REV-08, #13): `GET /artifacts/{artifact}/attachments` e o cartão Anexos da página do item (7.4).
 - **Quem pode aprovar:** o painel de gates mostra só o papel aguardado; para mostrar os nomes das pessoas, falta uma consulta que não exija permissão administrativa.
 - **Itens recentes:** não há registro de itens visitados; por isso a home não tem esse bloco.
 

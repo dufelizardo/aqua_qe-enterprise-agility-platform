@@ -652,8 +652,12 @@ Documentos existem apenas em Iniciativas e Features. Os tipos são `PRD`, `SAD`,
 | GET | `/artifacts/{artifact}/documents/{type}/versions` | Lista de versões (sem conteúdo). | ler | 020 |
 | GET | `/artifacts/{artifact}/documents/{type}/versions/{number}` | Conteúdo de uma versão. | ler | 020 |
 | POST | `/artifacts/{artifact}/documents/{type}/status` | Aprova ou reabre o documento. | ver abaixo | 019, 023 |
-| POST | `/artifacts/{artifact}/attachments` | Envia anexo (`multipart/form-data`). | editar no nível | 018 |
+| GET | `/artifacts/{artifact}/attachments` | Lista os anexos (#13; REV-08): `id`, `fileName`, `contentType`, `size`, `uploadedBy`, `uploadedAt`, do mais recente para o mais antigo, mais `canEdit` e `maxSize`. | ler o artefato | 018 |
+| POST | `/artifacts/{artifact}/attachments` | Envia anexo (`multipart/form-data`, campo `file`). | editar no nível | 018 |
 | GET | `/attachments/{id}/content` | Baixa o anexo. | ler o artefato | 018 |
+| DELETE | `/attachments/{id}` | Remove o anexo (só marca; some da lista e do download). | editar no nível | 018 |
+
+**Anexos (2026-11-27, #13; REV-08):** valem para qualquer tipo de artefato. Limite de 10 MB por arquivo (`aquaqe.attachments.max-size`, variável `AQUAQE_ATTACHMENT_MAX_SIZE`); acima dele, `413 ATTACHMENT_TOO_LARGE`. Arquivo vazio ou sem nome: `400` no campo `file`. O nome perde o caminho e os caracteres de controle (até 255). O tipo é o informado no envio, sem parâmetros; inválido vira `application/octet-stream`. O download sai sempre como arquivo (`Content-Disposition: attachment`), com `X-Content-Type-Options: nosniff` e sem cache, para que um HTML ou SVG enviado não abra como página da plataforma. Artefato arquivado não recebe nem perde anexo: `409 DOCUMENT_NOT_EDITABLE`. Eventos: `attachment.uploaded` e `attachment.removed`. O conteúdo fica atrás de uma interface de armazenamento: no MVP, no banco (`livingdocs.attachment_blob`, pela `storage_key`); o armazenamento de objetos do SAD entra depois como outra implementação, sem mudar a API. O bloco `attachment` dos documentos (seção 6) fica para outra entrega.
 
 Salvar (`PUT`): o corpo traz `baseVersion` (número da versão em que a edição se baseou) e `sections` no formato da seção 6. Se `baseVersion` não for a versão atual, `VERSION_CONFLICT`. Cada gravação cria uma versão nova; versões não são alteradas nem apagadas.
 
@@ -1336,7 +1340,8 @@ Convenções:
 | | `business_rule` | `feature_id`, `code`, `text`, `version` | (`feature_id`, `code`) único. |
 | | `story_rule_ref` | `story_id`, `business_rule_id` | PK composta. |
 | | `acceptance_criterion` | `story_id`, `position`, `text` | Índice em `story_id`. |
-| | `attachment` | `artifact_id`, `file_name`, `content_type`, `size_bytes`, `storage_key`, `uploaded_by` | `storage_key` aponta para o armazenamento de objetos. |
+| `livingdocs` | `attachment` (#13) | `artifact_id`, `file_name`, `content_type`, `size_bytes`, `storage_key`, `uploaded_by`, `uploaded_at`, `removed_at`, `removed_by` | Índice em (`artifact_id`, `uploaded_at`) dos não removidos; `storage_key` única. Era listada em `workitem`; fica no `livingdocs`, dono das rotas (seção 3.7). |
+| | `attachment_blob` (#13) | `storage_key` (PK), `content` | Conteúdo no MVP, atrás da interface de armazenamento; sai quando entrar o armazenamento de objetos. |
 | `workflow` | `status_history` | `artifact_id`, `from_status_id`, `to_status_id`, `transition_id`, `changed_by`, `changed_at`, `comment` | Só inserção; índice em (`artifact_id`, `changed_at`). |
 | `governance` | `gate` | `transition_id`, `name` | Um por transição. |
 | | `gate_rule` | `gate_id`, `position`, `category`, `type`, `params` (JSON), `message` | Índice em `gate_id`. |
@@ -1365,7 +1370,7 @@ A tabela `story_rule_ref` não aparece no diagrama do SAD; ela materializa a ref
 - **Notificações:** só e-mail ao responsável em quatro eventos; faltam preferências do usuário, outros destinatários e outros canais.
 - **Eventos de autenticação** na trilha da plataforma.
 - **Campos customizados:** declarados por tipo de artefato e validados na gravação e nos gates desde a #17 (seção 3.3). Campos por unidade, obrigatórios na criação e com regras de exibição ficam para o Customization Engine.
-- **Limites operacionais:** tamanho máximo de anexo, retenção da outbox e limites de taxa da API dependem dos valores de qualidade ainda em aberto.
+- **Limites operacionais:** tamanho máximo de anexo (decidido: 10 MB, configurável, #13), retenção da outbox e limites de taxa da API dependem dos valores de qualidade ainda em aberto.
 - **Internacionalização:** os nomes de status e as mensagens de regra estão em português; não há mecanismo de tradução.
 - **Dados pessoais:** visibilidade de nome e e-mail de outros usuários, tratamento de contas desativadas na trilha de auditoria e retenção ([REV-14](REVIEW-01.md#rev-14--privacidade-e-dados-pessoais)).
 

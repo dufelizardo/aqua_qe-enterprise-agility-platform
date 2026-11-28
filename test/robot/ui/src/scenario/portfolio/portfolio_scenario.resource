@@ -152,3 +152,15 @@ PORTFOLIO - PESSOAS NO NOVO ITEM
     ${title}=    Unique Name    ${initiative_base}
     Squad - Abrir Quadro Do Nivel    ${squad}    ${squad_level_name}    portfolio
     Portfolio - Criar Iniciativa Com Tech Lead E QA    ${title}    ${initiative_description}    ${squad}    ${display_name}
+
+PORTFOLIO - ANEXO NA INICIATIVA
+    [Documentation]    Cria a Iniciativa no Quadro da Squad, envia e remove um anexo na página dela (#13; REV-08).
+    [Arguments]    ${username}    ${display_name}    ${root_name}    ${portfolio_base}    ${portfolio_label}
+    ...    ${cadeia_base}    ${cadeia_label}    ${squad_base}    ${squad_label}    ${squad_level_name}
+    ...    ${initiative_base}    ${initiative_description}    ${file_name}    ${file_content}
+    ${squad}=    Squad - Preparar Squad    ${username}    ${display_name}    ${root_name}    ${portfolio_base}
+    ...    ${portfolio_label}    ${cadeia_base}    ${cadeia_label}    ${squad_base}    ${squad_label}
+    ${title}=    Unique Name    ${initiative_base}
+    Squad - Abrir Quadro Do Nivel    ${squad}    ${squad_level_name}    portfolio
+    Portfolio - Criar Iniciativa    ${title}    ${initiative_description}    ${squad}
+    Artefato - Anexo Enviado E Removido    IDEA    ${title}    ${file_name}    ${file_content}

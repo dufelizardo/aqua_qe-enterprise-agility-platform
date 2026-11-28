@@ -19,6 +19,7 @@ import {
 } from '../../knowledge/artifact-documents.service';
 import { ActivityService } from '../../core/activity.service';
 import { DocOutline } from '../../knowledge/doc-outline';
+import { ArtifactAttachments } from './artifact-attachments';
 import { ArtifactGates } from './artifact-gates';
 import { DraftMatch, DraftStore, LEAVE_MESSAGE, LeaveAware, draftBlocks, draftKey, draftMatch } from '../../knowledge/draft-store';
 import { RichDoc, blocksToDoc, docToBlocks } from '../../knowledge/knowledge.service';
@@ -51,7 +52,7 @@ interface DraftSection {
  */
 @Component({
   selector: 'app-artifact-page',
-  imports: [RouterLink, DatePipe, RichEditor, DocOutline, ArtifactGates],
+  imports: [RouterLink, DatePipe, RichEditor, DocOutline, ArtifactGates, ArtifactAttachments],
   templateUrl: './artifact-page.html',
   styleUrls: ['../wiki/wiki.scss', './artifact-page.scss'],
 })

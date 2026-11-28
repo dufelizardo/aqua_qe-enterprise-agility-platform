@@ -9,6 +9,7 @@ Resource            ../../pom/gates/gates_pom.resource
 Resource            ../../pom/default_owner/default_owner_pom.resource
 Resource            ../../pom/board_templates/board_templates_pom.resource
 Resource            ../../pom/custom_fields/custom_fields_pom.resource
+Resource            ../../pom/attachments/attachments_pom.resource
 
 *** Keywords ***
 Portfolio - Preparar Portfólio
@@ -342,3 +343,18 @@ Portfolio - Criar Iniciativa Com Tech Lead E QA
     Wait For Artifact Title    ${title}
     Wait For Artifact Field    technicalLeadId    ${person_name}
     Wait For Artifact Field    qaOwnerId    ${person_name}
+
+Artefato - Anexo Enviado E Removido
+    [Documentation]    #13 (REV-08): na página da Iniciativa, quem edita envia um arquivo, que aparece na seção Anexos
+    ...    com o link de download; remover pede confirmação e tira o anexo da lista.
+    [Arguments]    ${status}    ${title}    ${file_name}    ${file_content}
+    ${card}=    Card Locator    ${status}    ${title}
+    Open Card Page    ${card}
+    Wait For Artifact Title    ${title}
+    Wait For Attachments Section
+    Upload Attachment With Text    ${file_name}    ${file_content}
+    Wait For Attachment Row    ${file_name}
+    ${href}=    Get Attachment Download Href    ${file_name}
+    Should Match Regexp    ${href}    /api/v1/attachments/[0-9a-f-]+/content$
+    Remove Attachment    ${file_name}
+    Wait For No Attachments
